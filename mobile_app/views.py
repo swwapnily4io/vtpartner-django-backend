@@ -2887,7 +2887,7 @@ def cancel_cab_booking(request):
             row_count = insert_query(query2, values2)
             
             query3 = """
-            update vtpartner.active_cab_drivertbl set current_status='1' where cab_driver_id=%s
+            update vtpartner.active_cab_drivertbl set current_status='1',current_booking_id='-1' where cab_driver_id=%s
             """
             values3 = [
                     driver_id
@@ -2941,7 +2941,8 @@ def cancel_other_driver_booking(request):
         booking_id = data.get("booking_id")
         customer_id = data.get("customer_id")
         driver_id = data.get("driver_id")
-        server_token = data.get("server_token")
+        agent_server_token = data.get("agent_server_token")
+        customer_server_token = data.get("customer_server_token")
         pickup_address = data.get("pickup_address")
         cancel_reason = data.get("cancel_reason")
         
@@ -2950,7 +2951,8 @@ def cancel_other_driver_booking(request):
         # List of required fields
         required_fields = {
             "booking_id": booking_id,
-            "server_token": server_token,
+            "agent_server_token": agent_server_token,
+            "customer_server_token": customer_server_token,
             "customer_id": customer_id,
             "driver_id": driver_id,
             "cancel_reason": cancel_reason,
@@ -3007,7 +3009,7 @@ def cancel_other_driver_booking(request):
             f'The ride request has been canceled by the customer. \nPickup Location: {pickup_address}.',
             f'Driver Ride Canceled - [Booking ID: {str(booking_id)}]',
             fcm_data,
-            server_token,
+            agent_server_token,
             "Agent"
             
             )
@@ -3023,7 +3025,8 @@ def cancel_other_driver_booking(request):
                 f'Your Driver ride request has been successfully canceled. \nPickup Location: {pickup_address}.',
                 f'Driver Ride Cancellation Confirmation - [Booking ID: {str(booking_id)}]',
                 fcm_data2,
-                server_token
+                customer_server_token,
+                "Customer"
             )
 
             
@@ -10161,7 +10164,10 @@ def generate_new_cab_drivers_booking_id_get_nearby_drivers_with_fcm_token(reques
         pickup_address = data.get("pickup_address")
         drop_address = data.get("drop_address")
         server_access_token = data.get("server_access_token")
-
+        coupon_applied = data.get("coupon_applied")
+        coupon_id = data.get("coupon_id")
+        coupon_amount = data.get("coupon_amount")
+        before_coupon_amount = data.get("before_coupon_amount")
         # List of required fields
         required_fields = {
             "city_id":city_id,
@@ -10215,12 +10221,13 @@ def generate_new_cab_drivers_booking_id_get_nearby_drivers_with_fcm_token(reques
                     customer_id, driver_id, pickup_lat, pickup_lng, destination_lat, destination_lng, 
                     distance, time, total_price, base_price, booking_timing, booking_date, 
                     otp, gst_amount, igst_amount, 
-                    payment_method, city_id,pickup_address,drop_address
+                    payment_method, city_id,pickup_address,drop_address,
+                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount
                 ) 
                 VALUES (
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
-                    %s, %s,%s, %s
+                    %s, %s,%s, %s,%s, %s,%s, %s
                 ) 
                 RETURNING booking_id;
             """
@@ -10228,7 +10235,8 @@ def generate_new_cab_drivers_booking_id_get_nearby_drivers_with_fcm_token(reques
             insert_values = [
                 customer_id, '-1', pickup_lat, pickup_lng, destination_lat, destination_lng, 
                 distance, time, total_price, base_price, otp, 
-                gst_amount, igst_amount, payment_method, city_id,pickup_address,drop_address
+                gst_amount, igst_amount, payment_method, city_id,pickup_address,drop_address,
+                coupon_applied,coupon_id,coupon_amount,before_coupon_amount
             ]
 
             # Assuming insert_query is a function that runs the query
@@ -10383,7 +10391,7 @@ def cab_booking_details_live_track(request):
             
         try:
             query = """
-                select booking_id,cab_bookings_tbl.customer_id,cab_bookings_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,cab_bookings_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,payment_method,cab_bookings_tbl.city_id,cancelled_reason,cancel_time,order_id,driver_first_name,cab_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,cab_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,cab_driverstbl.profile_pic from vtpartner.vehiclestbl,vtpartner.cab_bookings_tbl,vtpartner.cab_driverstbl,vtpartner.customers_tbl where cab_driverstbl.cab_driver_id=cab_bookings_tbl.driver_id and customers_tbl.customer_id=cab_bookings_tbl.customer_id and booking_id=%s and booking_status!='End Trip' and vehiclestbl.vehicle_id=cab_driverstbl.vehicle_id
+                select booking_id,cab_bookings_tbl.customer_id,cab_bookings_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,cab_bookings_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,payment_method,cab_bookings_tbl.city_id,cancelled_reason,cancel_time,order_id,driver_first_name,cab_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,cab_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,cab_driverstbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount from vtpartner.vehiclestbl,vtpartner.cab_bookings_tbl,vtpartner.cab_driverstbl,vtpartner.customers_tbl where cab_driverstbl.cab_driver_id=cab_bookings_tbl.driver_id and customers_tbl.customer_id=cab_bookings_tbl.customer_id and booking_id=%s and booking_status!='End Trip' and vehiclestbl.vehicle_id=cab_driverstbl.vehicle_id
             """
             result = select_query(query,[booking_id])  # Assuming select_query is defined elsewhere
 
@@ -10430,7 +10438,10 @@ def cab_booking_details_live_track(request):
                     "vehicle_plate_no": str(row[34]),
                     "vehicle_fuel_type": str(row[35]),
                     "profile_pic": str(row[36]),
-
+                    "coupon_applied":str(row[37]),
+                    "coupon_id":str(row[38]),
+                    "coupon_amount":str(row[39]),
+                    "before_coupon_amount":str(row[40])
                     
                 }
                 for row in result
@@ -13015,7 +13026,8 @@ def other_driver_booking_details_live_track(request):
                 other_driverstbl.mobile_no AS driver_mobile_no,
                 sub_cat_name,
                 service_name,
-                other_driverstbl.profile_pic
+                other_driverstbl.profile_pic,
+                coupon_applied,coupon_id,coupon_amount,before_coupon_amount
             FROM 
                 vtpartner.other_driver_bookings_tbl
             LEFT JOIN 
@@ -13072,6 +13084,10 @@ def other_driver_booking_details_live_track(request):
                     "sub_cat_name": str(row[31]),
                     "service_name": str(row[32]),
                     "profile_pic": str(row[33]),
+                    "coupon_applied":str(row[34]),
+                    "coupon_id":str(row[35]),
+                    "coupon_amount":str(row[36]),
+                    "before_coupon_amount":str(row[37])
 
                     
                 }
