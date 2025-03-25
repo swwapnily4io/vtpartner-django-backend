@@ -2141,7 +2141,7 @@ def goods_order_details(request):
             
         try:
             query = """
-                select booking_id,orders_tbl.customer_id,orders_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,orders_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,goods_type_id,payment_method,orders_tbl.city_id,order_id,sender_name,sender_number,receiver_name,receiver_number,driver_first_name,goods_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,goods_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,goods_driverstbl.profile_pic,orders_tbl.ratings,pickup_time,drop_time from vtpartner.vehiclestbl,vtpartner.orders_tbl,vtpartner.goods_driverstbl,vtpartner.customers_tbl where goods_driverstbl.goods_driver_id=orders_tbl.driver_id and customers_tbl.customer_id=orders_tbl.customer_id and order_id=%s and vehiclestbl.vehicle_id=goods_driverstbl.vehicle_id
+                select booking_id,orders_tbl.customer_id,orders_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,orders_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,goods_type_id,payment_method,orders_tbl.city_id,order_id,sender_name,sender_number,receiver_name,receiver_number,driver_first_name,goods_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,goods_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,goods_driverstbl.profile_pic,orders_tbl.ratings,pickup_time,drop_time,coupon_applied,coupon_id,coupon_amount,before_coupon_amount from vtpartner.vehiclestbl,vtpartner.orders_tbl,vtpartner.goods_driverstbl,vtpartner.customers_tbl where goods_driverstbl.goods_driver_id=orders_tbl.driver_id and customers_tbl.customer_id=orders_tbl.customer_id and order_id=%s and vehiclestbl.vehicle_id=goods_driverstbl.vehicle_id
             """
             result = select_query(query,[order_id])  # Assuming select_query is defined elsewhere
 
@@ -2194,7 +2194,10 @@ def goods_order_details(request):
                     "ratings": str(row[40]),
                     "pickup_time": str(row[41]),
                     "drop_time": str(row[42]),
-
+                    "coupon_applied":str(row[43]),
+                    "coupon_id":str(row[44]),
+                    "coupon_amount":str(row[45]),
+                    "before_coupon_amount":str(row[46])
                     
                 }
                 for row in result
@@ -2233,7 +2236,7 @@ def cab_order_details(request):
             
         try:
             query = """
-                select booking_id,cab_orders_tbl.customer_id,cab_orders_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,cab_orders_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,payment_method,cab_orders_tbl.city_id,order_id,driver_first_name,cab_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,cab_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,cab_driverstbl.profile_pic,cab_orders_tbl.ratings,pickup_time,drop_time from vtpartner.vehiclestbl,vtpartner.cab_orders_tbl,vtpartner.cab_driverstbl,vtpartner.customers_tbl where cab_driverstbl.cab_driver_id=cab_orders_tbl.driver_id and customers_tbl.customer_id=cab_orders_tbl.customer_id and order_id=%s and vehiclestbl.vehicle_id=cab_driverstbl.vehicle_id
+                select booking_id,cab_orders_tbl.customer_id,cab_orders_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,cab_orders_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,payment_method,cab_orders_tbl.city_id,order_id,driver_first_name,cab_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,cab_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,cab_driverstbl.profile_pic,cab_orders_tbl.ratings,pickup_time,drop_time,coupon_applied,coupon_id,coupon_amount,before_coupon_amount from vtpartner.vehiclestbl,vtpartner.cab_orders_tbl,vtpartner.cab_driverstbl,vtpartner.customers_tbl where cab_driverstbl.cab_driver_id=cab_orders_tbl.driver_id and customers_tbl.customer_id=cab_orders_tbl.customer_id and order_id=%s and vehiclestbl.vehicle_id=cab_driverstbl.vehicle_id
             """
             result = select_query(query,[order_id])  # Assuming select_query is defined elsewhere
 
@@ -2281,7 +2284,10 @@ def cab_order_details(request):
                     "ratings": str(row[35]),
                     "pickup_time": str(row[36]),
                     "drop_time": str(row[37]),
-
+                    "coupon_applied":str(row[38]),
+                    "coupon_id":str(row[39]),
+                    "coupon_amount":str(row[40]),
+                    "before_coupon_amount":str(row[41])
                     
                 }
                 for row in result
@@ -2355,7 +2361,8 @@ def other_driver_order_details(request):
     pickup_time,
     drop_time,
     other_servicestbl.service_name,
-    sub_categorytbl.sub_cat_name
+    sub_categorytbl.sub_cat_name,
+    coupon_applied,coupon_id,coupon_amount,before_coupon_amount
 FROM 
     vtpartner.other_driver_orders_tbl
 JOIN 
@@ -2425,7 +2432,10 @@ ORDER BY
                     "drop_time": str(row[32]),
                     "service_name": str(row[33]),
                     "sub_cat_name": str(row[34]),
-
+                    "coupon_applied":str(row[35]),
+                    "coupon_id":str(row[36]),
+                    "coupon_amount":str(row[37]),
+                    "before_coupon_amount":str(row[38])
                     
                 }
                 for row in result
@@ -2499,7 +2509,7 @@ def handyman_order_details(request):
     pickup_time,
     drop_time,
     other_servicestbl.service_name,
-    sub_categorytbl.sub_cat_name
+    sub_categorytbl.sub_cat_name,coupon_applied,coupon_id,coupon_amount,before_coupon_amount
 FROM 
     vtpartner.handyman_orders_tbl
 JOIN 
@@ -2571,7 +2581,10 @@ ORDER BY
                     "drop_time": str(row[32]),
                     "service_name": str(row[33]),
                     "sub_cat_name": str(row[34]),
-
+                    "coupon_applied":str(row[35]),
+                    "coupon_id":str(row[36]),
+                    "coupon_amount":str(row[37]),
+                    "before_coupon_amount":str(row[38])
                     
                 }
                 for row in result
@@ -2645,7 +2658,7 @@ def jcb_crane_order_details(request):
     pickup_time,
     drop_time,
     other_servicestbl.service_name,
-    sub_categorytbl.sub_cat_name
+    sub_categorytbl.sub_cat_name,coupon_applied,coupon_id,coupon_amount,before_coupon_amount
 FROM 
     vtpartner.jcb_crane_orders_tbl
 JOIN 
@@ -2716,6 +2729,10 @@ ORDER BY
                     "drop_time": str(row[32]),
                     "service_name": str(row[33]),
                     "sub_cat_name": str(row[34]),
+                    "coupon_applied":str(row[35]),
+                    "coupon_id":str(row[36]),
+                    "coupon_amount":str(row[37]),
+                    "before_coupon_amount":str(row[38])
 
                     
                 }
@@ -2842,7 +2859,8 @@ def cancel_cab_booking(request):
         booking_id = data.get("booking_id")
         customer_id = data.get("customer_id")
         driver_id = data.get("driver_id")
-        server_token = data.get("server_token")
+        agent_server_token = data.get("agent_server_token")
+        customer_server_token = data.get("customer_server_token")
         pickup_address = data.get("pickup_address")
         cancel_reason = data.get("cancel_reason")
         
@@ -2851,7 +2869,8 @@ def cancel_cab_booking(request):
         # List of required fields
         required_fields = {
             "booking_id": booking_id,
-            "server_token": server_token,
+            "agent_server_token": agent_server_token,
+            "customer_server_token": customer_server_token,
             "customer_id": customer_id,
             "driver_id": driver_id,
             "cancel_reason": cancel_reason,
@@ -2908,7 +2927,7 @@ def cancel_cab_booking(request):
             f'The Cab ride request has been canceled by the customer. \nPickup Location: {pickup_address}.',
             f'Cab Ride Canceled - [Booking ID: {str(booking_id)}]',
             fcm_data,
-            server_token,
+            agent_server_token,
             "Agent"
             )
 
@@ -2923,7 +2942,8 @@ def cancel_cab_booking(request):
                 f'Your Cab ride request has been successfully canceled. \nPickup Location: {pickup_address}.',
                 'Cab Ride Cancellation Confirmation',
                 fcm_data2,
-                server_token
+                customer_server_token,
+                "Customer"
             )
 
             
@@ -3044,7 +3064,8 @@ def cancel_jcb_crane_driver_booking(request):
         booking_id = data.get("booking_id")
         customer_id = data.get("customer_id")
         driver_id = data.get("driver_id")
-        server_token = data.get("server_token")
+        agent_server_token = data.get("agent_server_token")
+        customer_server_token = data.get("customer_server_token")
         pickup_address = data.get("pickup_address")
         cancel_reason = data.get("cancel_reason")
         
@@ -3053,7 +3074,8 @@ def cancel_jcb_crane_driver_booking(request):
         # List of required fields
         required_fields = {
             "booking_id": booking_id,
-            "server_token": server_token,
+            "agent_server_token": agent_server_token,
+            "customer_server_token": customer_server_token,
             "customer_id": customer_id,
             "driver_id": driver_id,
             "cancel_reason": cancel_reason,
@@ -3110,7 +3132,7 @@ def cancel_jcb_crane_driver_booking(request):
             f'The Jcb/Crane ride request has been canceled by the customer. \nPickup Location: {pickup_address}.',
             f'JCB Crane Ride Canceled - [Booking ID: {str(booking_id)}]',
             fcm_data,
-            server_token,
+            agent_server_token,
             "Agent"
             )
 
@@ -3125,7 +3147,8 @@ def cancel_jcb_crane_driver_booking(request):
                 f'Your JCB /Crane ride request has been successfully canceled. \nPickup Location: {pickup_address}.',
                 f'JCB/Crane Ride Cancellation Confirmation - [Booking ID: {str(booking_id)}]',
                 fcm_data2,
-                server_token
+                customer_server_token,
+                "Customer"
             )
 
             
@@ -3143,7 +3166,8 @@ def cancel_handyman_agent_booking(request):
         booking_id = data.get("booking_id")
         customer_id = data.get("customer_id")
         driver_id = data.get("driver_id")
-        server_token = data.get("server_token")
+        agent_server_token = data.get("agent_server_token")
+        customer_server_token = data.get("customer_server_token")
         pickup_address = data.get("pickup_address")
         cancel_reason = data.get("cancel_reason")
         
@@ -3152,7 +3176,8 @@ def cancel_handyman_agent_booking(request):
         # List of required fields
         required_fields = {
             "booking_id": booking_id,
-            "server_token": server_token,
+            "agent_server_token": agent_server_token,
+            "customer_server_token": customer_server_token,
             "customer_id": customer_id,
             "driver_id": driver_id,
             "cancel_reason": cancel_reason,
@@ -3209,7 +3234,7 @@ def cancel_handyman_agent_booking(request):
             f'The HandyMan Service request has been canceled by the customer. \Work Location: {pickup_address}.',
             f'HandyMan Service Canceled - [Booking ID: {str(booking_id)}]',
             fcm_data,
-            server_token,
+            agent_server_token,
             "Agent"
             )
 
@@ -3224,7 +3249,8 @@ def cancel_handyman_agent_booking(request):
                 f'Your HandyMan Service request has been successfully canceled. \Work Location: {pickup_address}.',
                 f'HandyMan Service Cancellation Confirmation - [Booking ID: {str(booking_id)}]',
                 fcm_data2,
-                server_token
+                customer_server_token,
+                "Customer"
             )
 
             
