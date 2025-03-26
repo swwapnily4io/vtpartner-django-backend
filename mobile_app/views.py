@@ -10537,7 +10537,7 @@ def jcb_crane_driver_booking_details_live_track(request):
                 jcb_crane_driverstbl.mobile_no AS driver_mobile_no,
                 sub_cat_name,
                 service_name,
-                jcb_crane_driverstbl.profile_pic
+                jcb_crane_driverstbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount
             FROM 
                 vtpartner.jcb_crane_bookings_tbl
             LEFT JOIN 
@@ -10591,6 +10591,10 @@ def jcb_crane_driver_booking_details_live_track(request):
                     "sub_cat_name": str(row[28]),
                     "service_name": str(row[29]),
                     "profile_pic": str(row[30]),
+                    "coupon_applied":row[31],
+                    "coupon_id":row[32],
+                    "coupon_amount":row[33],
+                    "before_coupon_amount":row[34]
 
                     
                 }
@@ -10661,7 +10665,7 @@ def handyman_agent_booking_details_live_track(request):
                 handymans_tbl.mobile_no AS driver_mobile_no,
                 sub_cat_name,
                 service_name,
-                handymans_tbl.profile_pic
+                handymans_tbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount
             FROM 
                 vtpartner.handyman_bookings_tbl
             LEFT JOIN 
@@ -10715,6 +10719,10 @@ def handyman_agent_booking_details_live_track(request):
                     "sub_cat_name": str(row[28]),
                     "service_name": str(row[29]),
                     "profile_pic": str(row[30]),
+                    "coupon_applied":row[31],
+                    "coupon_id":row[32],
+                    "coupon_amount":row[33],
+                    "before_coupon_amount":row[34]
                 }
                 for row in result
             ]
