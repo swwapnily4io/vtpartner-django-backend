@@ -1115,6 +1115,65 @@ def customer_wallet_details(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+@csrf_exempt
+def update_wallet_balance(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            customer_id = data.get("customer_id")
+            amount = data.get("amount")
+            razorpay_payment_id = data.get("razorpay_payment_id")
+            payment_mode = data.get("payment_mode")
+
+            # Check for missing fields
+            required_fields = {
+                "customer_id": customer_id,
+                "amount": amount,
+                "razorpay_payment_id": razorpay_payment_id,
+                "payment_mode": payment_mode
+            }
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+
+            # Update wallet balance
+            update_wallet_query = """
+                UPDATE vtpartner.customer_wallet 
+                SET current_balance = current_balance + %s,
+                    last_updated = date_part('epoch', CURRENT_TIMESTAMP)
+                WHERE customer_id = %s
+                RETURNING wallet_id;
+            """
+            wallet_result = update_query(update_wallet_query, [amount, customer_id])
+            if not wallet_result:
+                return JsonResponse({"message": "Failed to update wallet balance"}, status=400)
+
+            wallet_id = wallet_result[0][0]
+
+            # Insert transaction record
+            insert_transaction_query = """
+                INSERT INTO vtpartner.customer_wallet_transactions (
+                    wallet_id, customer_id, transaction_type, amount, status, 
+                    razorpay_payment_id, payment_mode, remarks
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
+            """
+            transaction_params = [
+                wallet_id, customer_id, 'CREDIT', amount, 'SUCCESS', 
+                razorpay_payment_id, payment_mode, 'Wallet Recharge'
+            ]
+            insert_query(insert_transaction_query, transaction_params)
+
+            return JsonResponse({"message": "Wallet updated successfully", "status": "success"})
+
+        except Exception as err:
+            print("Error updating wallet:", err)
+            return JsonResponse({"message": "Failed to update wallet", "error": str(err)}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
 @csrf_exempt 
 def customer_details(request):
     

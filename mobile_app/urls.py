@@ -22,6 +22,8 @@ urlpatterns = [
     path('all_coupons',views.all_coupons,name='all_coupons'),
     #Customer wallet balance and history
     path('customer_wallet_details',views.customer_wallet_details,name='customer_wallet_details'),
+    #Customer wallet balance add
+    path('update_wallet_balance',views.update_wallet_balance,name='update_wallet_balance'),
     #Get Customer Details
     path('customer_details',views.customer_details,name='customer_details'),
     #Get Customer Reward Points Details
