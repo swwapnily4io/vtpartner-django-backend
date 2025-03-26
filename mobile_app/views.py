@@ -1139,19 +1139,32 @@ def update_wallet_balance(request):
                     status=400
                 )
 
-            # Update wallet balance
-            update_wallet_query = """
-                UPDATE vtpartner.customer_wallet 
-                SET current_balance = current_balance + %s,
-                    last_updated = date_part('epoch', CURRENT_TIMESTAMP)
-                WHERE customer_id = %s
-                RETURNING wallet_id;
+            # Check if wallet exists for the customer
+            check_wallet_query = """
+                SELECT wallet_id FROM vtpartner.customer_wallet WHERE customer_id = %s;
             """
-            wallet_result = update_query(update_wallet_query, [amount, customer_id])
-            if not wallet_result:
-                return JsonResponse({"message": "Failed to update wallet balance"}, status=400)
+            wallet_result = fetch_query(check_wallet_query, [customer_id])
 
-            wallet_id = wallet_result[0][0]
+            if wallet_result:
+                wallet_id = wallet_result[0][0]
+                update_wallet_query = """
+                    UPDATE vtpartner.customer_wallet 
+                    SET current_balance = current_balance + %s,
+                        last_updated = date_part('epoch', CURRENT_TIMESTAMP)
+                    WHERE customer_id = %s
+                    RETURNING wallet_id;
+                """
+                update_query(update_wallet_query, [amount, customer_id])
+            else:
+                insert_wallet_query = """
+                    INSERT INTO vtpartner.customer_wallet (customer_id, current_balance, last_updated)
+                    VALUES (%s, %s, date_part('epoch', CURRENT_TIMESTAMP))
+                    RETURNING wallet_id;
+                """
+                wallet_result = insert_query(insert_wallet_query, [customer_id, amount])
+                if not wallet_result:
+                    return JsonResponse({"message": "Failed to create wallet"}, status=400)
+                wallet_id = wallet_result[0][0]
 
             # Insert transaction record
             insert_transaction_query = """
