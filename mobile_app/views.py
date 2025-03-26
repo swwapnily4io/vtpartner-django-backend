@@ -1143,7 +1143,7 @@ def update_wallet_balance(request):
             check_wallet_query = """
                 SELECT wallet_id FROM vtpartner.customer_wallet WHERE customer_id = %s;
             """
-            wallet_result = fetch_query(check_wallet_query, [customer_id])
+            wallet_result = select_query(check_wallet_query, [customer_id])
 
             if wallet_result:
                 wallet_id = wallet_result[0][0]
