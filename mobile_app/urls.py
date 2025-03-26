@@ -20,6 +20,8 @@ urlpatterns = [
     path('customer_registration',views.customer_registration,name='customer_registration'),
     #All Coupons
     path('all_coupons',views.all_coupons,name='all_coupons'),
+    #Customer wallet balance and history
+    path('customer_wallet_details',views.customer_wallet_details,name='customer_wallet_details'),
     #Get Customer Details
     path('customer_details',views.customer_details,name='customer_details'),
     #Get Customer Reward Points Details

@@ -1004,7 +1004,116 @@ def all_coupons(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+@csrf_exempt 
+def customer_wallet_details(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        customer_id = data.get("customer_id")
+        
+        # List of required fields
+        required_fields = {
+            "customer_id": customer_id,
+        }
+        
+        # Check for missing fields
+        missing_fields = check_missing_fields(required_fields)
+        
+        if missing_fields:
+            return JsonResponse(
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
+            
+        try:
+            # First query to get wallet balance
+            wallet_query = """
+                SELECT 
+                    wallet_id,
+                    customer_id,
+                    current_balance,
+                    last_updated
+                FROM 
+                    vtpartner.customer_wallet
+                WHERE 
+                    customer_id = %s;
+            """
+            
+            # Second query to get transaction history
+            transactions_query = """
+                SELECT 
+                    t.transaction_id,
+                    t.wallet_id,
+                    t.customer_id,
+                    t.transaction_type,
+                    t.amount,
+                    t.status,
+                    t.transaction_time,
+                    t.transaction_date,
+                    t.razorpay_payment_id,
+                    t.razorpay_order_id,
+                    t.razorpay_signature,
+                    t.payment_mode,
+                    t.remarks,
+                    c.customer_name,
+                    c.mobile_no
+                FROM 
+                    vtpartner.customer_wallet_transactions t
+                JOIN 
+                    vtpartner.customers_tbl c ON c.customer_id = t.customer_id
+                WHERE 
+                    t.customer_id = %s
+                ORDER BY 
+                    t.transaction_time DESC;
+            """
+            
+            wallet_result = select_query(wallet_query, [customer_id])
+            transactions_result = select_query(transactions_query, [customer_id])
 
+            if not wallet_result:
+                return JsonResponse({"message": "No wallet found for this customer"}, status=404)
+
+            # Format wallet details
+            wallet_details = {
+                "wallet_id": wallet_result[0][0],
+                "customer_id": wallet_result[0][1],
+                "current_balance": float(wallet_result[0][2]),
+                "last_updated": wallet_result[0][3]
+            }
+
+            # Format transaction history
+            transaction_history = [
+                {
+                    "transaction_id": row[0],
+                    "wallet_id": row[1],
+                    "customer_id": row[2],
+                    "transaction_type": row[3],
+                    "amount": float(row[4]),
+                    "status": row[5],
+                    "transaction_time": row[6],
+                    "transaction_date": str(row[7]),
+                    "razorpay_payment_id": row[8],
+                    "razorpay_order_id": row[9],
+                    "razorpay_signature": row[10],
+                    "payment_mode": row[11],
+                    "remarks": row[12],
+                    "customer_name": row[13],
+                    "customer_mobile": row[14]
+                }
+                for row in transactions_result
+            ]
+
+            response_data = {
+                "wallet_details": wallet_details,
+                "transaction_history": transaction_history
+            }
+
+            return JsonResponse({"results": response_data}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt 
 def customer_details(request):
