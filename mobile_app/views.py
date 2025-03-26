@@ -2025,10 +2025,10 @@ def booking_details_live_track(request):
                     "vehicle_plate_no": str(row[39]),
                     "vehicle_fuel_type": str(row[40]),
                     "profile_pic": str(row[41]),
-                    "coupon_applied":str(row[42]),
-                    "coupon_id":str(row[43]),
-                    "coupon_amount":str(row[44]),
-                    "before_coupon_amount":str(row[45])
+                    "coupon_applied":row[42],
+                    "coupon_id":row[43],
+                    "coupon_amount":row[44],
+                    "before_coupon_amount":row[45]
                     
                 }
                 for row in result
