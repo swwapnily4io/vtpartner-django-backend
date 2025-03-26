@@ -10464,10 +10464,10 @@ def cab_booking_details_live_track(request):
                     "vehicle_plate_no": str(row[34]),
                     "vehicle_fuel_type": str(row[35]),
                     "profile_pic": str(row[36]),
-                    "coupon_applied":str(row[37]),
-                    "coupon_id":str(row[38]),
-                    "coupon_amount":str(row[39]),
-                    "before_coupon_amount":str(row[40])
+                    "coupon_applied":row[37],
+                    "coupon_id":row[38],
+                    "coupon_amount":row[39],
+                    "before_coupon_amount":row[40]
                     
                 }
                 for row in result
@@ -13110,10 +13110,10 @@ def other_driver_booking_details_live_track(request):
                     "sub_cat_name": str(row[31]),
                     "service_name": str(row[32]),
                     "profile_pic": str(row[33]),
-                    "coupon_applied":str(row[34]),
-                    "coupon_id":str(row[35]),
-                    "coupon_amount":str(row[36]),
-                    "before_coupon_amount":str(row[37])
+                    "coupon_applied":row[34],
+                    "coupon_id":row[35],
+                    "coupon_amount":row[36],
+                    "before_coupon_amount":row[37]
 
                     
                 }
