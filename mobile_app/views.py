@@ -3008,7 +3008,7 @@ def cancel_other_driver_booking(request):
             row_count = insert_query(query2, values2)
             
             query3 = """
-            update vtpartner.active_other_drivertbl set current_status='1' where other_driver_id=%s
+            update vtpartner.active_other_drivertbl set current_status='1',current_booking_id='-1' where other_driver_id=%s
             """
             values3 = [
                     driver_id
@@ -3111,7 +3111,7 @@ def cancel_jcb_crane_driver_booking(request):
             row_count = insert_query(query2, values2)
             
             query3 = """
-            update vtpartner.active_jcb_crane_drivertbl set current_status='1' where jcb_crane_driver_id=%s
+            update vtpartner.active_jcb_crane_drivertbl set current_status='1',current_booking_id='-1' where jcb_crane_driver_id=%s
             """
             values3 = [
                     driver_id
@@ -3213,7 +3213,7 @@ def cancel_handyman_agent_booking(request):
             row_count = insert_query(query2, values2)
             
             query3 = """
-            update vtpartner.active_handyman_tbl set current_status='1' where handyman_id=%s
+            update vtpartner.active_handyman_tbl set current_status='1',current_booking_id='-1' where handyman_id=%s
             """
             values3 = [
                     driver_id
