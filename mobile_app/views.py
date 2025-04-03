@@ -2278,7 +2278,7 @@ def get_cab_driver_current_booking_detail(request):
 
         try:
             query = """
-                SELECT current_booking_id FROM vtpartner.active_cab_drivertbl WHERE goods_driver_id = %s
+                SELECT current_booking_id FROM vtpartner.active_cab_drivertbl WHERE cab_driver_id = %s
             """
             result = select_query(query, [cab_driver_id])  # Assuming select_query is defined elsewhere
 
