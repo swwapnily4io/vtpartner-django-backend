@@ -8231,6 +8231,62 @@ def goods_driver_current_new_recharge_details(request):
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt
+def cab_driver_current_new_recharge_details(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        driver_id = data.get("driver_id")
+
+        # List of required fields
+        required_fields = {
+            "driver_id": driver_id,
+        }
+        # Check for missing fields
+        missing_fields = check_missing_fields(required_fields)
+        
+        # If there are missing fields, return an error response
+        if missing_fields:
+            return JsonResponse(
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
+            
+        try:
+            # Query to get today's earnings and rides count
+            query = """
+                 select current_plan_id,cab_driver_current_recharge_plan_tbl.recharge_plan_id,expiry_time,last_recharge_history_id,plan_title,plan_description,plan_days,plan_price from vtpartner.cab_driver_current_recharge_plan_tbl,vtpartner.goods_driver_recharge_plans_tbl where cab_driver_current_recharge_plan_tbl.driver_id=%s and cab_driver_current_recharge_plan_tbl.recharge_plan_id=goods_driver_recharge_plans_tbl.recharge_plan_id and category_id='2'
+            """
+            result = select_query(query, [driver_id])  
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            
+           
+            
+            # Extract the first row from the result
+            row = result[0]
+            
+            recharge_details = {
+                "current_plan_id": row[0],
+                "recharge_plan_id": row[1],
+                "expiry_time":row[2],
+                "last_recharge_history_id":row[3],
+                "plan_title":row[4],
+                "plan_description":row[5],
+                "plan_days":row[6],
+                "plan_price":row[7],
+            }
+
+            return JsonResponse({"results": [recharge_details]}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
 def get_faqs_by_category(request):
     if request.method == "POST":
         try:
@@ -10327,11 +10383,23 @@ def cab_driver_todays_earnings(request):
             if not result:
                 return JsonResponse({"message": "No Data Found"}, status=404)
 
+            
+            query2 = """
+                SELECT COALESCE(SUM(amount), 0) AS todays_earnings, 
+                       COUNT(*) AS todays_rides 
+                FROM vtpartner.cab_driver_earningstbl 
+                WHERE driver_id = %s ;
+            """
+            result_total = select_query(query2, [driver_id])  # Assuming select_query is defined elsewhere
+            
             # Extract the first row from the result
             row = result[0]
+            row_total = result_total[0]
             earning_details = {
                 "todays_earnings": row[0],
                 "todays_rides": row[1],
+                "total_earnings":row_total[0],
+                "total_rides":row_total[1],
             }
 
             return JsonResponse({"results": [earning_details]}, status=200)
