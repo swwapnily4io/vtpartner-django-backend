@@ -7448,6 +7448,61 @@ def get_goods_driver_new_recharge_plan_history_list(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+@csrf_exempt 
+def get_cab_driver_new_recharge_plan_history_list(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        driver_id = data.get("driver_id")
+        
+
+        # List of required fields
+        required_fields = {
+            "driver_id": driver_id,
+        }
+        # Check for missing fields
+        missing_fields = check_missing_fields(required_fields)
+        
+        # If there are missing fields, return an error response
+        if missing_fields:
+            return JsonResponse(
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
+            
+        try:
+            query = """
+               select recharge_history_id,goods_driver_recharge_history_tbl.recharge_plan_id,plan_expiry_time,plan_title,plan_description,plan_days,expiry_days,plan_price,recharge_time from vtpartner.cab_driver_recharge_history_tbl,vtpartner.goods_driver_recharge_plans_tbl where cab_driver_recharge_history_tbl.driver_id=%s and cab_driver_recharge_history_tbl.recharge_plan_id=goods_driver_recharge_plans_tbl.recharge_plan_id and category_id='2' order by recharge_history_id desc
+            """
+            result = select_query(query,[driver_id])  
+
+            if result == []:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            # Map each row to a dictionary with appropriate keys
+            services_details = [
+                {
+                    "recharge_history_id": row[0],
+                    "recharge_plan_id": row[1],
+                    "plan_expiry_time": row[2],
+                    "plan_title": row[3],
+                    "plan_description": row[4],
+                    "plan_days": row[5],
+                    "expiry_days": row[6],
+                    "plan_price": row[7],
+                    "recharge_time": row[8],
+                    
+                }
+                for row in result
+            ]
+
+            return JsonResponse({"results": services_details}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
 
 @csrf_exempt 
 def get_goods_driver_current_recharge_details(request):
@@ -9744,7 +9799,11 @@ def generate_order_id_for_booking_id_cab_driver(request):
                         pickup_address, 
                         drop_address,
                         pickup_time,
-                        drop_time
+                        drop_time,
+                        coupon_applied,
+                        coupon_id,
+                        coupon_amount,
+                        before_coupon_amount
                     )
                     SELECT 
                         customer_id, 
@@ -9770,7 +9829,11 @@ def generate_order_id_for_booking_id_cab_driver(request):
                         pickup_address, 
                         drop_address,
                         pickup_time,
-                        drop_time
+                        drop_time,
+                        coupon_applied,
+                        coupon_id,
+                        coupon_amount,
+                        before_coupon_amount
                     FROM vtpartner.cab_bookings_tbl
                     WHERE booking_id = %s
                     RETURNING order_id;
