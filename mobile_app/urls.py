@@ -200,6 +200,10 @@ urlpatterns = [
     
     
     #Cab Driver Api's URLs
+    # Profile Details Cab Driver
+    path('get_cab_driver_details',views.get_cab_driver_details,name='get_cab_driver_details'),
+    #Update / Edit Profile
+    path('update_cab_driver_details',views.update_cab_driver_details,name='update_cab_driver_details'),
     #Login
     path('cab_driver_login',views.cab_driver_login_view,name='cab_driver_login'),
     #Registration 
