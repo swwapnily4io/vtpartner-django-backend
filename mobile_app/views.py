@@ -7471,7 +7471,7 @@ def get_cab_driver_new_recharge_plan_history_list(request):
             
         try:
             query = """
-               select recharge_history_id,goods_driver_recharge_history_tbl.recharge_plan_id,plan_expiry_time,plan_title,plan_description,plan_days,expiry_days,plan_price,recharge_time from vtpartner.cab_driver_recharge_history_tbl,vtpartner.goods_driver_recharge_plans_tbl where cab_driver_recharge_history_tbl.driver_id=%s and cab_driver_recharge_history_tbl.recharge_plan_id=goods_driver_recharge_plans_tbl.recharge_plan_id and category_id='2' order by recharge_history_id desc
+               select recharge_history_id,cab_driver_recharge_history_tbl.recharge_plan_id,plan_expiry_time,plan_title,plan_description,plan_days,expiry_days,plan_price,recharge_time from vtpartner.cab_driver_recharge_history_tbl,vtpartner.goods_driver_recharge_plans_tbl where cab_driver_recharge_history_tbl.driver_id=%s and cab_driver_recharge_history_tbl.recharge_plan_id=goods_driver_recharge_plans_tbl.recharge_plan_id and category_id='2' order by recharge_history_id desc
             """
             result = select_query(query,[driver_id])  
 
