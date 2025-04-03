@@ -8564,7 +8564,7 @@ def get_cab_driver_details(request):
                        gd.vehicle_fuel_type, gd.authtoken, gd.otp_no, gd.reason, 
                        gd.bank_name, gd.ifsc_code, gd.account_number, gd.account_name, 
                        v.vehicle_name, v.image as vehicle_image
-                FROM vtpartner.goods_driverstbl gd
+                FROM vtpartner.cab_driverstbl gd
                 LEFT JOIN vtpartner.vehiclestbl v ON gd.vehicle_id = v.vehicle_id
                 WHERE gd.cab_driver_id = %s
             """
