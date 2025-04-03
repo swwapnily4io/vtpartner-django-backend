@@ -10012,30 +10012,7 @@ def generate_order_id_for_booking_id_cab_driver(request):
                 # Execute the query
                 row_count = insert_query(query, values)
 
-                # Send success response
-                auth_token = get_customer_auth_token(customer_id)
-                body = title = ""
-                data_map = {}
-                if booking_status == "Driver Arrived":
-                    body = "Our cab agent has arrived at your pickup location"
-                    title = "Cab Agent Arrived"
-                elif booking_status == "OTP verified":
-                    body = "Your trip otp is verified for cab ride"
-                    title = "Cab Trip OTP Verified"
-                elif booking_status == "Start Trip":
-                    body = "Cab Trip has been started from your pickup location"
-                    title = "Cab Trip Started"
-                elif booking_status == "Ongoing":
-                    body = "Cab Trip has been started from your pickup location"
-                    title = "Cab Ongoing"
-                elif booking_status == "End Trip":
-                    body = "You have reached your destination successfully"
-                    title = "Cab Destination Arrived"
-                    data_map = {
-                        'intent':'end_cab_live_tracking',
-                        'order_id':str(order_id)
-                            }
-                sendFMCMsg(auth_token,body,title,data_map,server_token,"Customer")
+                
                 #return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
                 
                 #Generating Order ID
@@ -10112,6 +10089,7 @@ def generate_order_id_for_booking_id_cab_driver(request):
                     #get order_id from here
                     if ret_result!=None:
                         order_id = ret_result[0][0]
+                        
                         try:
                             query2 = """
                             update vtpartner.active_cab_drivertbl set current_status='1',current_booking_id='-1' where cab_driver_id=%s
@@ -10190,6 +10168,30 @@ def generate_order_id_for_booking_id_cab_driver(request):
 
                                         # Execute the query
                                         row_count = insert_query(query5, values5)
+                                        # Send success response
+                                        auth_token = get_customer_auth_token(customer_id)
+                                        body = title = ""
+                                        data_map = {}
+                                        if booking_status == "Driver Arrived":
+                                            body = "Our cab agent has arrived at your pickup location"
+                                            title = "Cab Agent Arrived"
+                                        elif booking_status == "OTP verified":
+                                            body = "Your trip otp is verified for cab ride"
+                                            title = "Cab Trip OTP Verified"
+                                        elif booking_status == "Start Trip":
+                                            body = "Cab Trip has been started from your pickup location"
+                                            title = "Cab Trip Started"
+                                        elif booking_status == "Ongoing":
+                                            body = "Cab Trip has been started from your pickup location"
+                                            title = "Cab Ongoing"
+                                        elif booking_status == "End Trip":
+                                            body = "You have reached your destination successfully"
+                                            title = "Cab Destination Arrived"
+                                            data_map = {
+                                                'intent':'end_cab_live_tracking',
+                                                'order_id':str(order_id)
+                                                    }
+                                        sendFMCMsg(auth_token,body,title,data_map,server_token,"Customer")
                                         #success
                                         return JsonResponse({"message": f"{ret_result} row(s) updated","order_id":order_id}, status=200)
                                     except Exception as err:
