@@ -14134,7 +14134,7 @@ def jcb_crane_driver_registration(request):
         current_lat = data.get("current_lat")
         current_lng = data.get("current_lng")
         recent_online_pic = data.get("recent_online_pic")
-        vehicle_id = data.get("vehicle_id")
+        # vehicle_id = data.get("vehicle_id")
         city_id = data.get("city_id")
         aadhar_no = data.get("aadhar_no")
         pan_card_no = data.get("pan_card_no")
@@ -14180,7 +14180,7 @@ def jcb_crane_driver_registration(request):
             "current_lat":current_lat,
             "current_lng":current_lng,
             "recent_online_pic":recent_online_pic,
-            "vehicle_id":vehicle_id,
+            # "vehicle_id":vehicle_id,
             "city_id":city_id,
             "aadhar_no":aadhar_no,
             "pan_card_no":pan_card_no,
@@ -14300,7 +14300,7 @@ def jcb_crane_driver_registration(request):
             r_lng,
             recent_online_pic,
             '3',
-            vehicle_id,
+            '-1',
             city_id,
             aadhar_no,
             pan_card_no,
