@@ -193,6 +193,8 @@ urlpatterns = [
     path('goods_driver_current_new_recharge_details',views.goods_driver_current_new_recharge_details,name='goods_driver_current_new_recharge_details'),
     #getting cab driver current new day wise recharge details
     path('cab_driver_current_new_recharge_details',views.cab_driver_current_new_recharge_details,name='cab_driver_current_new_recharge_details'),
+    #getting cab driver current new day wise recharge details
+    path('other_driver_current_new_recharge_details',views.other_driver_current_new_recharge_details,name='other_driver_current_new_recharge_details'),
     #getting goods driver faq 
     path('get_faqs_by_category',views.get_faqs_by_category,name='get_faqs_by_category'),
     #getting all banners

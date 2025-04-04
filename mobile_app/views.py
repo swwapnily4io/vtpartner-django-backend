@@ -8462,6 +8462,62 @@ def cab_driver_current_new_recharge_details(request):
 
 
 @csrf_exempt
+def other_driver_current_new_recharge_details(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        driver_id = data.get("driver_id")
+
+        # List of required fields
+        required_fields = {
+            "driver_id": driver_id,
+        }
+        # Check for missing fields
+        missing_fields = check_missing_fields(required_fields)
+        
+        # If there are missing fields, return an error response
+        if missing_fields:
+            return JsonResponse(
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
+            
+        try:
+            # Query to get today's earnings and rides count
+            query = """
+                 select current_plan_id,cab_driver_current_recharge_plan_tbl.recharge_plan_id,expiry_time,last_recharge_history_id,plan_title,plan_description,plan_days,plan_price from vtpartner.cab_driver_current_recharge_plan_tbl,vtpartner.goods_driver_recharge_plans_tbl where cab_driver_current_recharge_plan_tbl.driver_id=%s and cab_driver_current_recharge_plan_tbl.recharge_plan_id=goods_driver_recharge_plans_tbl.recharge_plan_id and category_id='4'
+            """
+            result = select_query(query, [driver_id])  
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            
+           
+            
+            # Extract the first row from the result
+            row = result[0]
+            
+            recharge_details = {
+                "current_plan_id": row[0],
+                "recharge_plan_id": row[1],
+                "expiry_time":row[2],
+                "last_recharge_history_id":row[3],
+                "plan_title":row[4],
+                "plan_description":row[5],
+                "plan_days":row[6],
+                "plan_price":row[7],
+            }
+
+            return JsonResponse({"results": [recharge_details]}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
 def get_faqs_by_category(request):
     if request.method == "POST":
         try:
@@ -11712,45 +11768,64 @@ def other_driver_online_status(request):
         data = json.loads(request.body)
         other_driver_id = data.get("other_driver_id")
 
-         # List of required fields
+        # List of required fields
         required_fields = {
             "other_driver_id": other_driver_id,
         }
         # Check for missing fields
-         # Use the utility function to check for missing fields
         missing_fields = check_missing_fields(required_fields)
         
-        # If there are missing fields, return an error response
         if missing_fields:
             return JsonResponse(
-            {"message": f"Missing required fields: {', '.join(missing_fields)}"},
-            status=400
-        )
-                
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
                 
         try:
+            # Updated query to include subcategory and service information
             query = """
-            select is_online,status,driver_first_name,recent_online_pic,profile_pic,mobile_no from vtpartner.other_driverstbl where other_driver_id=%s
+            SELECT 
+                od.is_online,
+                od.status,
+                od.driver_first_name,
+                od.recent_online_pic,
+                od.profile_pic,
+                od.mobile_no,
+                od.sub_cat_id,
+                sc.sub_cat_name,
+                od.service_id,
+                CASE 
+                    WHEN od.service_id != '-1' THEN os.service_name 
+                    ELSE 'NA' 
+                END as service_name
+            FROM vtpartner.other_driverstbl od
+            LEFT JOIN vtpartner.sub_categorytbl sc ON od.sub_cat_id = sc.sub_cat_id
+            LEFT JOIN vtpartner.other_servicestbl os ON od.service_id = os.service_id
+            WHERE od.other_driver_id = %s
             """
             params = [other_driver_id]
-            result = select_query(query, params)  # Assuming select_query is defined elsewhere
+            result = select_query(query, params)
 
-            if result == []:
+            if not result:
                 return JsonResponse({"message": "No Data Found"}, status=404)
                                 
             # Map the results to a list of dictionaries with meaningful keys
             response_value = [
                 {
                     "is_online": row[0],
-                    "status": row[1],  
-                    "driver_first_name": row[2],  
-                    "recent_online_pic": row[3],  
-                    "profile_pic": row[4],  
-                    "mobile_no": row[5],  
+                    "status": row[1],
+                    "driver_first_name": row[2],
+                    "recent_online_pic": row[3],
+                    "profile_pic": row[4],
+                    "mobile_no": row[5],
+                    "sub_cat_id": row[6],
+                    "sub_cat_name": row[7] or "NA",
+                    "service_id": row[8] or -1,
+                    "service_name": row[9] or "NA"
                 }
                 for row in result
             ]
-            # Return customer response
+
             return JsonResponse({"results": response_value}, status=200)
 
         except Exception as err:
@@ -11960,8 +12035,7 @@ def delete_other_driver_to_active_drivers_table(request):
                 return JsonResponse({"message": "An error occurred"}, status=500)
             
             
-            # Send success response
-            return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
+            
 
         except Exception as err:
             print("Error executing query:", err)
@@ -13563,16 +13637,29 @@ def other_driver_todays_earnings(request):
                 FROM vtpartner.other_driver_earningstbl 
                 WHERE driver_id = %s AND earning_date = CURRENT_DATE;
             """
-            result = select_query(query, [driver_id])  # Assuming select_query is defined elsewhere
+            result = select_query(query, [driver_id])
 
             if not result:
                 return JsonResponse({"message": "No Data Found"}, status=404)
 
-            # Extract the first row from the result
+            # Query to get total earnings and rides count
+            query2 = """
+                SELECT COALESCE(SUM(amount), 0) AS todays_earnings, 
+                       COUNT(*) AS todays_rides 
+                FROM vtpartner.other_driver_earningstbl 
+                WHERE driver_id = %s;
+            """
+            result_total = select_query(query2, [driver_id])
+            
+            # Extract the first row from both results
             row = result[0]
+            row_total = result_total[0]
+            
             earning_details = {
                 "todays_earnings": row[0],
                 "todays_rides": row[1],
+                "total_earnings": row_total[0],
+                "total_rides": row_total[1],
             }
 
             return JsonResponse({"results": [earning_details]}, status=200)
@@ -13582,7 +13669,6 @@ def other_driver_todays_earnings(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
-
 
 @csrf_exempt 
 def other_driver_booking_details_live_track(request):
