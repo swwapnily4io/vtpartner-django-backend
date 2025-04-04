@@ -16490,6 +16490,8 @@ def handyman_registration(request):
         aadhar_card_back = data.get("aadhar_card_back")
         pan_card_front = data.get("pan_card_front")
         pan_card_back = data.get("pan_card_back")
+        license_front = data.get("license_front")
+        license_back = data.get("license_back")
         sub_cat_id = data.get("sub_cat_id")
         service_id = data.get("service_id")
         
@@ -16517,6 +16519,8 @@ def handyman_registration(request):
             "aadhar_card_back":aadhar_card_back,
             "pan_card_front":pan_card_front,
             "pan_card_back":pan_card_back,
+            "license_front":license_front,
+            "license_back":license_front,
             "sub_cat_id":sub_cat_id,
             "service_id":service_id,
             
@@ -16555,7 +16559,9 @@ def handyman_registration(request):
             aadhar_card_front = %s,
             aadhar_card_back = %s,
             pan_card_front = %s,
-            pan_card_back = %s
+            pan_card_back = %s,
+            license_front = %s,
+            license_back = %s
             
             WHERE handyman_id=%s
         """
@@ -16580,12 +16586,14 @@ def handyman_registration(request):
             aadhar_card_back,
             pan_card_front,
             pan_card_back,
+            license_front,
+            license_back,
             handyman_id
         ]
         row_count = update_query(query, values)
 
         # Send success response
-        return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
+        return JsonResponse({"messages": f"{row_count} row(s) updated"}, status=200)
 
     except Exception as err:
         print("Error executing query", err)
