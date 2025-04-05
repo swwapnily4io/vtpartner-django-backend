@@ -263,6 +263,11 @@ urlpatterns = [
     #All Cab Drivers Nearby
     path('cab_booking_details_live_track',views.cab_booking_details_live_track,name='cab_booking_details_live_track'),
     
+    
+    path('jcb_crane_driver_new_recharge_plan', views.jcb_crane_driver_new_recharge_plan, name='jcb_crane_driver_new_recharge_plan'),
+    path('other_driver_new_recharge_plan', views.other_driver_new_recharge_plan, name='other_driver_new_recharge_plan'),
+    path('handyman_new_recharge_plan', views.handyman_new_recharge_plan, name='handyman_new_recharge_plan'),
+    
     #Other Drivers Api's URLs
     #Login
     path('other_driver_login',views.other_driver_login_view,name='other_driver_login'),
