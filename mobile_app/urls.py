@@ -179,6 +179,12 @@ urlpatterns = [
     path('get_goods_driver_new_recharge_plan_history_list',views.get_goods_driver_new_recharge_plan_history_list,name='get_goods_driver_new_recharge_plan_history_list'),
     #Get cab Driver New Recharge Plan History List 
     path('get_cab_driver_new_recharge_plan_history_list',views.get_cab_driver_new_recharge_plan_history_list,name='get_cab_driver_new_recharge_plan_history_list'),
+    #Get jcb crane Driver New Recharge Plan History List 
+    path('get_jcb_crane_driver_new_recharge_plan_history_list',views.get_jcb_crane_driver_new_recharge_plan_history_list,name='get_jcb_crane_driver_new_recharge_plan_history_list'),
+    #Get other Driver New Recharge Plan History List 
+    path('get_other_driver_new_recharge_plan_history_list',views.get_other_driver_new_recharge_plan_history_list,name='get_other_driver_new_recharge_plan_history_list'),
+    #Get Handyman Agent New Recharge Plan History List 
+    path('get_handyman_new_recharge_plan_history_list',views.get_handyman_new_recharge_plan_history_list,name='get_handyman_new_recharge_plan_history_list'),
     #Insert the Goods Driver New Recharge
     path('new_goods_driver_recharge',views.new_goods_driver_recharge,name='new_goods_driver_recharge'),
     #Insert the Goods Driver New Recharge Plans
