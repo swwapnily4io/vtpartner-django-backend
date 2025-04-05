@@ -8460,6 +8460,70 @@ def cab_driver_current_new_recharge_details(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+@csrf_exempt
+def jcb_crane_current_new_recharge_details(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        driver_id = data.get("driver_id")
+
+        # List of required fields
+        required_fields = {
+            "driver_id": driver_id,
+        }
+        # Check for missing fields
+        missing_fields = check_missing_fields(required_fields)
+        
+        # If there are missing fields, return an error response
+        if missing_fields:
+            return JsonResponse(
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
+            
+        try:
+            # Updated query to use jcb_crane tables
+            query = """
+                SELECT 
+                    current_plan_id,
+                    jc.recharge_plan_id,
+                    expiry_time,
+                    last_recharge_history_id,
+                    plan_title,
+                    plan_description,
+                    plan_days,
+                    plan_price 
+                FROM vtpartner.jcb_crane_current_recharge_plan_tbl jc
+                JOIN vtpartner.goods_driver_recharge_plans_tbl p 
+                    ON jc.recharge_plan_id = p.recharge_plan_id 
+                WHERE jc.driver_id = %s 
+                    AND p.category_id = '4'
+            """
+            result = select_query(query, [driver_id])  
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+            
+            # Extract the first row from the result
+            row = result[0]
+            
+            recharge_details = {
+                "current_plan_id": row[0],
+                "recharge_plan_id": row[1],
+                "expiry_time": row[2],
+                "last_recharge_history_id": row[3],
+                "plan_title": row[4],
+                "plan_description": row[5],
+                "plan_days": row[6],
+                "plan_price": row[7],
+            }
+
+            return JsonResponse({"results": [recharge_details]}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt
 def other_driver_current_new_recharge_details(request):
@@ -8516,6 +8580,70 @@ def other_driver_current_new_recharge_details(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+@csrf_exempt
+def handyman_current_new_recharge_details(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        driver_id = data.get("driver_id")
+
+        # List of required fields
+        required_fields = {
+            "driver_id": driver_id,
+        }
+        # Check for missing fields
+        missing_fields = check_missing_fields(required_fields)
+        
+        # If there are missing fields, return an error response
+        if missing_fields:
+            return JsonResponse(
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
+            
+        try:
+            # Updated query to use handyman table
+            query = """
+                SELECT 
+                    current_plan_id,
+                    h.recharge_plan_id,
+                    expiry_time,
+                    last_recharge_history_id,
+                    plan_title,
+                    plan_description,
+                    plan_days,
+                    plan_price 
+                FROM vtpartner.handyman_current_recharge_plan_tbl h
+                JOIN vtpartner.goods_driver_recharge_plans_tbl p 
+                    ON h.recharge_plan_id = p.recharge_plan_id 
+                WHERE h.driver_id = %s 
+                    AND p.category_id = '5'
+            """
+            result = select_query(query, [driver_id])  
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+            
+            # Extract the first row from the result
+            row = result[0]
+            
+            recharge_details = {
+                "current_plan_id": row[0],
+                "recharge_plan_id": row[1],
+                "expiry_time": row[2],
+                "last_recharge_history_id": row[3],
+                "plan_title": row[4],
+                "plan_description": row[5],
+                "plan_days": row[6],
+                "plan_price": row[7],
+            }
+
+            return JsonResponse({"results": [recharge_details]}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt
 def get_faqs_by_category(request):
@@ -14515,45 +14643,64 @@ def jcb_crane_driver_online_status(request):
         data = json.loads(request.body)
         jcb_crane_driver_id = data.get("jcb_crane_driver_id")
 
-         # List of required fields
+        # List of required fields
         required_fields = {
             "jcb_crane_driver_id": jcb_crane_driver_id,
         }
         # Check for missing fields
-         # Use the utility function to check for missing fields
         missing_fields = check_missing_fields(required_fields)
         
-        # If there are missing fields, return an error response
         if missing_fields:
             return JsonResponse(
-            {"message": f"Missing required fields: {', '.join(missing_fields)}"},
-            status=400
-        )
-                
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
                 
         try:
+            # Updated query to include subcategory and service information
             query = """
-            select is_online,status,driver_name,recent_online_pic,profile_pic,mobile_no from vtpartner.jcb_crane_driverstbl where jcb_crane_driver_id=%s
+            SELECT 
+                jc.is_online,
+                jc.status,
+                jc.driver_name,
+                jc.recent_online_pic,
+                jc.profile_pic,
+                jc.mobile_no,
+                jc.sub_cat_id,
+                sc.sub_cat_name,
+                jc.service_id,
+                CASE 
+                    WHEN jc.service_id != '-1' THEN os.service_name 
+                    ELSE 'NA' 
+                END as service_name
+            FROM vtpartner.jcb_crane_driverstbl jc
+            LEFT JOIN vtpartner.sub_categorytbl sc ON jc.sub_cat_id = sc.sub_cat_id
+            LEFT JOIN vtpartner.other_servicestbl os ON jc.service_id = os.service_id
+            WHERE jc.jcb_crane_driver_id = %s
             """
             params = [jcb_crane_driver_id]
-            result = select_query(query, params)  # Assuming select_query is defined elsewhere
+            result = select_query(query, params)
 
-            if result == []:
+            if not result:
                 return JsonResponse({"message": "No Data Found"}, status=404)
                                 
             # Map the results to a list of dictionaries with meaningful keys
             response_value = [
                 {
                     "is_online": row[0],
-                    "status": row[1],  
-                    "driver_first_name": row[2],  
-                    "recent_online_pic": row[3],  
-                    "profile_pic": row[4],  
-                    "mobile_no": row[5],  
+                    "status": row[1],
+                    "driver_first_name": row[2],  # using driver_name from jcb_crane_driverstbl
+                    "recent_online_pic": row[3],
+                    "profile_pic": row[4],
+                    "mobile_no": row[5],
+                    "sub_cat_id": row[6],
+                    "sub_cat_name": row[7] or "NA",
+                    "service_id": row[8] or -1,
+                    "service_name": row[9] or "NA"
                 }
                 for row in result
             ]
-            # Return customer response
+
             return JsonResponse({"results": response_value}, status=200)
 
         except Exception as err:
@@ -14561,6 +14708,7 @@ def jcb_crane_driver_online_status(request):
             return JsonResponse({"message": "An error occurred"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 
 @csrf_exempt
 def jcb_crane_driver_update_online_status(request):
@@ -16776,45 +16924,64 @@ def handyman_online_status(request):
         data = json.loads(request.body)
         handyman_id = data.get("handyman_id")
 
-         # List of required fields
+        # List of required fields
         required_fields = {
             "handyman_id": handyman_id,
         }
         # Check for missing fields
-         # Use the utility function to check for missing fields
         missing_fields = check_missing_fields(required_fields)
         
-        # If there are missing fields, return an error response
         if missing_fields:
             return JsonResponse(
-            {"message": f"Missing required fields: {', '.join(missing_fields)}"},
-            status=400
-        )
-                
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
                 
         try:
+            # Updated query to match other_driver_online_status structure
             query = """
-            select is_online,status,name,recent_online_pic,profile_pic,mobile_no from vtpartner.handymans_tbl where handyman_id=%s
+            SELECT 
+                h.is_online,
+                h.status,
+                h.name,
+                h.recent_online_pic,
+                h.profile_pic,
+                h.mobile_no,
+                h.sub_cat_id,
+                sc.sub_cat_name,
+                h.service_id,
+                CASE 
+                    WHEN h.service_id != '-1' THEN os.service_name 
+                    ELSE 'NA' 
+                END as service_name
+            FROM vtpartner.handymans_tbl h
+            LEFT JOIN vtpartner.sub_categorytbl sc ON h.sub_cat_id = sc.sub_cat_id
+            LEFT JOIN vtpartner.other_servicestbl os ON h.service_id = os.service_id
+            WHERE h.handyman_id = %s
             """
             params = [handyman_id]
-            result = select_query(query, params)  # Assuming select_query is defined elsewhere
+            result = select_query(query, params)
 
-            if result == []:
+            if not result:
                 return JsonResponse({"message": "No Data Found"}, status=404)
                                 
             # Map the results to a list of dictionaries with meaningful keys
             response_value = [
                 {
                     "is_online": row[0],
-                    "status": row[1],  
-                    "driver_first_name": row[2],  
-                    "recent_online_pic": row[3],  
-                    "profile_pic": row[4],  
-                    "mobile_no": row[5],  
+                    "status": row[1],
+                    "driver_first_name": row[2],  # using name from handymans_tbl
+                    "recent_online_pic": row[3],
+                    "profile_pic": row[4],
+                    "mobile_no": row[5],
+                    "sub_cat_id": row[6],
+                    "sub_cat_name": row[7] or "NA",
+                    "service_id": row[8] or -1,
+                    "service_name": row[9] or "NA"
                 }
                 for row in result
             ]
-            # Return customer response
+
             return JsonResponse({"results": response_value}, status=200)
 
         except Exception as err:
