@@ -16293,16 +16293,29 @@ def jcb_crane_driver_todays_earnings(request):
                 FROM vtpartner.jcb_crane_driver_earningstbl 
                 WHERE driver_id = %s AND earning_date = CURRENT_DATE;
             """
-            result = select_query(query, [driver_id])  # Assuming select_query is defined elsewhere
+            result = select_query(query, [driver_id])
 
             if not result:
                 return JsonResponse({"message": "No Data Found"}, status=404)
 
-            # Extract the first row from the result
+            # Query to get total earnings and rides count
+            query2 = """
+                SELECT COALESCE(SUM(amount), 0) AS total_earnings, 
+                       COUNT(*) AS total_rides 
+                FROM vtpartner.jcb_crane_driver_earningstbl 
+                WHERE driver_id = %s;
+            """
+            result_total = select_query(query2, [driver_id])
+            
+            # Extract the first row from both results
             row = result[0]
+            row_total = result_total[0]
+            
             earning_details = {
                 "todays_earnings": row[0],
                 "todays_rides": row[1],
+                "total_earnings": row_total[0],
+                "total_rides": row_total[1],
             }
 
             return JsonResponse({"results": [earning_details]}, status=200)
@@ -16312,6 +16325,7 @@ def jcb_crane_driver_todays_earnings(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 
 @csrf_exempt
 def generate_new_jcb_crane_booking_id_get_nearby_agents_with_fcm_token(request):
@@ -18403,16 +18417,29 @@ def handyman_todays_earnings(request):
                 FROM vtpartner.handyman_earningstbl 
                 WHERE handy_man_id = %s AND earning_date = CURRENT_DATE;
             """
-            result = select_query(query, [driver_id])  # Assuming select_query is defined elsewhere
+            result = select_query(query, [driver_id])
 
             if not result:
                 return JsonResponse({"message": "No Data Found"}, status=404)
 
-            # Extract the first row from the result
+            # Query to get total earnings and rides count
+            query2 = """
+                SELECT COALESCE(SUM(amount), 0) AS total_earnings, 
+                       COUNT(*) AS total_rides 
+                FROM vtpartner.handyman_earningstbl 
+                WHERE handy_man_id = %s;
+            """
+            result_total = select_query(query2, [driver_id])
+            
+            # Extract the first row from both results
             row = result[0]
+            row_total = result_total[0]
+            
             earning_details = {
                 "todays_earnings": row[0],
                 "todays_rides": row[1],
+                "total_earnings": row_total[0],
+                "total_rides": row_total[1],
             }
 
             return JsonResponse({"results": [earning_details]}, status=200)
