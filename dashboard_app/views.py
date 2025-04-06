@@ -9076,8 +9076,8 @@ def get_total_handyman_un_verified_with_count(request):
                     handyman_data["sub_category_details"] = {
                         "sub_cat_name": row[34] if row[34] else "NA",
                         "sub_cat_image": row[35] if row[35] else "NA",
-                        "sub_cat_price_per_hour": float(row[36]) if row[36] else 0.0,
-                        "sub_cat_service_base_price": float(row[37]) if row[37] else 0.0,
+                        "sub_cat_price_per_hour": row[36] if row[36] else 0.0,
+                        "sub_cat_service_base_price": row[37] if row[37] else 0.0,
                     }
                 else:
                     handyman_data["sub_category_details"] = None
