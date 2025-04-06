@@ -358,48 +358,164 @@ def get_server_key_token():
     # Return the access token
     return credentials.token
 
-def sendFMCMsg(deviceToken, msg, title, data,serverToken,app_type):
+
+# def sendFMCMsg(deviceToken, msg, title, data,serverToken,app_type):
     
-    deviceToken = deviceToken.replace('__colon__', ':')
-    print(f"deviceToken::{deviceToken}")
-    print(f"serverKey::{serverToken}")
+#     deviceToken = deviceToken.replace('__colon__', ':')
+#     print(f"deviceToken::{deviceToken}")
+#     print(f"serverKey::{serverToken}")
     
-    # Validate the device token
-    if not deviceToken:
-        print("Invalid device token")
-        return
+#     # Validate the device token
+#     if not deviceToken:
+#         print("Invalid device token")
+#         return
 
-    # Check if the token has already been sent a notification
-    # (You may want to implement a more robust solution to track notifications)
+#     # Check if the token has already been sent a notification
+#     # (You may want to implement a more robust solution to track notifications)
 
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {serverToken}',
-    }
+#     headers = {
+#         'Content-Type': 'application/json',
+#         'Authorization': f'Bearer {serverToken}',
+#     }
 
-    body =  {
-        "message": {
-            "token": deviceToken,
-            "notification": {
-                "body": msg,
-                "title": title
-            },
-            "data": data
-        }
-    }
+#     body =  {
+#         "message": {
+#             "token": deviceToken,
+#             "notification": {
+#                 "body": msg,
+#                 "title": title
+#             },
+#             "data": data
+#         }
+#     }
 
-    try:
-        if app_type == "Agent":
-            response = requests.post("https://fcm.googleapis.com/v1/projects/vt-partner-agent-app/messages:send", headers=headers, data=json.dumps(body))
-        else:    
-            response = requests.post("https://fcm.googleapis.com/v1/projects/vt-partner-8317b/messages:send", headers=headers, data=json.dumps(body))
-        response_data = response.json()
-        print("FCM Response:")
-        print(response_data)
-        print("Status Code:", response.status_code)
-    except requests.exceptions.RequestException as e:
-        print("Error sending FCM notification:", e)
+#     try:
+#         if app_type == "Agent":
+#             response = requests.post("https://fcm.googleapis.com/v1/projects/vt-partner-agent-app/messages:send", headers=headers, data=json.dumps(body))
+#         else:    
+#             response = requests.post("https://fcm.googleapis.com/v1/projects/vt-partner-8317b/messages:send", headers=headers, data=json.dumps(body))
+#         response_data = response.json()
+#         print("FCM Response:")
+#         print(response_data)
+#         print("Status Code:", response.status_code)
+#     except requests.exceptions.RequestException as e:
+#         print("Error sending FCM notification:", e)
+
         
+def get_access_token(service_account_path):
+    """Get Firebase access token using service account credentials"""
+    try:
+        credentials = service_account.Credentials.from_service_account_file(
+            service_account_path,
+            scopes=['https://www.googleapis.com/auth/firebase.messaging']
+        )
+        return credentials.token
+    except Exception as e:
+        print(f"Error getting access token: {e}")
+        return None
+            
+def sendFMCMsg(deviceToken, msg, title, data, serverToken, app_type):
+    """
+    Send FCM notification to a specific device
+    
+    Args:
+        deviceToken (str): The device token to send notification to
+        msg (str): Notification message
+        title (str): Notification title
+        data (dict): Additional data to send with notification
+        serverToken (str): Server token for authentication
+        app_type (str): Type of app ("Agent" or "User")
+    """
+    try:
+        # Clean the device token
+        deviceToken = deviceToken.replace('__colon__', ':')
+        print(f"deviceToken::{deviceToken}")
+        print(f"serverKey::{serverToken}")
+        
+        # Validate the device token
+        if not deviceToken:
+            print("Invalid device token")
+            return
+
+        
+
+        # Set up headers with the access token
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {serverToken}',
+        }
+
+        # Prepare notification payload
+        payload = {
+            "message": {
+                "token": deviceToken,
+                "notification": {
+                    "title": title,
+                    "body": msg
+                },
+                "data": data,
+                "android": {
+                    "priority": "high",
+                    "notification": {
+                        "sound": "default",
+                        "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                    }
+                },
+                "apns": {
+                    "payload": {
+                        "aps": {
+                            "sound": "default",
+                            "badge": 1
+                        }
+                    }
+                }
+            }
+        }
+
+        # Determine the correct FCM endpoint based on app type
+        if app_type == "Agent":
+            project_id = "vt-partner-agent-app"
+        else:    
+            project_id = "vt-partner-8317b"
+            
+        url = f"https://fcm.googleapis.com/v1/projects/{project_id}/messages:send"
+
+        # Send the notification
+        try:
+            response = requests.post(
+                url, 
+                headers=headers, 
+                data=json.dumps(payload),
+                timeout=10  # Add timeout to prevent hanging
+            )
+            
+            # Log the response
+            print("FCM Response:")
+            print(response.json())
+            print("Status Code:", response.status_code)
+            
+            # Handle different response status codes
+            if response.status_code == 200:
+                print("Notification sent successfully")
+                return True
+            elif response.status_code == 401:
+                print("Authentication error. Check your credentials.")
+            elif response.status_code == 404:
+                print("Invalid FCM endpoint")
+            else:
+                print(f"FCM error: {response.status_code}")
+                
+            return False
+
+        except requests.exceptions.Timeout:
+            print("Request timed out while sending notification")
+        except requests.exceptions.RequestException as e:
+            print(f"Error sending FCM notification: {e}")
+        
+    except Exception as e:
+        print(f"Unexpected error in sendFMCMsg: {e}")
+        return False
+            
 def sendBulkFMCMsg(deviceTokens, msg, title, data, serverToken):
     # Validate the device tokens
     deviceTokens = [token.replace('__colon__', ':') for token in deviceTokens if token]
