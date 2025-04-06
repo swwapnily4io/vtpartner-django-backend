@@ -8860,7 +8860,7 @@ def get_total_handyman_verified_with_count(request):
             key = data.get("key")
 
             # Get the total count
-            count_query = "SELECT COUNT(*) FROM vtpartner.handymantbl WHERE status = 1;"
+            count_query = "SELECT COUNT(*) FROM vtpartner.handymans_tbl WHERE status = 1;"
             total_count_result = select_query(count_query)
             total_count = total_count_result[0][0] if total_count_result else 0
 
@@ -8874,7 +8874,7 @@ def get_total_handyman_verified_with_count(request):
                            os.service_name, os.service_image,
                            os.price_per_hour as service_price_per_hour,
                            os.service_base_price as service_base_price
-                    FROM vtpartner.handymantbl h
+                    FROM vtpartner.handymans_tbl h
                     LEFT JOIN vtpartner.sub_categorytbl sc 
                         ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
                     LEFT JOIN vtpartner.other_servicestbl os 
@@ -8891,7 +8891,7 @@ def get_total_handyman_verified_with_count(request):
                            os.service_name, os.service_image,
                            os.price_per_hour as service_price_per_hour,
                            os.service_base_price as service_base_price
-                    FROM vtpartner.handymantbl h
+                    FROM vtpartner.handymans_tbl h
                     LEFT JOIN vtpartner.sub_categorytbl sc 
                         ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
                     LEFT JOIN vtpartner.other_servicestbl os 
@@ -8987,7 +8987,7 @@ def get_total_handyman_un_verified_with_count(request):
             key = data.get("key")
 
             # Get the total count
-            count_query = "SELECT COUNT(*) FROM vtpartner.handymantbl WHERE status = 0;"
+            count_query = "SELECT COUNT(*) FROM vtpartner.handymans_tbl WHERE status = 0;"
             total_count_result = select_query(count_query)
             total_count = total_count_result[0][0] if total_count_result else 0
 
@@ -9001,7 +9001,7 @@ def get_total_handyman_un_verified_with_count(request):
                            os.service_name, os.service_image,
                            os.price_per_hour as service_price_per_hour,
                            os.service_base_price as service_base_price
-                    FROM vtpartner.handymantbl h
+                    FROM vtpartner.handymans_tbl h
                     LEFT JOIN vtpartner.sub_categorytbl sc 
                         ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
                     LEFT JOIN vtpartner.other_servicestbl os 
@@ -9018,7 +9018,7 @@ def get_total_handyman_un_verified_with_count(request):
                            os.service_name, os.service_image,
                            os.price_per_hour as service_price_per_hour,
                            os.service_base_price as service_base_price
-                    FROM vtpartner.handymantbl h
+                    FROM vtpartner.handymans_tbl h
                     LEFT JOIN vtpartner.sub_categorytbl sc 
                         ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
                     LEFT JOIN vtpartner.other_servicestbl os 
@@ -9114,7 +9114,7 @@ def get_total_handyman_blocked_with_count(request):
             key = data.get("key")
 
             # Get the total count
-            count_query = "SELECT COUNT(*) FROM vtpartner.handymantbl WHERE status = 2;"
+            count_query = "SELECT COUNT(*) FROM vtpartner.handymans_tbl WHERE status = 2;"
             total_count_result = select_query(count_query)
             total_count = total_count_result[0][0] if total_count_result else 0
 
@@ -9128,7 +9128,7 @@ def get_total_handyman_blocked_with_count(request):
                            os.service_name, os.service_image,
                            os.price_per_hour as service_price_per_hour,
                            os.service_base_price as service_base_price
-                    FROM vtpartner.handymantbl h
+                    FROM vtpartner.handymans_tbl h
                     LEFT JOIN vtpartner.sub_categorytbl sc 
                         ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
                     LEFT JOIN vtpartner.other_servicestbl os 
@@ -9145,7 +9145,7 @@ def get_total_handyman_blocked_with_count(request):
                            os.service_name, os.service_image,
                            os.price_per_hour as service_price_per_hour,
                            os.service_base_price as service_base_price
-                    FROM vtpartner.handymantbl h
+                    FROM vtpartner.handymans_tbl h
                     LEFT JOIN vtpartner.sub_categorytbl sc 
                         ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
                     LEFT JOIN vtpartner.other_servicestbl os 
@@ -9241,7 +9241,7 @@ def get_total_handyman_rejected_with_count(request):
             key = data.get("key")
 
             # Get the total count
-            count_query = "SELECT COUNT(*) FROM vtpartner.handymantbl WHERE status = 3;"
+            count_query = "SELECT COUNT(*) FROM vtpartner.handymans_tbl WHERE status = 3;"
             total_count_result = select_query(count_query)
             total_count = total_count_result[0][0] if total_count_result else 0
 
@@ -9255,7 +9255,7 @@ def get_total_handyman_rejected_with_count(request):
                            os.service_name, os.service_image,
                            os.price_per_hour as service_price_per_hour,
                            os.service_base_price as service_base_price
-                    FROM vtpartner.handymantbl h
+                    FROM vtpartner.handymans_tbl h
                     LEFT JOIN vtpartner.sub_categorytbl sc 
                         ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
                     LEFT JOIN vtpartner.other_servicestbl os 
@@ -9272,7 +9272,7 @@ def get_total_handyman_rejected_with_count(request):
                            os.service_name, os.service_image,
                            os.price_per_hour as service_price_per_hour,
                            os.service_base_price as service_base_price
-                    FROM vtpartner.handymantbl h
+                    FROM vtpartner.handymans_tbl h
                     LEFT JOIN vtpartner.sub_categorytbl sc 
                         ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
                     LEFT JOIN vtpartner.other_servicestbl os 
