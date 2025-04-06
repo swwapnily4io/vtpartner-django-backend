@@ -9082,11 +9082,12 @@ def get_total_handyman_un_verified_with_count(request):
                 else:
                     handyman_data["sub_category_details"] = None
 
+                print("row->", row)
+                print("row[39]:", row[39])
                 # Add service details if available
                 if row[18] != -1:
                     try:
-                        print("row->", row)
-                        print("row[39]:", row[39])
+                        
                         handyman_data["service_details"] = {
                             "service_name": str(row[38]) if row[38] else "NA",  # Ensure string
                             "service_image": str(row[39]) if row[39] else "NA",  # Ensure string
