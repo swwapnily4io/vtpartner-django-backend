@@ -9034,6 +9034,8 @@ def get_total_handyman_un_verified_with_count(request):
 
             mapped_results = []
             for row in result:
+                # Debug print
+                print("Processing row:", row)
                 handyman_data = {
                     "handyman_id": row[0],
                     "handyman_first_name": row[1],
@@ -9083,7 +9085,7 @@ def get_total_handyman_un_verified_with_count(request):
                     handyman_data["sub_category_details"] = None
 
                 
-                print("row[39]:", row[39])
+                
                 # Add service details if available
                 if row[18] != -1:
                     try:
