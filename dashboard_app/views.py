@@ -9105,7 +9105,7 @@ def get_total_handyman_un_verified_with_count(request):
                         }
                 else:
                     handyman_data["service_details"] = None
-                print(f"handyman_data: {handyman_data}")
+            
                 mapped_results.append(handyman_data)
 
             return JsonResponse({
