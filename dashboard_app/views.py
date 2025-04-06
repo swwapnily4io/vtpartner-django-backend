@@ -9110,7 +9110,7 @@ def get_total_handyman_un_verified_with_count(request):
             }, status=200)
 
         except Exception as err:
-            print("Error executing query:", err)
+            print("Error executing handyman un verified agents query:", err)
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
