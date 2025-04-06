@@ -471,6 +471,9 @@ def sendFMCMsg(deviceToken, msg, title, data, serverToken, app_type):
                 }
             }
         }
+        
+        
+        print("fcm payload::",payload)
 
         # Determine the correct FCM endpoint based on app type
         if app_type == "Agent":
