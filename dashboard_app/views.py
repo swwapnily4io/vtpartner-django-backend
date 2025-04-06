@@ -9089,8 +9089,8 @@ def get_total_handyman_un_verified_with_count(request):
                             "service_name": str(row[38]) if row[38] else "NA",  # Ensure string
                             "service_image": str(row[39]) if row[39] else "NA",  # Ensure string
                             # Safely convert to float or use default
-                            "service_price_per_hour": float(row[40]) if isinstance(row[40], (int, float, str)) and str(row[40]).replace('.', '', 1).isdigit() else 0.0,
-                            "service_base_price": float(row[41]) if isinstance(row[41], (int, float, str)) and str(row[41]).replace('.', '', 1).isdigit() else 0.0,
+                            "service_price_per_hour": row[40],
+                            "service_base_price": row[41],
                         }
                     except (ValueError, TypeError):
                         handyman_data["service_details"] = {
