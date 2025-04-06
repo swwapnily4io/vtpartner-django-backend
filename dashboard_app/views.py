@@ -9034,7 +9034,6 @@ def get_total_handyman_un_verified_with_count(request):
 
             mapped_results = []
             for row in result:
-                
                 handyman_data = {
                     "handyman_id": row[0],
                     "handyman_first_name": row[1],
@@ -9083,12 +9082,11 @@ def get_total_handyman_un_verified_with_count(request):
                 else:
                     handyman_data["sub_category_details"] = None
 
-                
-                
                 # Add service details if available
                 if row[18] != -1:
                     try:
-                        
+                        print("row->", row)
+                        print("row[39]:", row[39])
                         handyman_data["service_details"] = {
                             "service_name": str(row[38]) if row[38] else "NA",  # Ensure string
                             "service_image": str(row[39]) if row[39] else "NA",  # Ensure string
@@ -9105,7 +9103,7 @@ def get_total_handyman_un_verified_with_count(request):
                         }
                 else:
                     handyman_data["service_details"] = None
-            
+
                 mapped_results.append(handyman_data)
 
             return JsonResponse({
