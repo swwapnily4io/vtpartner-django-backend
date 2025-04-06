@@ -239,4 +239,24 @@ urlpatterns = [
     path('get_total_handyman_un_verified_with_count', views.get_total_handyman_un_verified_with_count, name='get_total_handyman_un_verified_with_count'),
     path('get_total_handyman_blocked_with_count', views.get_total_handyman_blocked_with_count, name='get_total_handyman_blocked_with_count'),
     path('get_total_handyman_rejected_with_count', views.get_total_handyman_rejected_with_count, name='get_total_handyman_rejected_with_count'),
+    
+     # Cab Drivers
+    path('get_total_cab_drivers_orders_and_earnings/', views.get_total_cab_drivers_orders_and_earnings, name='get_total_cab_drivers_orders_and_earnings'),
+    path('get_cab_drivers_today_earnings/', views.get_cab_drivers_today_earnings, name='get_cab_drivers_today_earnings'),
+    path('get_cab_drivers_current_month_earnings/', views.get_cab_drivers_current_month_earnings, name='get_cab_drivers_current_month_earnings'),
+
+    # JCB Crane Drivers
+    path('get_total_jcb_crane_drivers_orders_and_earnings/', views.get_total_jcb_crane_drivers_orders_and_earnings, name='get_total_jcb_crane_drivers_orders_and_earnings'),
+    path('get_jcb_crane_drivers_today_earnings/', views.get_jcb_crane_drivers_today_earnings, name='get_jcb_crane_drivers_today_earnings'),
+    path('get_jcb_crane_drivers_current_month_earnings/', views.get_jcb_crane_drivers_current_month_earnings, name='get_jcb_crane_drivers_current_month_earnings'),
+
+    # Other Drivers
+    path('get_total_other_drivers_orders_and_earnings/', views.get_total_other_drivers_orders_and_earnings, name='get_total_other_drivers_orders_and_earnings'),
+    path('get_other_drivers_today_earnings/', views.get_other_drivers_today_earnings, name='get_other_drivers_today_earnings'),
+    path('get_other_drivers_current_month_earnings/', views.get_other_drivers_current_month_earnings, name='get_other_drivers_current_month_earnings'),
+
+    # Handyman
+    path('get_total_handyman_orders_and_earnings/', views.get_total_handyman_orders_and_earnings, name='get_total_handyman_orders_and_earnings'),
+    path('get_handyman_today_earnings/', views.get_handyman_today_earnings, name='get_handyman_today_earnings'),
+    path('get_handyman_current_month_earnings/', views.get_handyman_current_month_earnings, name='get_handyman_current_month_earnings'),
 ]

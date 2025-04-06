@@ -9359,4 +9359,264 @@ def get_total_handyman_rejected_with_count(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
+# CAB DRIVERS APIs
+@csrf_exempt
+def get_total_cab_drivers_orders_and_earnings(request):
+    if request.method == "POST":
+        try:
+            query = """
+                SELECT COUNT(*) AS total_orders, 
+                       SUM(total_price) AS total_earnings
+                FROM vtpartner.cab_orders_tbl;
+            """
+            result = select_query(query)
+            if result:
+                total_orders, total_earnings = result[0]
+                return JsonResponse({
+                    "total_orders": total_orders,
+                    "total_earnings": total_earnings
+                }, status=200)
+            else:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+        except Exception as e:
+            print("Error:", e)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_cab_drivers_today_earnings(request):
+    if request.method == "POST":
+        try:
+            query = """
+                SELECT SUM(total_price) AS today_earnings
+                FROM vtpartner.cab_orders_tbl
+                WHERE booking_date = CURRENT_DATE;
+            """
+            result = select_query(query)
+            if result:
+                today_earnings = result[0][0] or 0
+                return JsonResponse({"today_earnings": today_earnings}, status=200)
+            else:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+        except Exception as e:
+            print("Error:", e)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_cab_drivers_current_month_earnings(request):
+    if request.method == "POST":
+        try:
+            query = """
+                SELECT SUM(total_price) AS current_month_earnings
+                FROM vtpartner.cab_orders_tbl
+                WHERE EXTRACT(MONTH FROM booking_date) = EXTRACT(MONTH FROM CURRENT_DATE)
+                  AND EXTRACT(YEAR FROM booking_date) = EXTRACT(YEAR FROM CURRENT_DATE);
+            """
+            result = select_query(query)
+            if result:
+                current_month_earnings = result[0][0] or 0
+                return JsonResponse({"current_month_earnings": current_month_earnings}, status=200)
+            else:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+        except Exception as e:
+            print("Error:", e)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+# JCB CRANE DRIVERS APIs
+@csrf_exempt
+def get_total_jcb_crane_drivers_orders_and_earnings(request):
+    if request.method == "POST":
+        try:
+            query = """
+                SELECT COUNT(*) AS total_orders, 
+                       SUM(total_price) AS total_earnings
+                FROM vtpartner.jcb_crane_orders_tbl;
+            """
+            result = select_query(query)
+            if result:
+                total_orders, total_earnings = result[0]
+                return JsonResponse({
+                    "total_orders": total_orders,
+                    "total_earnings": total_earnings
+                }, status=200)
+            else:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+        except Exception as e:
+            print("Error:", e)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_jcb_crane_drivers_today_earnings(request):
+    if request.method == "POST":
+        try:
+            query = """
+                SELECT SUM(total_price) AS today_earnings
+                FROM vtpartner.jcb_crane_orders_tbl
+                WHERE booking_date = CURRENT_DATE;
+            """
+            result = select_query(query)
+            if result:
+                today_earnings = result[0][0] or 0
+                return JsonResponse({"today_earnings": today_earnings}, status=200)
+            else:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+        except Exception as e:
+            print("Error:", e)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_jcb_crane_drivers_current_month_earnings(request):
+    if request.method == "POST":
+        try:
+            query = """
+                SELECT SUM(total_price) AS current_month_earnings
+                FROM vtpartner.jcb_crane_orders_tbl
+                WHERE EXTRACT(MONTH FROM booking_date) = EXTRACT(MONTH FROM CURRENT_DATE)
+                  AND EXTRACT(YEAR FROM booking_date) = EXTRACT(YEAR FROM CURRENT_DATE);
+            """
+            result = select_query(query)
+            if result:
+                current_month_earnings = result[0][0] or 0
+                return JsonResponse({"current_month_earnings": current_month_earnings}, status=200)
+            else:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+        except Exception as e:
+            print("Error:", e)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+# OTHER DRIVERS APIs
+@csrf_exempt
+def get_total_other_drivers_orders_and_earnings(request):
+    if request.method == "POST":
+        try:
+            query = """
+                SELECT COUNT(*) AS total_orders, 
+                       SUM(total_price) AS total_earnings
+                FROM vtpartner.other_driver_orders_tbl;
+            """
+            result = select_query(query)
+            if result:
+                total_orders, total_earnings = result[0]
+                return JsonResponse({
+                    "total_orders": total_orders,
+                    "total_earnings": total_earnings
+                }, status=200)
+            else:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+        except Exception as e:
+            print("Error:", e)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_other_drivers_today_earnings(request):
+    if request.method == "POST":
+        try:
+            query = """
+                SELECT SUM(total_price) AS today_earnings
+                FROM vtpartner.other_driver_orders_tbl
+                WHERE booking_date = CURRENT_DATE;
+            """
+            result = select_query(query)
+            if result:
+                today_earnings = result[0][0] or 0
+                return JsonResponse({"today_earnings": today_earnings}, status=200)
+            else:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+        except Exception as e:
+            print("Error:", e)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_other_drivers_current_month_earnings(request):
+    if request.method == "POST":
+        try:
+            query = """
+                SELECT SUM(total_price) AS current_month_earnings
+                FROM vtpartner.other_driver_orders_tbl
+                WHERE EXTRACT(MONTH FROM booking_date) = EXTRACT(MONTH FROM CURRENT_DATE)
+                  AND EXTRACT(YEAR FROM booking_date) = EXTRACT(YEAR FROM CURRENT_DATE);
+            """
+            result = select_query(query)
+            if result:
+                current_month_earnings = result[0][0] or 0
+                return JsonResponse({"current_month_earnings": current_month_earnings}, status=200)
+            else:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+        except Exception as e:
+            print("Error:", e)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+# HANDYMAN APIs
+@csrf_exempt
+def get_total_handyman_orders_and_earnings(request):
+    if request.method == "POST":
+        try:
+            query = """
+                SELECT COUNT(*) AS total_orders, 
+                       SUM(total_price) AS total_earnings
+                FROM vtpartner.handyman_orders_tbl;
+            """
+            result = select_query(query)
+            if result:
+                total_orders, total_earnings = result[0]
+                return JsonResponse({
+                    "total_orders": total_orders,
+                    "total_earnings": total_earnings
+                }, status=200)
+            else:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+        except Exception as e:
+            print("Error:", e)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_handyman_today_earnings(request):
+    if request.method == "POST":
+        try:
+            query = """
+                SELECT SUM(total_price) AS today_earnings
+                FROM vtpartner.handyman_orders_tbl
+                WHERE booking_date = CURRENT_DATE;
+            """
+            result = select_query(query)
+            if result:
+                today_earnings = result[0][0] or 0
+                return JsonResponse({"today_earnings": today_earnings}, status=200)
+            else:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+        except Exception as e:
+            print("Error:", e)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_handyman_current_month_earnings(request):
+    if request.method == "POST":
+        try:
+            query = """
+                SELECT SUM(total_price) AS current_month_earnings
+                FROM vtpartner.handyman_orders_tbl
+                WHERE EXTRACT(MONTH FROM booking_date) = EXTRACT(MONTH FROM CURRENT_DATE)
+                  AND EXTRACT(YEAR FROM booking_date) = EXTRACT(YEAR FROM CURRENT_DATE);
+            """
+            result = select_query(query)
+            if result:
+                current_month_earnings = result[0][0] or 0
+                return JsonResponse({"current_month_earnings": current_month_earnings}, status=200)
+            else:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+        except Exception as e:
+            print("Error:", e)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 #
