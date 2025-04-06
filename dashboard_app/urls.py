@@ -213,4 +213,30 @@ urlpatterns = [
     path('create_razorpay_order',views.create_razorpay_order,name='create_razorpay_order'),
     #Admin Login
     # path('login',views.login_view,name='login'),
+    
+    path('get_all_cab_driver_online_current_location', views.get_all_cab_driver_online_current_location, name='get_all_cab_driver_online_current_location'),
+    
+    path('get_all_jcb_crane_driver_online_current_location', views.get_all_jcb_crane_driver_online_current_location, name='get_all_jcb_crane_driver_online_current_location'),
+    
+    path('get_all_other_driver_online_current_location', views.get_all_other_driver_online_current_location, name='get_all_other_driver_online_current_location'),
+    
+    path('get_all_handyman_online_current_location', views.get_all_handyman_online_current_location, name='get_all_handyman_online_current_location'),
+    
+      # JCB Crane Driver paths
+    path('get_total_jcb_crane_drivers_verified_with_count', views.get_total_jcb_crane_drivers_verified_with_count, name='get_total_jcb_crane_drivers_verified_with_count'),
+    path('get_total_jcb_crane_drivers_un_verified_with_count', views.get_total_jcb_crane_drivers_un_verified_with_count, name='get_total_jcb_crane_drivers_un_verified_with_count'),
+    path('get_total_jcb_crane_drivers_blocked_with_count', views.get_total_jcb_crane_drivers_blocked_with_count, name='get_total_jcb_crane_drivers_blocked_with_count'),
+    path('get_total_jcb_crane_drivers_rejected_with_count', views.get_total_jcb_crane_drivers_rejected_with_count, name='get_total_jcb_crane_drivers_rejected_with_count'),
+
+    # Other Drivers paths
+    path('get_total_other_drivers_verified_with_count', views.get_total_other_drivers_verified_with_count, name='get_total_other_drivers_verified_with_count'),
+    path('get_total_other_drivers_un_verified_with_count', views.get_total_other_drivers_un_verified_with_count, name='get_total_other_drivers_un_verified_with_count'),
+    path('get_total_other_drivers_blocked_with_count', views.get_total_other_drivers_blocked_with_count, name='get_total_other_drivers_blocked_with_count'),
+    path('get_total_other_drivers_rejected_with_count', views.get_total_other_drivers_rejected_with_count, name='get_total_other_drivers_rejected_with_count'),
+
+    # Handyman paths
+    path('get_total_handyman_verified_with_count', views.get_total_handyman_verified_with_count, name='get_total_handyman_verified_with_count'),
+    path('get_total_handyman_un_verified_with_count', views.get_total_handyman_un_verified_with_count, name='get_total_handyman_un_verified_with_count'),
+    path('get_total_handyman_blocked_with_count', views.get_total_handyman_blocked_with_count, name='get_total_handyman_blocked_with_count'),
+    path('get_total_handyman_rejected_with_count', views.get_total_handyman_rejected_with_count, name='get_total_handyman_rejected_with_count'),
 ]

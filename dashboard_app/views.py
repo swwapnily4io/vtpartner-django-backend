@@ -6214,6 +6214,263 @@ def get_all_goods_driver_online_current_location(request):
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt 
+def get_all_cab_driver_online_current_location(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        city_id = data.get("city_id")
+        
+        try:
+            if city_id is not None:
+                query = """
+                SELECT active_cab_drivertbl.cab_driver_id,
+                       active_cab_drivertbl.current_lat,
+                       active_cab_drivertbl.current_lng,
+                       driver_first_name,
+                       profile_pic,
+                       entry_time,
+                       current_status,
+                       cab_driverstbl.mobile_no 
+                FROM vtpartner.active_cab_drivertbl,
+                     vtpartner.cab_driverstbl 
+                WHERE active_cab_drivertbl.cab_driver_id = cab_driverstbl.cab_driver_id 
+                  AND city_id = %s
+                """
+                result = select_query(query, [city_id])
+            else:
+                query = """
+                SELECT active_cab_drivertbl.cab_driver_id,
+                       active_cab_drivertbl.current_lat,
+                       active_cab_drivertbl.current_lng,
+                       driver_first_name,
+                       profile_pic,
+                       entry_time,
+                       current_status,
+                       cab_driverstbl.mobile_no 
+                FROM vtpartner.active_cab_drivertbl,
+                     vtpartner.cab_driverstbl 
+                WHERE active_cab_drivertbl.cab_driver_id = cab_driverstbl.cab_driver_id
+                """
+                result = select_query(query, [])
+
+            if result == []:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            services_details = [
+                {
+                    "cab_driver_id": row[0],
+                    "current_lat": row[1],
+                    "current_lng": row[2],
+                    "driver_first_name": row[3],
+                    "profile_pic": row[4],
+                    "entry_time": row[5],
+                    "current_status": row[6],
+                    "mobile_no": row[7],
+                }
+                for row in result
+            ]
+
+            return JsonResponse({"results": services_details}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt 
+def get_all_jcb_crane_driver_online_current_location(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        city_id = data.get("city_id")
+        
+        try:
+            if city_id is not None:
+                query = """
+                SELECT active_jcb_crane_drivertbl.jcb_crane_driver_id,
+                       active_jcb_crane_drivertbl.current_lat,
+                       active_jcb_crane_drivertbl.current_lng,
+                       driver_name,
+                       profile_pic,
+                       entry_time,
+                       current_status,
+                       jcb_crane_driverstbl.mobile_no 
+                FROM vtpartner.active_jcb_crane_drivertbl,
+                     vtpartner.jcb_crane_driverstbl 
+                WHERE active_jcb_crane_drivertbl.jcb_crane_driver_id = jcb_crane_driverstbl.jcb_crane_driver_id 
+                  AND city_id = %s
+                """
+                result = select_query(query, [city_id])
+            else:
+                query = """
+                SELECT active_jcb_crane_drivertbl.jcb_crane_driver_id,
+                       active_jcb_crane_drivertbl.current_lat,
+                       active_jcb_crane_drivertbl.current_lng,
+                       driver_name,
+                       profile_pic,
+                       entry_time,
+                       current_status,
+                       jcb_crane_driverstbl.mobile_no 
+                FROM vtpartner.active_jcb_crane_drivertbl,
+                     vtpartner.jcb_crane_driverstbl 
+                WHERE active_jcb_crane_drivertbl.jcb_crane_driver_id = jcb_crane_driverstbl.jcb_crane_driver_id
+                """
+                result = select_query(query, [])
+
+            if result == []:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            services_details = [
+                {
+                    "jcb_crane_driver_id": row[0],
+                    "current_lat": row[1],
+                    "current_lng": row[2],
+                    "driver_name": row[3],
+                    "profile_pic": row[4],
+                    "entry_time": row[5],
+                    "current_status": row[6],
+                    "mobile_no": row[7],
+                }
+                for row in result
+            ]
+
+            return JsonResponse({"results": services_details}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt 
+def get_all_other_driver_online_current_location(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        city_id = data.get("city_id")
+        
+        try:
+            if city_id is not None:
+                query = """
+                SELECT active_other_drivertbl.other_driver_id,
+                       active_other_drivertbl.current_lat,
+                       active_other_drivertbl.current_lng,
+                       driver_first_name,
+                       profile_pic,
+                       entry_time,
+                       current_status,
+                       other_driverstbl.mobile_no 
+                FROM vtpartner.active_other_drivertbl,
+                     vtpartner.other_driverstbl 
+                WHERE active_other_drivertbl.other_driver_id = other_driverstbl.other_driver_id 
+                  AND city_id = %s
+                """
+                result = select_query(query, [city_id])
+            else:
+                query = """
+                SELECT active_other_drivertbl.other_driver_id,
+                       active_other_drivertbl.current_lat,
+                       active_other_drivertbl.current_lng,
+                       driver_first_name,
+                       profile_pic,
+                       entry_time,
+                       current_status,
+                       other_driverstbl.mobile_no 
+                FROM vtpartner.active_other_drivertbl,
+                     vtpartner.other_driverstbl 
+                WHERE active_other_drivertbl.other_driver_id = other_driverstbl.other_driver_id
+                """
+                result = select_query(query, [])
+
+            if result == []:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            services_details = [
+                {
+                    "other_driver_id": row[0],
+                    "current_lat": row[1],
+                    "current_lng": row[2],
+                    "driver_first_name": row[3],
+                    "profile_pic": row[4],
+                    "entry_time": row[5],
+                    "current_status": row[6],
+                    "mobile_no": row[7],
+                }
+                for row in result
+            ]
+
+            return JsonResponse({"results": services_details}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt 
+def get_all_handyman_online_current_location(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        city_id = data.get("city_id")
+        
+        try:
+            if city_id is not None:
+                query = """
+                SELECT active_handyman_tbl.handyman_id,
+                       active_handyman_tbl.current_lat,
+                       active_handyman_tbl.current_lng,
+                       name,
+                       profile_pic,
+                       entry_time,
+                       current_status,
+                       handymans_tbl.mobile_no 
+                FROM vtpartner.active_handyman_tbl,
+                     vtpartner.handymans_tbl 
+                WHERE active_handyman_tbl.handyman_id = handymans_tbl.handyman_id 
+                  AND city_id = %s
+                """
+                result = select_query(query, [city_id])
+            else:
+                query = """
+                SELECT active_handyman_tbl.handyman_id,
+                       active_handyman_tbl.current_lat,
+                       active_handyman_tbl.current_lng,
+                       name,
+                       profile_pic,
+                       entry_time,
+                       current_status,
+                       handymans_tbl.mobile_no 
+                FROM vtpartner.active_handyman_tbl,
+                     vtpartner.handymans_tbl 
+                WHERE active_handyman_tbl.handyman_id = handymans_tbl.handyman_id
+                """
+                result = select_query(query, [])
+
+            if result == []:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            services_details = [
+                {
+                    "handyman_id": row[0],
+                    "current_lat": row[1],
+                    "current_lng": row[2],
+                    "name": row[3],
+                    "profile_pic": row[4],
+                    "entry_time": row[5],
+                    "current_status": row[6],
+                    "mobile_no": row[7],
+                }
+                for row in result
+            ]
+
+            return JsonResponse({"results": services_details}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+
+@csrf_exempt 
 def get_goods_driver_details(request):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -7254,3 +7511,1852 @@ def create_razorpay_order(request):
                 'status': 'error',
                 'message': str(e)
             }, status=500)
+            
+            
+@csrf_exempt
+def get_total_cab_drivers_verified_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+
+            # Get the total count separately
+            count_query = "SELECT COUNT(*) FROM vtpartner.cab_driverstbl WHERE status = 1;"
+            total_count_result = select_query(count_query)
+            total_count = total_count_result[0][0] if total_count_result else 0
+
+            # Now fetch the driver data
+            query = f"""
+            SELECT cd.*, 
+                v.vehicle_name, v.weight, v.description, v.image, v.size_image
+            FROM vtpartner.cab_driverstbl cd
+            LEFT JOIN vtpartner.vehiclestbl v ON cd.vehicle_id = v.vehicle_id AND cd.category_id = 2
+            WHERE cd.status = 1 
+            ORDER BY cd.cab_driver_id DESC
+            {'LIMIT 10' if key is not None else ''};
+            """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                mapped_results.append({
+                    "cab_driver_id": row[0],
+                    "driver_first_name": row[1],
+                    "driver_last_name": row[2],
+                    "profile_pic": row[3],
+                    "is_online": row[4],
+                    "ratings": row[5],
+                    "mobile_no": row[6],
+                    "registration_date": row[7],
+                    "time": row[8],
+                    "r_lat": row[9],
+                    "r_lng": row[10],
+                    "current_lat": row[11],
+                    "current_lng": row[12],
+                    "status": row[13],
+                    "recent_online_pic": row[14],
+                    "is_verified": row[15],
+                    "category_id": row[16],
+                    "vehicle_id": row[17],
+                    "city_id": row[18],
+                    "pan_card_no": row[19],
+                    "aadhar_no": row[20],
+                    "house_no": row[21],
+                    "city_name": row[22],
+                    "full_address": row[23],
+                    "gender": row[24],
+                    "aadhar_card_front": row[25],
+                    "aadhar_card_back": row[26],
+                    "pan_card_front": row[27],
+                    "pan_card_back": row[28],
+                    "license_front": row[29],
+                    "license_back": row[30],
+                    "insurance_image": row[31],
+                    "noc_image": row[32],
+                    "pollution_certificate_image": row[33],
+                    "rc_image": row[34],
+                    "vehicle_image": row[35],
+                    "owner_id": row[36],
+                    "vehicle_plate_image": row[37],
+                    "driving_license_no": row[38],
+                    "vehicle_plate_no": row[39],
+                    "rc_no": row[40],
+                    "insurance_no": row[41],
+                    "noc_no": row[42],
+                    "vehicle_fuel_type": row[43],
+                    "authtoken": row[44],
+                    "otp_no": row[45],
+                    "reason": row[46],
+                    "bank_name": row[47],
+                    "ifsc_code": row[48],
+                    "account_number": row[49],
+                    "account_name": row[50],
+                    "vehicle_name": row[51] if len(row) > 51 else "NA",
+                    "vehicle_weight": row[52] if len(row) > 52 else "NA",
+                    "vehicle_description": row[53] if len(row) > 53 else "NA",
+                    "vehicle_image_details": row[54] if len(row) > 54 else "NA",
+                    "vehicle_size_image": row[55] if len(row) > 55 else "NA",
+                })
+
+            return JsonResponse({"drivers": mapped_results, "total_count": total_count}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_total_cab_drivers_un_verified_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+            if key is not None:
+                query = """
+                    SELECT *, 
+                        (SELECT COUNT(*) 
+                            FROM vtpartner.cab_driverstbl 
+                            WHERE status = 0) AS total_count
+                    FROM vtpartner.cab_driverstbl
+                    WHERE status = 0 ORDER BY cab_driver_id DESC LIMIT 10;
+                """
+            else:
+                query = """
+                    SELECT *, 
+                        (SELECT COUNT(*) 
+                            FROM vtpartner.cab_driverstbl 
+                            WHERE status = 0) AS total_count
+                    FROM vtpartner.cab_driverstbl
+                    WHERE status = 0 ORDER BY cab_driver_id DESC;
+                """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                mapped_results.append({
+                    "cab_driver_id": row[0],
+                    "driver_first_name": row[1],
+                    "driver_last_name": row[2],
+                    "profile_pic": row[3],
+                    "is_online": row[4],
+                    "ratings": row[5],
+                    "mobile_no": row[6],
+                    "registration_date": row[7],
+                    "time": row[8],
+                    "r_lat": row[9],
+                    "r_lng": row[10],
+                    "current_lat": row[11],
+                    "current_lng": row[12],
+                    "status": row[13],
+                    "recent_online_pic": row[14],
+                    "is_verified": row[15],
+                    "category_id": row[16],
+                    "vehicle_id": row[17],
+                    "city_id": row[18],
+                    "pan_card_no": row[19],
+                    "aadhar_no": row[20],
+                    "house_no": row[21],
+                    "city_name": row[22],
+                    "full_address": row[23],
+                    "gender": row[24],
+                    "aadhar_card_front": row[25],
+                    "aadhar_card_back": row[26],
+                    "pan_card_front": row[27],
+                    "pan_card_back": row[28],
+                    "license_front": row[29],
+                    "license_back": row[30],
+                    "insurance_image": row[31],
+                    "noc_image": row[32],
+                    "pollution_certificate_image": row[33],
+                    "rc_image": row[34],
+                    "vehicle_image": row[35],
+                    "owner_id": row[36],
+                    "vehicle_plate_image": row[37],
+                    "driving_license_no": row[38],
+                    "vehicle_plate_no": row[39],
+                    "rc_no": row[40],
+                    "insurance_no": row[41],
+                    "noc_no": row[42],
+                    "vehicle_fuel_type": row[43],
+                    "authtoken": row[44],
+                    "otp_no": row[45],
+                    "reason": row[46],
+                    "bank_name": row[47],
+                    "ifsc_code": row[48],
+                    "account_number": row[49],
+                    "account_name": row[50],
+                    "total_count": row[-1],
+                })
+
+            return JsonResponse({"drivers": mapped_results}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_total_cab_drivers_blocked_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+            if key is not None:
+                query = """
+                    SELECT *, 
+                        (SELECT COUNT(*) 
+                            FROM vtpartner.cab_driverstbl 
+                            WHERE status = 2) AS total_count
+                    FROM vtpartner.cab_driverstbl
+                    WHERE status = 2 ORDER BY cab_driver_id DESC LIMIT 10;
+                """
+            else:
+                query = """
+                    SELECT *, 
+                        (SELECT COUNT(*) 
+                            FROM vtpartner.cab_driverstbl 
+                            WHERE status = 2) AS total_count
+                    FROM vtpartner.cab_driverstbl
+                    WHERE status = 2 ORDER BY cab_driver_id DESC;
+                """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                mapped_results.append({
+                    "cab_driver_id": row[0],
+                    "driver_first_name": row[1],
+                    "driver_last_name": row[2],
+                    "profile_pic": row[3],
+                    "is_online": row[4],
+                    "ratings": row[5],
+                    "mobile_no": row[6],
+                    "registration_date": row[7],
+                    "time": row[8],
+                    "r_lat": row[9],
+                    "r_lng": row[10],
+                    "current_lat": row[11],
+                    "current_lng": row[12],
+                    "status": row[13],
+                    "recent_online_pic": row[14],
+                    "is_verified": row[15],
+                    "category_id": row[16],
+                    "vehicle_id": row[17],
+                    "city_id": row[18],
+                    "pan_card_no": row[19],
+                    "aadhar_no": row[20],
+                    "house_no": row[21],
+                    "city_name": row[22],
+                    "full_address": row[23],
+                    "gender": row[24],
+                    "aadhar_card_front": row[25],
+                    "aadhar_card_back": row[26],
+                    "pan_card_front": row[27],
+                    "pan_card_back": row[28],
+                    "license_front": row[29],
+                    "license_back": row[30],
+                    "insurance_image": row[31],
+                    "noc_image": row[32],
+                    "pollution_certificate_image": row[33],
+                    "rc_image": row[34],
+                    "vehicle_image": row[35],
+                    "owner_id": row[36],
+                    "vehicle_plate_image": row[37],
+                    "driving_license_no": row[38],
+                    "vehicle_plate_no": row[39],
+                    "rc_no": row[40],
+                    "insurance_no": row[41],
+                    "noc_no": row[42],
+                    "vehicle_fuel_type": row[43],
+                    "authtoken": row[44],
+                    "otp_no": row[45],
+                    "reason": row[46],
+                    "bank_name": row[47],
+                    "ifsc_code": row[48],
+                    "account_number": row[49],
+                    "account_name": row[50],
+                    "total_count": row[-1],
+                })
+
+            return JsonResponse({"drivers": mapped_results}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_total_cab_drivers_rejected_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+            if key is not None:
+                query = """
+                    SELECT *, 
+                        (SELECT COUNT(*) 
+                            FROM vtpartner.cab_driverstbl 
+                            WHERE status = 3) AS total_count
+                    FROM vtpartner.cab_driverstbl
+                    WHERE status = 3 ORDER BY cab_driver_id DESC LIMIT 10;
+                """
+            else:
+                query = """
+                    SELECT *, 
+                        (SELECT COUNT(*) 
+                            FROM vtpartner.cab_driverstbl 
+                            WHERE status = 3) AS total_count
+                    FROM vtpartner.cab_driverstbl
+                    WHERE status = 3 ORDER BY cab_driver_id DESC;
+                """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                mapped_results.append({
+                    "cab_driver_id": row[0],
+                    "driver_first_name": row[1],
+                    "driver_last_name": row[2],
+                    "profile_pic": row[3],
+                    "is_online": row[4],
+                    "ratings": row[5],
+                    "mobile_no": row[6],
+                    "registration_date": row[7],
+                    "time": row[8],
+                    "r_lat": row[9],
+                    "r_lng": row[10],
+                    "current_lat": row[11],
+                    "current_lng": row[12],
+                    "status": row[13],
+                    "recent_online_pic": row[14],
+                    "is_verified": row[15],
+                    "category_id": row[16],
+                    "vehicle_id": row[17],
+                    "city_id": row[18],
+                    "pan_card_no": row[19],
+                    "aadhar_no": row[20],
+                    "house_no": row[21],
+                    "city_name": row[22],
+                    "full_address": row[23],
+                    "gender": row[24],
+                    "aadhar_card_front": row[25],
+                    "aadhar_card_back": row[26],
+                    "pan_card_front": row[27],
+                    "pan_card_back": row[28],
+                    "license_front": row[29],
+                    "license_back": row[30],
+                    "insurance_image": row[31],
+                    "noc_image": row[32],
+                    "pollution_certificate_image": row[33],
+                    "rc_image": row[34],
+                    "vehicle_image": row[35],
+                    "owner_id": row[36],
+                    "vehicle_plate_image": row[37],
+                    "driving_license_no": row[38],
+                    "vehicle_plate_no": row[39],
+                    "rc_no": row[40],
+                    "insurance_no": row[41],
+                    "noc_no": row[42],
+                    "vehicle_fuel_type": row[43],
+                    "authtoken": row[44],
+                    "otp_no": row[45],
+                    "reason": row[46],
+                    "bank_name": row[47],
+                    "ifsc_code": row[48],
+                    "account_number": row[49],
+                    "account_name": row[50],
+                    "total_count": row[-1],
+                })
+
+            return JsonResponse({"drivers": mapped_results}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+
+#JCB Crane
+
+@csrf_exempt
+def get_total_jcb_crane_drivers_verified_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+
+            # Get the total count separately
+            count_query = "SELECT COUNT(*) FROM vtpartner.jcb_crane_driverstbl WHERE status = 1;"
+            total_count_result = select_query(count_query)
+            total_count = total_count_result[0][0] if total_count_result else 0
+
+            # Now fetch the driver data with sub category and service details
+            query = f"""
+            SELECT jcd.*, 
+                   sc.sub_cat_name, sc.image as sub_cat_image, 
+                   sc.price_per_hour as sub_cat_price_per_hour,
+                   sc.service_base_price as sub_cat_service_base_price,
+                   os.service_name, os.service_image,
+                   os.price_per_hour as service_price_per_hour,
+                   os.service_base_price as service_base_price
+            FROM vtpartner.jcb_crane_driverstbl jcd
+            LEFT JOIN vtpartner.sub_categorytbl sc 
+                ON jcd.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 3
+            LEFT JOIN vtpartner.other_servicestbl os 
+                ON jcd.service_id = os.service_id AND os.sub_cat_id = jcd.sub_cat_id
+            WHERE jcd.status = 1 
+            ORDER BY jcd.jcb_crane_driver_id DESC
+            {'LIMIT 10' if key is not None else ''};
+            """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                driver_data = {
+                    "jcb_crane_driver_id": row[0],
+                    "driver_name": row[1],
+                    "profile_pic": row[2],
+                    "is_online": row[3],
+                    "ratings": row[4],
+                    "mobile_no": row[5],
+                    "registration_date": row[6],
+                    "r_lat": row[7],
+                    "r_lng": row[8],
+                    "current_lat": row[9],
+                    "current_lng": row[10],
+                    "status": row[11],
+                    "recent_online_pic": row[12],
+                    "is_verified": row[13],
+                    "category_id": row[14],
+                    "sub_cat_id": row[15],
+                    "service_id": row[16],
+                    "vehicle_id": row[17],
+                    "city_id": row[18],
+                    "time": row[19],
+                    "pan_card_no": row[20],
+                    "aadhar_no": row[21],
+                    "house_no": row[22],
+                    "city_name": row[23],
+                    "full_address": row[24],
+                    "gender": row[25],
+                    "aadhar_card_front": row[26],
+                    "aadhar_card_back": row[27],
+                    "pan_card_front": row[28],
+                    "pan_card_back": row[29],
+                    "license_front": row[30],
+                    "license_back": row[31],
+                    "insurance_image": row[32],
+                    "noc_image": row[33],
+                    "pollution_certificate_image": row[34],
+                    "rc_image": row[35],
+                    "vehicle_image": row[36],
+                    "owner_id": row[37],
+                    "vehicle_plate_image": row[38],
+                    "driving_license_no": row[39],
+                    "vehicle_plate_no": row[40],
+                    "rc_no": row[41],
+                    "insurance_no": row[42],
+                    "noc_no": row[43],
+                    "vehicle_fuel_type": row[44],
+                    "authtoken": row[45],
+                    "otp_no": row[46],
+                }
+
+                # Add sub category details if available
+                if row[15] != -1:  # if sub_cat_id is not -1
+                    driver_data["sub_category_details"] = {
+                        "sub_cat_name": row[47] if row[47] else "NA",
+                        "sub_cat_image": row[48] if row[48] else "NA",
+                        "sub_cat_price_per_hour": float(row[49]) if row[49] else 0.0,
+                        "sub_cat_service_base_price": float(row[50]) if row[50] else 0.0,
+                    }
+                else:
+                    driver_data["sub_category_details"] = None
+
+                # Add service details if available
+                if row[16] != -1:  # if service_id is not -1
+                    driver_data["service_details"] = {
+                        "service_name": row[51] if row[51] else "NA",
+                        "service_image": row[52] if row[52] else "NA",
+                        "service_price_per_hour": float(row[53]) if row[53] else 0.0,
+                        "service_base_price": float(row[54]) if row[54] else 0.0,
+                    }
+                else:
+                    driver_data["service_details"] = None
+
+                mapped_results.append(driver_data)
+
+            return JsonResponse({
+                "drivers": mapped_results, 
+                "total_count": total_count
+            }, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+@csrf_exempt
+def get_total_jcb_crane_drivers_un_verified_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+
+            # Get the total count
+            count_query = "SELECT COUNT(*) FROM vtpartner.jcb_crane_driverstbl WHERE status = 0;"
+            total_count_result = select_query(count_query)
+            total_count = total_count_result[0][0] if total_count_result else 0
+
+            # Fetch driver data with sub category and service details
+            if key is not None:
+                query = """
+                    SELECT jcd.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.jcb_crane_driverstbl jcd
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON jcd.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 3
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON jcd.service_id = os.service_id AND os.sub_cat_id = jcd.sub_cat_id
+                    WHERE jcd.status = 0 
+                    ORDER BY jcd.jcb_crane_driver_id DESC LIMIT 10;
+                """
+            else:
+                query = """
+                    SELECT jcd.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.jcb_crane_driverstbl jcd
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON jcd.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 3
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON jcd.service_id = os.service_id AND os.sub_cat_id = jcd.sub_cat_id
+                    WHERE jcd.status = 0 
+                    ORDER BY jcd.jcb_crane_driver_id DESC;
+                """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                driver_data = {
+                    # Same driver fields as in verified function
+                    "jcb_crane_driver_id": row[0],
+                    "driver_name": row[1],
+                    "profile_pic": row[2],
+                    "is_online": row[3],
+                    "ratings": row[4],
+                    "mobile_no": row[5],
+                    "registration_date": row[6],
+                    "r_lat": row[7],
+                    "r_lng": row[8],
+                    "current_lat": row[9],
+                    "current_lng": row[10],
+                    "status": row[11],
+                    "recent_online_pic": row[12],
+                    "is_verified": row[13],
+                    "category_id": row[14],
+                    "sub_cat_id": row[15],
+                    "service_id": row[16],
+                    "vehicle_id": row[17],
+                    "city_id": row[18],
+                    "time": row[19],
+                    "pan_card_no": row[20],
+                    "aadhar_no": row[21],
+                    "house_no": row[22],
+                    "city_name": row[23],
+                    "full_address": row[24],
+                    "gender": row[25],
+                    "aadhar_card_front": row[26],
+                    "aadhar_card_back": row[27],
+                    "pan_card_front": row[28],
+                    "pan_card_back": row[29],
+                    "license_front": row[30],
+                    "license_back": row[31],
+                    "insurance_image": row[32],
+                    "noc_image": row[33],
+                    "pollution_certificate_image": row[34],
+                    "rc_image": row[35],
+                    "vehicle_image": row[36],
+                    "owner_id": row[37],
+                    "vehicle_plate_image": row[38],
+                    "driving_license_no": row[39],
+                    "vehicle_plate_no": row[40],
+                    "rc_no": row[41],
+                    "insurance_no": row[42],
+                    "noc_no": row[43],
+                    "vehicle_fuel_type": row[44],
+                    "authtoken": row[45],
+                    "otp_no": row[46],
+                }
+
+                # Add sub category details if available
+                if row[15] != -1:
+                    driver_data["sub_category_details"] = {
+                        "sub_cat_name": row[47] if row[47] else "NA",
+                        "sub_cat_image": row[48] if row[48] else "NA",
+                        "sub_cat_price_per_hour": float(row[49]) if row[49] else 0.0,
+                        "sub_cat_service_base_price": float(row[50]) if row[50] else 0.0,
+                    }
+                else:
+                    driver_data["sub_category_details"] = None
+
+                # Add service details if available
+                if row[16] != -1:
+                    driver_data["service_details"] = {
+                        "service_name": row[51] if row[51] else "NA",
+                        "service_image": row[52] if row[52] else "NA",
+                        "service_price_per_hour": float(row[53]) if row[53] else 0.0,
+                        "service_base_price": float(row[54]) if row[54] else 0.0,
+                    }
+                else:
+                    driver_data["service_details"] = None
+
+                mapped_results.append(driver_data)
+
+            return JsonResponse({
+                "drivers": mapped_results,
+                "total_count": total_count
+            }, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_total_jcb_crane_drivers_blocked_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+
+            # Get the total count
+            count_query = "SELECT COUNT(*) FROM vtpartner.jcb_crane_driverstbl WHERE status = 2;"
+            total_count_result = select_query(count_query)
+            total_count = total_count_result[0][0] if total_count_result else 0
+
+            # Fetch driver data with sub category and service details
+            if key is not None:
+                query = """
+                    SELECT jcd.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.jcb_crane_driverstbl jcd
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON jcd.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 3
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON jcd.service_id = os.service_id AND os.sub_cat_id = jcd.sub_cat_id
+                    WHERE jcd.status = 2 
+                    ORDER BY jcd.jcb_crane_driver_id DESC LIMIT 10;
+                """
+            else:
+                query = """
+                    SELECT jcd.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.jcb_crane_driverstbl jcd
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON jcd.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 3
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON jcd.service_id = os.service_id AND os.sub_cat_id = jcd.sub_cat_id
+                    WHERE jcd.status = 2 
+                    ORDER BY jcd.jcb_crane_driver_id DESC;
+                """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                driver_data = {
+                    # Same driver fields as above
+                    "jcb_crane_driver_id": row[0],
+                    "driver_name": row[1],
+                    # ... (same fields as above)
+                    "otp_no": row[46],
+                }
+
+                # Add sub category details if available
+                if row[15] != -1:
+                    driver_data["sub_category_details"] = {
+                        "sub_cat_name": row[47] if row[47] else "NA",
+                        "sub_cat_image": row[48] if row[48] else "NA",
+                        "sub_cat_price_per_hour": float(row[49]) if row[49] else 0.0,
+                        "sub_cat_service_base_price": float(row[50]) if row[50] else 0.0,
+                    }
+                else:
+                    driver_data["sub_category_details"] = None
+
+                # Add service details if available
+                if row[16] != -1:
+                    driver_data["service_details"] = {
+                        "service_name": row[51] if row[51] else "NA",
+                        "service_image": row[52] if row[52] else "NA",
+                        "service_price_per_hour": float(row[53]) if row[53] else 0.0,
+                        "service_base_price": float(row[54]) if row[54] else 0.0,
+                    }
+                else:
+                    driver_data["service_details"] = None
+
+                mapped_results.append(driver_data)
+
+            return JsonResponse({
+                "drivers": mapped_results,
+                "total_count": total_count
+            }, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_total_jcb_crane_drivers_rejected_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+
+            # Get the total count
+            count_query = "SELECT COUNT(*) FROM vtpartner.jcb_crane_driverstbl WHERE status = 3;"
+            total_count_result = select_query(count_query)
+            total_count = total_count_result[0][0] if total_count_result else 0
+
+            # Fetch driver data with sub category and service details
+            if key is not None:
+                query = """
+                    SELECT jcd.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.jcb_crane_driverstbl jcd
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON jcd.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 3
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON jcd.service_id = os.service_id AND os.sub_cat_id = jcd.sub_cat_id
+                    WHERE jcd.status = 3 
+                    ORDER BY jcd.jcb_crane_driver_id DESC LIMIT 10;
+                """
+            else:
+                query = """
+                    SELECT jcd.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.jcb_crane_driverstbl jcd
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON jcd.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 3
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON jcd.service_id = os.service_id AND os.sub_cat_id = jcd.sub_cat_id
+                    WHERE jcd.status = 3 
+                    ORDER BY jcd.jcb_crane_driver_id DESC;
+                """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                driver_data = {
+                    # Same driver fields as above
+                    "jcb_crane_driver_id": row[0],
+                    "driver_name": row[1],
+                    # ... (same fields as above)
+                    "otp_no": row[46],
+                }
+
+                # Add sub category details if available
+                if row[15] != -1:
+                    driver_data["sub_category_details"] = {
+                        "sub_cat_name": row[47] if row[47] else "NA",
+                        "sub_cat_image": row[48] if row[48] else "NA",
+                        "sub_cat_price_per_hour": float(row[49]) if row[49] else 0.0,
+                        "sub_cat_service_base_price": float(row[50]) if row[50] else 0.0,
+                    }
+                else:
+                    driver_data["sub_category_details"] = None
+
+                # Add service details if available
+                if row[16] != -1:
+                    driver_data["service_details"] = {
+                        "service_name": row[51] if row[51] else "NA",
+                        "service_image": row[52] if row[52] else "NA",
+                        "service_price_per_hour": float(row[53]) if row[53] else 0.0,
+                        "service_base_price": float(row[54]) if row[54] else 0.0,
+                    }
+                else:
+                    driver_data["service_details"] = None
+
+                mapped_results.append(driver_data)
+
+            return JsonResponse({
+                "drivers": mapped_results,
+                "total_count": total_count
+            }, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_total_other_drivers_verified_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+
+            # Get the total count separately
+            count_query = "SELECT COUNT(*) FROM vtpartner.other_driverstbl WHERE status = 1;"
+            total_count_result = select_query(count_query)
+            total_count = total_count_result[0][0] if total_count_result else 0
+
+            # Now fetch the driver data with sub category and service details
+            query = f"""
+            SELECT od.*, 
+                   sc.sub_cat_name, sc.image as sub_cat_image, 
+                   sc.price_per_hour as sub_cat_price_per_hour,
+                   sc.service_base_price as sub_cat_service_base_price,
+                   os.service_name, os.service_image,
+                   os.price_per_hour as service_price_per_hour,
+                   os.service_base_price as service_base_price
+            FROM vtpartner.other_driverstbl od
+            LEFT JOIN vtpartner.sub_categorytbl sc 
+                ON od.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 4
+            LEFT JOIN vtpartner.other_servicestbl os 
+                ON od.service_id = os.service_id AND os.sub_cat_id = od.sub_cat_id
+            WHERE od.status = 1 
+            ORDER BY od.other_driver_id DESC
+            {'LIMIT 10' if key is not None else ''};
+            """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                driver_data = {
+                    "other_driver_id": row[0],
+                    "driver_first_name": row[1],
+                    "driver_last_name": row[2],
+                    "profile_pic": row[3],
+                    "is_online": row[4],
+                    "ratings": row[5],
+                    "mobile_no": row[6],
+                    "registration_date": row[7],
+                    "time": row[8],
+                    "r_lat": row[9],
+                    "r_lng": row[10],
+                    "current_lat": row[11],
+                    "current_lng": row[12],
+                    "status": row[13],
+                    "recent_online_pic": row[14],
+                    "is_verified": row[15],
+                    "category_id": row[16],
+                    "sub_cat_id": row[17],
+                    "service_id": row[18],
+                    "city_id": row[19],
+                    "house_no": row[20],
+                    "city_name": row[21],
+                    "full_address": row[22],
+                    "aadhar_no": row[23],
+                    "pan_card_no": row[24],
+                    "gender": row[25],
+                    "aadhar_card_front": row[26],
+                    "aadhar_card_back": row[27],
+                    "pan_card_front": row[28],
+                    "pan_card_back": row[29],
+                    "driving_license_no": row[30],
+                    "license_front": row[31],
+                    "license_back": row[32],
+                    "authtoken": row[33],
+                    "otp_no": row[34],
+                }
+
+                # Add sub category details if available
+                if row[17] != -1:  # if sub_cat_id is not -1
+                    driver_data["sub_category_details"] = {
+                        "sub_cat_name": row[35] if row[35] else "NA",
+                        "sub_cat_image": row[36] if row[36] else "NA",
+                        "sub_cat_price_per_hour": float(row[37]) if row[37] else 0.0,
+                        "sub_cat_service_base_price": float(row[38]) if row[38] else 0.0,
+                    }
+                else:
+                    driver_data["sub_category_details"] = None
+
+                # Add service details if available
+                if row[18] != -1:  # if service_id is not -1
+                    driver_data["service_details"] = {
+                        "service_name": row[39] if row[39] else "NA",
+                        "service_image": row[40] if row[40] else "NA",
+                        "service_price_per_hour": float(row[41]) if row[41] else 0.0,
+                        "service_base_price": float(row[42]) if row[42] else 0.0,
+                    }
+                else:
+                    driver_data["service_details"] = None
+
+                mapped_results.append(driver_data)
+
+            return JsonResponse({
+                "drivers": mapped_results, 
+                "total_count": total_count
+            }, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_total_other_drivers_un_verified_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+
+            # Get the total count
+            count_query = "SELECT COUNT(*) FROM vtpartner.other_driverstbl WHERE status = 0;"
+            total_count_result = select_query(count_query)
+            total_count = total_count_result[0][0] if total_count_result else 0
+
+            # Fetch driver data with sub category and service details
+            if key is not None:
+                query = """
+                    SELECT od.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.other_driverstbl od
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON od.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 4
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON od.service_id = os.service_id AND os.sub_cat_id = od.sub_cat_id
+                    WHERE od.status = 0 
+                    ORDER BY od.other_driver_id DESC LIMIT 10;
+                """
+            else:
+                query = """
+                    SELECT od.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.other_driverstbl od
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON od.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 4
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON od.service_id = os.service_id AND os.sub_cat_id = od.sub_cat_id
+                    WHERE od.status = 0 
+                    ORDER BY od.other_driver_id DESC;
+                """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                driver_data = {
+                    "other_driver_id": row[0],
+                    "driver_first_name": row[1],
+                    "driver_last_name": row[2],
+                    "profile_pic": row[3],
+                    "is_online": row[4],
+                    "ratings": row[5],
+                    "mobile_no": row[6],
+                    "registration_date": row[7],
+                    "time": row[8],
+                    "r_lat": row[9],
+                    "r_lng": row[10],
+                    "current_lat": row[11],
+                    "current_lng": row[12],
+                    "status": row[13],
+                    "recent_online_pic": row[14],
+                    "is_verified": row[15],
+                    "category_id": row[16],
+                    "sub_cat_id": row[17],
+                    "service_id": row[18],
+                    "city_id": row[19],
+                    "house_no": row[20],
+                    "city_name": row[21],
+                    "full_address": row[22],
+                    "aadhar_no": row[23],
+                    "pan_card_no": row[24],
+                    "gender": row[25],
+                    "aadhar_card_front": row[26],
+                    "aadhar_card_back": row[27],
+                    "pan_card_front": row[28],
+                    "pan_card_back": row[29],
+                    "driving_license_no": row[30],
+                    "license_front": row[31],
+                    "license_back": row[32],
+                    "authtoken": row[33],
+                    "otp_no": row[34],
+                }
+
+                # Add sub category details if available
+                if row[17] != -1:
+                    driver_data["sub_category_details"] = {
+                        "sub_cat_name": row[35] if row[35] else "NA",
+                        "sub_cat_image": row[36] if row[36] else "NA",
+                        "sub_cat_price_per_hour": float(row[37]) if row[37] else 0.0,
+                        "sub_cat_service_base_price": float(row[38]) if row[38] else 0.0,
+                    }
+                else:
+                    driver_data["sub_category_details"] = None
+
+                # Add service details if available
+                if row[18] != -1:
+                    driver_data["service_details"] = {
+                        "service_name": row[39] if row[39] else "NA",
+                        "service_image": row[40] if row[40] else "NA",
+                        "service_price_per_hour": float(row[41]) if row[41] else 0.0,
+                        "service_base_price": float(row[42]) if row[42] else 0.0,
+                    }
+                else:
+                    driver_data["service_details"] = None
+
+                mapped_results.append(driver_data)
+
+            return JsonResponse({
+                "drivers": mapped_results,
+                "total_count": total_count
+            }, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_total_other_drivers_blocked_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+
+            # Get the total count
+            count_query = "SELECT COUNT(*) FROM vtpartner.other_driverstbl WHERE status = 2;"
+            total_count_result = select_query(count_query)
+            total_count = total_count_result[0][0] if total_count_result else 0
+
+            # Fetch driver data with sub category and service details
+            if key is not None:
+                query = """
+                    SELECT od.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.other_driverstbl od
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON od.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 4
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON od.service_id = os.service_id AND os.sub_cat_id = od.sub_cat_id
+                    WHERE od.status = 2 
+                    ORDER BY od.other_driver_id DESC LIMIT 10;
+                """
+            else:
+                query = """
+                    SELECT od.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.other_driverstbl od
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON od.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 4
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON od.service_id = os.service_id AND os.sub_cat_id = od.sub_cat_id
+                    WHERE od.status = 2 
+                    ORDER BY od.other_driver_id DESC;
+                """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                driver_data = {
+                    "other_driver_id": row[0],
+                    "driver_first_name": row[1],
+                    "driver_last_name": row[2],
+                    "profile_pic": row[3],
+                    "is_online": row[4],
+                    "ratings": row[5],
+                    "mobile_no": row[6],
+                    "registration_date": row[7],
+                    "time": row[8],
+                    "r_lat": row[9],
+                    "r_lng": row[10],
+                    "current_lat": row[11],
+                    "current_lng": row[12],
+                    "status": row[13],
+                    "recent_online_pic": row[14],
+                    "is_verified": row[15],
+                    "category_id": row[16],
+                    "sub_cat_id": row[17],
+                    "service_id": row[18],
+                    "city_id": row[19],
+                    "house_no": row[20],
+                    "city_name": row[21],
+                    "full_address": row[22],
+                    "aadhar_no": row[23],
+                    "pan_card_no": row[24],
+                    "gender": row[25],
+                    "aadhar_card_front": row[26],
+                    "aadhar_card_back": row[27],
+                    "pan_card_front": row[28],
+                    "pan_card_back": row[29],
+                    "driving_license_no": row[30],
+                    "license_front": row[31],
+                    "license_back": row[32],
+                    "authtoken": row[33],
+                    "otp_no": row[34],
+                }
+
+                # Add sub category details if available
+                if row[17] != -1:
+                    driver_data["sub_category_details"] = {
+                        "sub_cat_name": row[35] if row[35] else "NA",
+                        "sub_cat_image": row[36] if row[36] else "NA",
+                        "sub_cat_price_per_hour": float(row[37]) if row[37] else 0.0,
+                        "sub_cat_service_base_price": float(row[38]) if row[38] else 0.0,
+                    }
+                else:
+                    driver_data["sub_category_details"] = None
+
+                # Add service details if available
+                if row[18] != -1:
+                    driver_data["service_details"] = {
+                        "service_name": row[39] if row[39] else "NA",
+                        "service_image": row[40] if row[40] else "NA",
+                        "service_price_per_hour": float(row[41]) if row[41] else 0.0,
+                        "service_base_price": float(row[42]) if row[42] else 0.0,
+                    }
+                else:
+                    driver_data["service_details"] = None
+
+                mapped_results.append(driver_data)
+
+            return JsonResponse({
+                "drivers": mapped_results,
+                "total_count": total_count
+            }, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_total_other_drivers_rejected_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+
+            # Get the total count
+            count_query = "SELECT COUNT(*) FROM vtpartner.other_driverstbl WHERE status = 3;"
+            total_count_result = select_query(count_query)
+            total_count = total_count_result[0][0] if total_count_result else 0
+
+            # Fetch driver data with sub category and service details
+            if key is not None:
+                query = """
+                    SELECT od.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.other_driverstbl od
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON od.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 4
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON od.service_id = os.service_id AND os.sub_cat_id = od.sub_cat_id
+                    WHERE od.status = 3 
+                    ORDER BY od.other_driver_id DESC LIMIT 10;
+                """
+            else:
+                query = """
+                    SELECT od.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.other_driverstbl od
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON od.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 4
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON od.service_id = os.service_id AND os.sub_cat_id = od.sub_cat_id
+                    WHERE od.status = 3 
+                    ORDER BY od.other_driver_id DESC;
+                """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                driver_data = {
+                    "other_driver_id": row[0],
+                    "driver_first_name": row[1],
+                    "driver_last_name": row[2],
+                    "profile_pic": row[3],
+                    "is_online": row[4],
+                    "ratings": row[5],
+                    "mobile_no": row[6],
+                    "registration_date": row[7],
+                    "time": row[8],
+                    "r_lat": row[9],
+                    "r_lng": row[10],
+                    "current_lat": row[11],
+                    "current_lng": row[12],
+                    "status": row[13],
+                    "recent_online_pic": row[14],
+                    "is_verified": row[15],
+                    "category_id": row[16],
+                    "sub_cat_id": row[17],
+                    "service_id": row[18],
+                    "city_id": row[19],
+                    "house_no": row[20],
+                    "city_name": row[21],
+                    "full_address": row[22],
+                    "aadhar_no": row[23],
+                    "pan_card_no": row[24],
+                    "gender": row[25],
+                    "aadhar_card_front": row[26],
+                    "aadhar_card_back": row[27],
+                    "pan_card_front": row[28],
+                    "pan_card_back": row[29],
+                    "driving_license_no": row[30],
+                    "license_front": row[31],
+                    "license_back": row[32],
+                    "authtoken": row[33],
+                    "otp_no": row[34],
+                }
+
+                # Add sub category details if available
+                if row[17] != -1:
+                    driver_data["sub_category_details"] = {
+                        "sub_cat_name": row[35] if row[35] else "NA",
+                        "sub_cat_image": row[36] if row[36] else "NA",
+                        "sub_cat_price_per_hour": float(row[37]) if row[37] else 0.0,
+                        "sub_cat_service_base_price": float(row[38]) if row[38] else 0.0,
+                    }
+                else:
+                    driver_data["sub_category_details"] = None
+
+                # Add service details if available
+                if row[18] != -1:
+                    driver_data["service_details"] = {
+                        "service_name": row[39] if row[39] else "NA",
+                        "service_image": row[40] if row[40] else "NA",
+                        "service_price_per_hour": float(row[41]) if row[41] else 0.0,
+                        "service_base_price": float(row[42]) if row[42] else 0.0,
+                    }
+                else:
+                    driver_data["service_details"] = None
+
+                mapped_results.append(driver_data)
+
+            return JsonResponse({
+                "drivers": mapped_results,
+                "total_count": total_count
+            }, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_total_handyman_verified_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+
+            # Get the total count
+            count_query = "SELECT COUNT(*) FROM vtpartner.handymantbl WHERE status = 1;"
+            total_count_result = select_query(count_query)
+            total_count = total_count_result[0][0] if total_count_result else 0
+
+            # Fetch handyman data with sub category and service details
+            if key is not None:
+                query = """
+                    SELECT h.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.handymantbl h
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON h.service_id = os.service_id AND os.sub_cat_id = h.sub_cat_id
+                    WHERE h.status = 1 
+                    ORDER BY h.handyman_id DESC LIMIT 10;
+                """
+            else:
+                query = """
+                    SELECT h.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.handymantbl h
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON h.service_id = os.service_id AND os.sub_cat_id = h.sub_cat_id
+                    WHERE h.status = 1 
+                    ORDER BY h.handyman_id DESC;
+                """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                handyman_data = {
+                    "handyman_id": row[0],
+                    "handyman_first_name": row[1],
+                    "handyman_last_name": row[2],
+                    "profile_pic": row[3],
+                    "is_online": row[4],
+                    "ratings": row[5],
+                    "mobile_no": row[6],
+                    "registration_date": row[7],
+                    "time": row[8],
+                    "r_lat": row[9],
+                    "r_lng": row[10],
+                    "current_lat": row[11],
+                    "current_lng": row[12],
+                    "status": row[13],
+                    "recent_online_pic": row[14],
+                    "is_verified": row[15],
+                    "category_id": row[16],
+                    "sub_cat_id": row[17],
+                    "service_id": row[18],
+                    "city_id": row[19],
+                    "house_no": row[20],
+                    "city_name": row[21],
+                    "full_address": row[22],
+                    "aadhar_no": row[23],
+                    "pan_card_no": row[24],
+                    "gender": row[25],
+                    "aadhar_card_front": row[26],
+                    "aadhar_card_back": row[27],
+                    "pan_card_front": row[28],
+                    "pan_card_back": row[29],
+                    "work_permit": row[30],
+                    "work_permit_back": row[31],
+                    "authtoken": row[32],
+                    "otp_no": row[33],
+                }
+
+                # Add sub category details if available
+                if row[17] != -1:
+                    handyman_data["sub_category_details"] = {
+                        "sub_cat_name": row[34] if row[34] else "NA",
+                        "sub_cat_image": row[35] if row[35] else "NA",
+                        "sub_cat_price_per_hour": float(row[36]) if row[36] else 0.0,
+                        "sub_cat_service_base_price": float(row[37]) if row[37] else 0.0,
+                    }
+                else:
+                    handyman_data["sub_category_details"] = None
+
+                # Add service details if available
+                if row[18] != -1:
+                    handyman_data["service_details"] = {
+                        "service_name": row[38] if row[38] else "NA",
+                        "service_image": row[39] if row[39] else "NA",
+                        "service_price_per_hour": float(row[40]) if row[40] else 0.0,
+                        "service_base_price": float(row[41]) if row[41] else 0.0,
+                    }
+                else:
+                    handyman_data["service_details"] = None
+
+                mapped_results.append(handyman_data)
+
+            return JsonResponse({
+                "handymen": mapped_results,
+                "total_count": total_count
+            }, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_total_handyman_un_verified_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+
+            # Get the total count
+            count_query = "SELECT COUNT(*) FROM vtpartner.handymantbl WHERE status = 0;"
+            total_count_result = select_query(count_query)
+            total_count = total_count_result[0][0] if total_count_result else 0
+
+            # Fetch handyman data with sub category and service details
+            if key is not None:
+                query = """
+                    SELECT h.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.handymantbl h
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON h.service_id = os.service_id AND os.sub_cat_id = h.sub_cat_id
+                    WHERE h.status = 0 
+                    ORDER BY h.handyman_id DESC LIMIT 10;
+                """
+            else:
+                query = """
+                    SELECT h.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.handymantbl h
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON h.service_id = os.service_id AND os.sub_cat_id = h.sub_cat_id
+                    WHERE h.status = 0 
+                    ORDER BY h.handyman_id DESC;
+                """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                handyman_data = {
+                    "handyman_id": row[0],
+                    "handyman_first_name": row[1],
+                    "handyman_last_name": row[2],
+                    "profile_pic": row[3],
+                    "is_online": row[4],
+                    "ratings": row[5],
+                    "mobile_no": row[6],
+                    "registration_date": row[7],
+                    "time": row[8],
+                    "r_lat": row[9],
+                    "r_lng": row[10],
+                    "current_lat": row[11],
+                    "current_lng": row[12],
+                    "status": row[13],
+                    "recent_online_pic": row[14],
+                    "is_verified": row[15],
+                    "category_id": row[16],
+                    "sub_cat_id": row[17],
+                    "service_id": row[18],
+                    "city_id": row[19],
+                    "house_no": row[20],
+                    "city_name": row[21],
+                    "full_address": row[22],
+                    "aadhar_no": row[23],
+                    "pan_card_no": row[24],
+                    "gender": row[25],
+                    "aadhar_card_front": row[26],
+                    "aadhar_card_back": row[27],
+                    "pan_card_front": row[28],
+                    "pan_card_back": row[29],
+                    "work_permit": row[30],
+                    "work_permit_back": row[31],
+                    "authtoken": row[32],
+                    "otp_no": row[33],
+                }
+
+                # Add sub category details if available
+                if row[17] != -1:
+                    handyman_data["sub_category_details"] = {
+                        "sub_cat_name": row[34] if row[34] else "NA",
+                        "sub_cat_image": row[35] if row[35] else "NA",
+                        "sub_cat_price_per_hour": float(row[36]) if row[36] else 0.0,
+                        "sub_cat_service_base_price": float(row[37]) if row[37] else 0.0,
+                    }
+                else:
+                    handyman_data["sub_category_details"] = None
+
+                # Add service details if available
+                if row[18] != -1:
+                    handyman_data["service_details"] = {
+                        "service_name": row[38] if row[38] else "NA",
+                        "service_image": row[39] if row[39] else "NA",
+                        "service_price_per_hour": float(row[40]) if row[40] else 0.0,
+                        "service_base_price": float(row[41]) if row[41] else 0.0,
+                    }
+                else:
+                    handyman_data["service_details"] = None
+
+                mapped_results.append(handyman_data)
+
+            return JsonResponse({
+                "handymen": mapped_results,
+                "total_count": total_count
+            }, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_total_handyman_blocked_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+
+            # Get the total count
+            count_query = "SELECT COUNT(*) FROM vtpartner.handymantbl WHERE status = 2;"
+            total_count_result = select_query(count_query)
+            total_count = total_count_result[0][0] if total_count_result else 0
+
+            # Fetch handyman data with sub category and service details
+            if key is not None:
+                query = """
+                    SELECT h.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.handymantbl h
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON h.service_id = os.service_id AND os.sub_cat_id = h.sub_cat_id
+                    WHERE h.status = 2 
+                    ORDER BY h.handyman_id DESC LIMIT 10;
+                """
+            else:
+                query = """
+                    SELECT h.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.handymantbl h
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON h.service_id = os.service_id AND os.sub_cat_id = h.sub_cat_id
+                    WHERE h.status = 2 
+                    ORDER BY h.handyman_id DESC;
+                """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                handyman_data = {
+                    "handyman_id": row[0],
+                    "handyman_first_name": row[1],
+                    "handyman_last_name": row[2],
+                    "profile_pic": row[3],
+                    "is_online": row[4],
+                    "ratings": row[5],
+                    "mobile_no": row[6],
+                    "registration_date": row[7],
+                    "time": row[8],
+                    "r_lat": row[9],
+                    "r_lng": row[10],
+                    "current_lat": row[11],
+                    "current_lng": row[12],
+                    "status": row[13],
+                    "recent_online_pic": row[14],
+                    "is_verified": row[15],
+                    "category_id": row[16],
+                    "sub_cat_id": row[17],
+                    "service_id": row[18],
+                    "city_id": row[19],
+                    "house_no": row[20],
+                    "city_name": row[21],
+                    "full_address": row[22],
+                    "aadhar_no": row[23],
+                    "pan_card_no": row[24],
+                    "gender": row[25],
+                    "aadhar_card_front": row[26],
+                    "aadhar_card_back": row[27],
+                    "pan_card_front": row[28],
+                    "pan_card_back": row[29],
+                    "work_permit": row[30],
+                    "work_permit_back": row[31],
+                    "authtoken": row[32],
+                    "otp_no": row[33],
+                }
+
+                # Add sub category details if available
+                if row[17] != -1:
+                    handyman_data["sub_category_details"] = {
+                        "sub_cat_name": row[34] if row[34] else "NA",
+                        "sub_cat_image": row[35] if row[35] else "NA",
+                        "sub_cat_price_per_hour": float(row[36]) if row[36] else 0.0,
+                        "sub_cat_service_base_price": float(row[37]) if row[37] else 0.0,
+                    }
+                else:
+                    handyman_data["sub_category_details"] = None
+
+                # Add service details if available
+                if row[18] != -1:
+                    handyman_data["service_details"] = {
+                        "service_name": row[38] if row[38] else "NA",
+                        "service_image": row[39] if row[39] else "NA",
+                        "service_price_per_hour": float(row[40]) if row[40] else 0.0,
+                        "service_base_price": float(row[41]) if row[41] else 0.0,
+                    }
+                else:
+                    handyman_data["service_details"] = None
+
+                mapped_results.append(handyman_data)
+
+            return JsonResponse({
+                "handymen": mapped_results,
+                "total_count": total_count
+            }, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_total_handyman_rejected_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+
+            # Get the total count
+            count_query = "SELECT COUNT(*) FROM vtpartner.handymantbl WHERE status = 3;"
+            total_count_result = select_query(count_query)
+            total_count = total_count_result[0][0] if total_count_result else 0
+
+            # Fetch handyman data with sub category and service details
+            if key is not None:
+                query = """
+                    SELECT h.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.handymantbl h
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON h.service_id = os.service_id AND os.sub_cat_id = h.sub_cat_id
+                    WHERE h.status = 3 
+                    ORDER BY h.handyman_id DESC LIMIT 10;
+                """
+            else:
+                query = """
+                    SELECT h.*, 
+                           sc.sub_cat_name, sc.image as sub_cat_image, 
+                           sc.price_per_hour as sub_cat_price_per_hour,
+                           sc.service_base_price as sub_cat_service_base_price,
+                           os.service_name, os.service_image,
+                           os.price_per_hour as service_price_per_hour,
+                           os.service_base_price as service_base_price
+                    FROM vtpartner.handymantbl h
+                    LEFT JOIN vtpartner.sub_categorytbl sc 
+                        ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
+                    LEFT JOIN vtpartner.other_servicestbl os 
+                        ON h.service_id = os.service_id AND os.sub_cat_id = h.sub_cat_id
+                    WHERE h.status = 3 
+                    ORDER BY h.handyman_id DESC;
+                """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                handyman_data = {
+                    "handyman_id": row[0],
+                    "handyman_first_name": row[1],
+                    "handyman_last_name": row[2],
+                    "profile_pic": row[3],
+                    "is_online": row[4],
+                    "ratings": row[5],
+                    "mobile_no": row[6],
+                    "registration_date": row[7],
+                    "time": row[8],
+                    "r_lat": row[9],
+                    "r_lng": row[10],
+                    "current_lat": row[11],
+                    "current_lng": row[12],
+                    "status": row[13],
+                    "recent_online_pic": row[14],
+                    "is_verified": row[15],
+                    "category_id": row[16],
+                    "sub_cat_id": row[17],
+                    "service_id": row[18],
+                    "city_id": row[19],
+                    "house_no": row[20],
+                    "city_name": row[21],
+                    "full_address": row[22],
+                    "aadhar_no": row[23],
+                    "pan_card_no": row[24],
+                    "gender": row[25],
+                    "aadhar_card_front": row[26],
+                    "aadhar_card_back": row[27],
+                    "pan_card_front": row[28],
+                    "pan_card_back": row[29],
+                    "work_permit": row[30],
+                    "work_permit_back": row[31],
+                    "authtoken": row[32],
+                    "otp_no": row[33],
+                }
+
+                # Add sub category details if available
+                if row[17] != -1:
+                    handyman_data["sub_category_details"] = {
+                        "sub_cat_name": row[34] if row[34] else "NA",
+                        "sub_cat_image": row[35] if row[35] else "NA",
+                        "sub_cat_price_per_hour": float(row[36]) if row[36] else 0.0,
+                        "sub_cat_service_base_price": float(row[37]) if row[37] else 0.0,
+                    }
+                else:
+                    handyman_data["sub_category_details"] = None
+
+                # Add service details if available
+                if row[18] != -1:
+                    handyman_data["service_details"] = {
+                        "service_name": row[38] if row[38] else "NA",
+                        "service_image": row[39] if row[39] else "NA",
+                        "service_price_per_hour": float(row[40]) if row[40] else 0.0,
+                        "service_base_price": float(row[41]) if row[41] else 0.0,
+                    }
+                else:
+                    handyman_data["service_details"] = None
+
+                mapped_results.append(handyman_data)
+
+            return JsonResponse({
+                "handymen": mapped_results,
+                "total_count": total_count
+            }, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+#
