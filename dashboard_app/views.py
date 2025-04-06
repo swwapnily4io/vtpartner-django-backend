@@ -8992,40 +8992,23 @@ def get_total_handyman_un_verified_with_count(request):
             total_count = total_count_result[0][0] if total_count_result else 0
 
             # Fetch handyman data with sub category and service details
-            if key is not None:
-                query = """
-                    SELECT h.*, 
-                           sc.sub_cat_name, sc.image as sub_cat_image, 
-                           sc.price_per_hour as sub_cat_price_per_hour,
-                           sc.service_base_price as sub_cat_service_base_price,
-                           os.service_name, os.service_image,
-                           os.price_per_hour as service_price_per_hour,
-                           os.service_base_price as service_base_price
-                    FROM vtpartner.handymans_tbl h
-                    LEFT JOIN vtpartner.sub_categorytbl sc 
-                        ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
-                    LEFT JOIN vtpartner.other_servicestbl os 
-                        ON h.service_id = os.service_id AND os.sub_cat_id = h.sub_cat_id
-                    WHERE h.status = 0 
-                    ORDER BY h.handyman_id DESC LIMIT 10;
-                """
-            else:
-                query = """
-                    SELECT h.*, 
-                           sc.sub_cat_name, sc.image as sub_cat_image, 
-                           sc.price_per_hour as sub_cat_price_per_hour,
-                           sc.service_base_price as sub_cat_service_base_price,
-                           os.service_name, os.service_image,
-                           os.price_per_hour as service_price_per_hour,
-                           os.service_base_price as service_base_price
-                    FROM vtpartner.handymans_tbl h
-                    LEFT JOIN vtpartner.sub_categorytbl sc 
-                        ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
-                    LEFT JOIN vtpartner.other_servicestbl os 
-                        ON h.service_id = os.service_id AND os.sub_cat_id = h.sub_cat_id
-                    WHERE h.status = 0 
-                    ORDER BY h.handyman_id DESC;
-                """
+            query = """
+                SELECT h.*, 
+                       sc.sub_cat_name, sc.image as sub_cat_image, 
+                       sc.price_per_hour as sub_cat_price_per_hour,
+                       sc.service_base_price as sub_cat_service_base_price,
+                       os.service_name, os.service_image,
+                       os.price_per_hour as service_price_per_hour,
+                       os.service_base_price as service_base_price
+                FROM vtpartner.handymans_tbl h
+                LEFT JOIN vtpartner.sub_categorytbl sc 
+                    ON h.sub_cat_id = sc.sub_cat_id AND sc.cat_id = 5
+                LEFT JOIN vtpartner.other_servicestbl os 
+                    ON h.service_id = os.service_id AND os.sub_cat_id = h.sub_cat_id
+                WHERE h.status = 0 
+                ORDER BY h.handyman_id DESC
+                {limit};
+            """.format(limit="LIMIT 10" if key is not None else "")
 
             result = select_query(query)
 
@@ -9034,65 +9017,65 @@ def get_total_handyman_un_verified_with_count(request):
 
             mapped_results = []
             for row in result:
+                # Map the columns according to the actual schema
                 handyman_data = {
                     "handyman_id": row[0],
-                    "handyman_first_name": row[1],
-                    "handyman_last_name": row[2],
-                    "profile_pic": row[3],
-                    "is_online": row[4],
-                    "ratings": row[5],
-                    "mobile_no": row[6],
-                    "registration_date": row[7],
-                    "time": row[8],
-                    "r_lat": row[9],
-                    "r_lng": row[10],
-                    "current_lat": row[11],
-                    "current_lng": row[12],
-                    "status": row[13],
-                    "recent_online_pic": row[14],
-                    "is_verified": row[15],
-                    "category_id": row[16],
-                    "sub_cat_id": row[17],
-                    "service_id": row[18],
-                    "city_id": row[19],
-                    "house_no": row[20],
-                    "city_name": row[21],
-                    "full_address": row[22],
-                    "aadhar_no": row[23],
-                    "pan_card_no": row[24],
-                    "gender": row[25],
-                    "aadhar_card_front": row[26],
-                    "aadhar_card_back": row[27],
-                    "pan_card_front": row[28],
-                    "pan_card_back": row[29],
-                    "authtoken": row[30],
-                    "otp_no": row[31],
-                    "license_front": row[32],
-                    "license_back": row[33],
+                    "name": row[1],  # Changed from handyman_first_name
+                    "profile_pic": row[2],
+                    "is_online": row[3],
+                    "ratings": row[4],
+                    "mobile_no": row[5],
+                    "registration_date": str(row[6]) if row[6] else "",  # Convert date to string
+                    "time": row[7],
+                    "r_lat": row[8],
+                    "r_lng": row[9],
+                    "current_lat": row[10],
+                    "current_lng": row[11],
+                    "status": row[12],
+                    "recent_online_pic": row[13],
+                    "is_verified": row[14],
+                    "category_id": row[15],
+                    "sub_cat_id": row[16],
+                    "service_id": row[17],
+                    "city_id": row[18],
+                    "house_no": row[19],
+                    "city_name": row[20],
+                    "full_address": row[21],
+                    "aadhar_no": row[22],
+                    "pan_card_no": row[23],
+                    "gender": row[24],
+                    "aadhar_card_front": row[25],
+                    "aadhar_card_back": row[26],
+                    "pan_card_front": row[27],
+                    "pan_card_back": row[28],
+                    "authtoken": row[29],
+                    "otp_no": row[30],
+                    "license_front": row[31],
+                    "license_back": row[32]
                 }
 
-                # Add sub category details if available
-                if row[17] != -1:
+                # Add sub category details if available (starting at index 33)
+                if row[16] != -1:  # Check sub_cat_id
                     handyman_data["sub_category_details"] = {
-                        "sub_cat_name": row[34] if row[34] else "NA",
-                        "sub_cat_image": row[35] if row[35] else "NA",
-                        "sub_cat_price_per_hour": row[36] if row[36] else 0.0,
-                        "sub_cat_service_base_price": row[37] if row[37] else 0.0,
+                        "sub_cat_name": str(row[33]) if row[33] else "NA",
+                        "sub_cat_image": str(row[34]) if row[34] else "NA",
+                        "sub_cat_price_per_hour": float(row[35]) if row[35] and str(row[35]).replace('.', '', 1).isdigit() else 0.0,
+                        "sub_cat_service_base_price": float(row[36]) if row[36] and str(row[36]).replace('.', '', 1).isdigit() else 0.0
                     }
                 else:
                     handyman_data["sub_category_details"] = None
 
-                # Add service details if available
-                if row[18] != -1:
+                # Add service details if available (starting at index 37)
+                if row[17] != -1:  # Check service_id
                     try:
                         handyman_data["service_details"] = {
-                            "service_name": str(row[38]) if row[38] else "NA",  # Ensure string
-                            "service_image": str(row[39]) if row[39] else "NA",  # Ensure string
-                            # Safely convert to float or use default
-                            "service_price_per_hour": row[40],
-                            "service_base_price": row[41],
+                            "service_name": str(row[37]) if row[37] else "NA",
+                            "service_image": str(row[38]) if row[38] else "NA",
+                            "service_price_per_hour": float(row[39]) if row[39] and str(row[39]).replace('.', '', 1).isdigit() else 0.0,
+                            "service_base_price": float(row[40]) if row[40] and str(row[40]).replace('.', '', 1).isdigit() else 0.0
                         }
-                    except (ValueError, TypeError):
+                    except (ValueError, TypeError, IndexError) as e:
+                        print(f"Error processing service details: {e}")
                         handyman_data["service_details"] = {
                             "service_name": "NA",
                             "service_image": "NA",
