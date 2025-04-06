@@ -222,6 +222,13 @@ urlpatterns = [
     
     path('get_all_handyman_online_current_location', views.get_all_handyman_online_current_location, name='get_all_handyman_online_current_location'),
     
+    # CAB Driver count
+    
+    path('get_total_cab_drivers_rejected_with_count', views.get_total_cab_drivers_rejected_with_count, name='get_total_cab_drivers_rejected_with_count'),
+    path('get_total_cab_drivers_blocked_with_count', views.get_total_cab_drivers_blocked_with_count, name='get_total_cab_drivers_blocked_with_count'),
+    path('get_total_cab_drivers_un_verified_with_count', views.get_total_cab_drivers_un_verified_with_count, name='get_total_cab_drivers_un_verified_with_count'),
+    path('get_total_cab_drivers_verified_with_count', views.get_total_cab_drivers_verified_with_count, name='get_total_cab_drivers_verified_with_count'),
+    
       # JCB Crane Driver paths
     path('get_total_jcb_crane_drivers_verified_with_count', views.get_total_jcb_crane_drivers_verified_with_count, name='get_total_jcb_crane_drivers_verified_with_count'),
     path('get_total_jcb_crane_drivers_un_verified_with_count', views.get_total_jcb_crane_drivers_un_verified_with_count, name='get_total_jcb_crane_drivers_un_verified_with_count'),

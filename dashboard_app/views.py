@@ -7895,7 +7895,7 @@ def get_total_cab_drivers_rejected_with_count(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
-
+#
 #JCB Crane
 
 @csrf_exempt
