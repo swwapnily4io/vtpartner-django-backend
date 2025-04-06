@@ -9065,10 +9065,10 @@ def get_total_handyman_un_verified_with_count(request):
                     "aadhar_card_back": row[27],
                     "pan_card_front": row[28],
                     "pan_card_back": row[29],
-                    "work_permit": row[30],
-                    "work_permit_back": row[31],
-                    "authtoken": row[32],
-                    "otp_no": row[33],
+                    "authtoken": row[30],
+                    "otp_no": row[31],
+                    "license_front": row[32],
+                    "license_back": row[33],
                 }
 
                 # Add sub category details if available
