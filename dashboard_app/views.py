@@ -4954,6 +4954,107 @@ def get_total_goods_drivers_with_count(request):
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
  
+@csrf_exempt
+def get_total_cab_drivers_with_count(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+            status = data.get("status")  # Status: 1 = Verified, 0 = Unverified, 2 = Blocked, 3 = Rejected
+
+            if status not in [0, 1, 2, 3]:
+                return JsonResponse({"message": "Invalid status provided"}, status=400)
+
+            # Fetch total count separately
+            count_query = f"SELECT COUNT(*) FROM vtpartner.cab_driverstbl WHERE status = {status};"
+            total_count_result = select_query(count_query)
+            total_count = total_count_result[0][0] if total_count_result else 0
+
+            # Fetch driver details with explicit column selection
+            query = f"""
+                SELECT cd.cab_driver_id, cd.driver_first_name, cd.driver_last_name, 
+                    cd.profile_pic, cd.is_online, cd.ratings, cd.mobile_no, 
+                    cd.registration_date, cd.time, cd.r_lat, cd.r_lng, cd.current_lat, cd.current_lng, 
+                    cd.status, cd.recent_online_pic, cd.is_verified, cd.category_id, 
+                    cd.vehicle_id, cd.city_id, cd.aadhar_no, cd.pan_card_no, cd.house_no, 
+                    cd.city_name, cd.full_address, cd.gender, cd.owner_id, cd.aadhar_card_front, 
+                    cd.aadhar_card_back, cd.pan_card_front, cd.pan_card_back, cd.license_front, 
+                    cd.license_back, cd.insurance_image, cd.noc_image, cd.pollution_certificate_image, 
+                    cd.rc_image, cd.vehicle_image, cd.vehicle_plate_image, cd.driving_license_no, 
+                    cd.vehicle_plate_no, cd.rc_no, cd.insurance_no, cd.noc_no, cd.vehicle_fuel_type, 
+                    v.vehicle_name, 
+                    v.image
+                FROM vtpartner.cab_driverstbl cd
+                LEFT JOIN vtpartner.vehiclestbl v ON cd.vehicle_id = v.vehicle_id AND cd.category_id = 2
+                WHERE cd.status = {status}
+                ORDER BY cd.cab_driver_id DESC
+                {'LIMIT 10' if key is not None else ''};
+            """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            # Map results to a list of dictionaries
+            mapped_results = []
+            for row in result:
+                mapped_results.append({
+                    "cab_driver_id": row[0],
+                    "driver_first_name": row[1],
+                    "driver_last_name": row[2],
+                    "profile_pic": row[3],
+                    "is_online": row[4],
+                    "ratings": row[5],
+                    "mobile_no": row[6],
+                    "registration_date": row[7],
+                    "time": row[8],
+                    "r_lat": row[9],
+                    "r_lng": row[10],
+                    "current_lat": row[11],
+                    "current_lng": row[12],
+                    "status": row[13],
+                    "recent_online_pic": row[14],
+                    "is_verified": row[15],
+                    "category_id": row[16],
+                    "vehicle_id": row[17],
+                    "city_id": row[18],
+                    "aadhar_no": row[19],
+                    "pan_card_no": row[20],
+                    "house_no": row[21],
+                    "city_name": row[22],
+                    "full_address": row[23],
+                    "gender": row[24],
+                    "owner_id": row[25],
+                    "aadhar_card_front": row[26],
+                    "aadhar_card_back": row[27],
+                    "pan_card_front": row[28],
+                    "pan_card_back": row[29],
+                    "license_front": row[30],
+                    "license_back": row[31],
+                    "insurance_image": row[32],
+                    "noc_image": row[33],
+                    "pollution_certificate_image": row[34],
+                    "rc_image": row[35],
+                    "driver_vehicle_image": row[36],
+                    "vehicle_plate_image": row[37],
+                    "driving_license_no": row[38],
+                    "vehicle_plate_no": row[39],
+                    "rc_no": row[40],
+                    "insurance_no": row[41],
+                    "noc_no": row[42],
+                    "vehicle_fuel_type": row[43],
+                    "vehicle_name": row[44],
+                    "vehicle_image": row[45]
+                })
+
+            return JsonResponse({"drivers": mapped_results, "total_count": total_count}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt
 def get_total_goods_drivers_verified_with_count(request):
@@ -6698,6 +6799,77 @@ def toggle_driver_online_status(request):
                 UPDATE vtpartner.goods_driverstbl 
                 SET is_online = %s 
                 WHERE goods_driver_id = %s
+            """
+            update_values = (new_status, driver_id)
+            update_query(update_driver_query, update_values)
+
+            return JsonResponse({
+                "message": f"Driver status updated to {'online' if new_status == 1 else 'offline'}"
+            }, status=200)
+
+        except Exception as err:
+            print("Error toggling driver status:", err)
+            return JsonResponse({"message": str(err)}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def toggle_cab_driver_online_status(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            driver_id = data.get('driver_id')
+            new_status = data.get('online_status')  # 1 for online, 0 for offline
+            current_lat = data.get('current_lat', 0)
+            current_lng = data.get('current_lng', 0)
+
+            if not driver_id:
+                return JsonResponse({"message": "Driver ID is required"}, status=400)
+
+            if new_status == 0:
+                # Check if driver is free before going offline
+                check_query = """
+                    SELECT current_booking_id 
+                    FROM vtpartner.active_cab_drivertbl 
+                    WHERE cab_driver_id = %s AND current_booking_id != -1
+                """
+                result = select_query(check_query, (driver_id,))
+                
+                if result:
+                    return JsonResponse({
+                        "message": "Driver has active bookings and cannot go offline"
+                    }, status=400)
+
+                # Delete from active drivers table
+                delete_driver_query = """
+                    DELETE FROM vtpartner.active_cab_drivertbl 
+                    WHERE cab_driver_id = %s
+                """
+                delete_values = (driver_id,)
+                delete_query(delete_driver_query, delete_values)
+
+            else:
+                # Add to active drivers table
+                insert_driver_query = """
+                    INSERT INTO vtpartner.active_cab_drivertbl 
+                    (cab_driver_id, current_lat, current_lng, current_status, current_booking_id) 
+                    VALUES (%s, %s, %s, 1, -1)
+                    ON CONFLICT (cab_driver_id) 
+                    DO UPDATE SET 
+                        current_lat = EXCLUDED.current_lat,
+                        current_lng = EXCLUDED.current_lng,
+                        entry_time = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP),
+                        date = CURRENT_DATE,
+                        current_status = 1
+                """
+                insert_values = (driver_id, current_lat, current_lng)
+                insert_query(insert_driver_query, insert_values)
+
+            # Update driver's online status
+            update_driver_query = """
+                UPDATE vtpartner.cab_driverstbl 
+                SET is_online = %s 
+                WHERE cab_driver_id = %s
             """
             update_values = (new_status, driver_id)
             update_query(update_driver_query, update_values)
