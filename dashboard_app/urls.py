@@ -187,6 +187,8 @@ urlpatterns = [
     path('get_cab_driver_details',views.get_cab_driver_details,name='get_cab_driver_details'),
     #Check Goods Driver Status
     path('check_driver_status',views.check_driver_status,name='check_driver_status'),
+    #Check Cab Driver Status
+    path('check_cab_driver_status',views.check_cab_driver_status,name='check_cab_driver_status'),
     #Change Goods Driver Status from Online to Offline and vice versa
     path('toggle_driver_online_status',views.toggle_driver_online_status,name='toggle_driver_online_status'),
     #Change cab Driver Status from Online to Offline and vice versa

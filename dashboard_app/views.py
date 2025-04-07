@@ -6902,6 +6902,37 @@ def check_driver_status(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+
+@csrf_exempt
+def check_cab_driver_status(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            driver_id = data.get('driver_id')
+
+            if not driver_id:
+                return JsonResponse({"message": "Driver ID is required"}, status=400)
+
+            # Check if driver has any active bookings
+            query = """
+                SELECT current_booking_id 
+                FROM vtpartner.active_cab_drivertbl 
+                WHERE cab_driver_id = %s
+            """
+            result = select_query(query, (driver_id,))
+
+            if not result:
+                return JsonResponse({"is_free": True}, status=200)
+
+            is_free = result[0][0] == -1
+            return JsonResponse({"is_free": is_free}, status=200)
+
+        except Exception as err:
+            print("Error checking cab driver status:", err)
+            return JsonResponse({"message": str(err)}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
 @csrf_exempt
 def toggle_driver_online_status(request):
     if request.method == "POST":
