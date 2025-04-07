@@ -7537,6 +7537,140 @@ def get_offline_drivers(request):
     
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+
+@csrf_exempt
+def get_offline_cab_drivers(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            page = data.get("page", 1)
+            limit = data.get("limit", 10)
+            search = data.get("search", "")
+            
+            # Count query for pagination
+            count_query = """
+                SELECT COUNT(*)
+                FROM vtpartner.cab_driverstbl cd
+                WHERE cd.is_online = 0 AND cd.status = 1
+                AND (
+                    LOWER(cd.driver_first_name) LIKE LOWER(%s) OR
+                    cd.mobile_no LIKE %s OR
+                    CAST(cd.cab_driver_id AS TEXT) LIKE %s
+                )
+            """
+            
+            # Main query with all fields
+            query = """
+                SELECT 
+                    cd.cab_driver_id, cd.driver_first_name, cd.driver_last_name, 
+                    cd.profile_pic, cd.is_online, cd.ratings, cd.mobile_no, 
+                    cd.registration_date, cd.time, cd.r_lat, cd.r_lng, cd.current_lat, 
+                    cd.current_lng, cd.status, cd.recent_online_pic, cd.is_verified, 
+                    cd.category_id, cd.vehicle_id, cd.city_id, cd.aadhar_no, 
+                    cd.pan_card_no, cd.house_no, cd.city_name, cd.full_address, 
+                    cd.gender, cd.owner_id, cd.aadhar_card_front, cd.aadhar_card_back, 
+                    cd.pan_card_front, cd.pan_card_back, cd.license_front, 
+                    cd.license_back, cd.insurance_image, cd.noc_image, 
+                    cd.pollution_certificate_image, cd.rc_image, cd.vehicle_image, 
+                    cd.vehicle_plate_image, cd.driving_license_no, cd.vehicle_plate_no, 
+                    cd.rc_no, cd.insurance_no, cd.noc_no, cd.vehicle_fuel_type,
+                    v.vehicle_name,
+                    v.image as vehicle_type_image
+                FROM vtpartner.cab_driverstbl cd
+                LEFT JOIN vtpartner.vehiclestbl v ON cd.vehicle_id = v.vehicle_id AND cd.category_id = 2
+                WHERE cd.is_online = 0 
+                AND cd.status = 1
+                AND (
+                    LOWER(cd.driver_first_name) LIKE LOWER(%s) OR
+                    cd.mobile_no LIKE %s OR
+                    CAST(cd.cab_driver_id AS TEXT) LIKE %s
+                )
+                ORDER BY cd.cab_driver_id DESC
+                OFFSET %s LIMIT %s
+            """
+            
+            search_pattern = f"%{search}%"
+            params = [search_pattern, search_pattern, search_pattern]
+            
+            # Get total count
+            total_count_result = select_query(count_query, params)
+            total_count = total_count_result[0][0] if total_count_result else 0
+            
+            # Calculate offset
+            offset = (page - 1) * limit
+            query_params = params + [offset, limit]
+            
+            result = select_query(query, query_params)
+            
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            # Map results to match the same structure
+            drivers = [
+                {
+                    "cab_driver_id": row[0],
+                    "driver_first_name": row[1],
+                    "driver_last_name": row[2],
+                    "profile_pic": row[3],
+                    "is_online": row[4],
+                    "ratings": row[5],
+                    "mobile_no": row[6],
+                    "registration_date": row[7],
+                    "time": row[8],
+                    "r_lat": row[9],
+                    "r_lng": row[10],
+                    "current_lat": row[11],
+                    "current_lng": row[12],
+                    "status": row[13],
+                    "recent_online_pic": row[14],
+                    "is_verified": row[15],
+                    "category_id": row[16],
+                    "vehicle_id": row[17],
+                    "city_id": row[18],
+                    "aadhar_no": row[19],
+                    "pan_card_no": row[20],
+                    "house_no": row[21],
+                    "city_name": row[22],
+                    "full_address": row[23],
+                    "gender": row[24],
+                    "owner_id": row[25],
+                    "aadhar_card_front": row[26],
+                    "aadhar_card_back": row[27],
+                    "pan_card_front": row[28],
+                    "pan_card_back": row[29],
+                    "license_front": row[30],
+                    "license_back": row[31],
+                    "insurance_image": row[32],
+                    "noc_image": row[33],
+                    "pollution_certificate_image": row[34],
+                    "rc_image": row[35],
+                    "driver_vehicle_image": row[36],
+                    "vehicle_plate_image": row[37],
+                    "driving_license_no": row[38],
+                    "vehicle_plate_no": row[39],
+                    "rc_no": row[40],
+                    "insurance_no": row[41],
+                    "noc_no": row[42],
+                    "vehicle_fuel_type": row[43],
+                    "vehicle_name": row[44],
+                    "vehicle_image": row[45]
+                }
+                for row in result
+            ]
+
+            return JsonResponse({
+                "drivers": drivers,
+                "total_count": total_count,
+                "total_pages": math.ceil(total_count / limit)
+            }, status=200)
+            
+        except Exception as e:
+            print("Error fetching offline cab drivers:", e)
+            return JsonResponse({
+                "message": "Internal Server Error"
+            }, status=500)
+    
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 @csrf_exempt
 def get_driver_recharge_history(request):
     if request.method == "POST":

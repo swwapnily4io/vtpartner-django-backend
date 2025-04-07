@@ -206,6 +206,8 @@ urlpatterns = [
     #
     path('get_offline_drivers',views.get_offline_drivers,name='get_offline_drivers'),
     #
+    path('get_offline_cab_drivers',views.get_offline_cab_drivers,name='get_offline_cab_drivers'),
+    #
     path('get_driver_recharge_history',views.get_driver_recharge_history,name='get_driver_recharge_history'),
     #
     path('get_driver_wallet_balance',views.get_driver_wallet_balance,name='get_driver_wallet_balance'),
