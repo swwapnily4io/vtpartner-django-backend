@@ -227,6 +227,24 @@ urlpatterns = [
     #
     path('add_cab_wallet_transaction',views.add_cab_wallet_transaction,name='add_cab_wallet_transaction'),
     
+    # JCB/Crane Driver Wallet Path
+    path('get_jcb_crane_driver_recharge_history', views.get_jcb_crane_driver_recharge_history, name='get_jcb_crane_driver_recharge_history'),
+    path('get_jcb_crane_driver_wallet_balance', views.get_jcb_crane_driver_wallet_balance, name='get_jcb_crane_driver_wallet_balance'),
+    path('get_jcb_crane_wallet_transactions', views.get_jcb_crane_wallet_transactions, name='get_jcb_crane_wallet_transactions'),
+    path('add_jcb_crane_wallet_transaction', views.add_jcb_crane_wallet_transaction, name='add_jcb_crane_wallet_transaction'),
+
+    # Other Driver Wallet Path
+    path('get_other_driver_recharge_history', views.get_other_driver_recharge_history, name='get_other_driver_recharge_history'),
+    path('get_other_driver_wallet_balance', views.get_other_driver_wallet_balance, name='get_other_driver_wallet_balance'),
+    path('get_other_wallet_transactions', views.get_other_wallet_transactions, name='get_other_wallet_transactions'),
+    path('add_other_wallet_transaction', views.add_other_wallet_transaction, name='add_other_wallet_transaction'),
+
+    # Handyman Wallet Path
+    path('get_handyman_recharge_history', views.get_handyman_recharge_history, name='get_handyman_recharge_history'),
+    path('get_handyman_wallet_balance', views.get_handyman_wallet_balance, name='get_handyman_wallet_balance'),
+    path('get_handyman_wallet_transactions', views.get_handyman_wallet_transactions, name='get_handyman_wallet_transactions'),
+    path('add_handyman_wallet_transaction', views.add_handyman_wallet_transaction, name='add_handyman_wallet_transaction'),
+    
     #
     path('get_customer_wallet_balance',views.get_customer_wallet_balance,name='get_customer_wallet_balance'),
     #
