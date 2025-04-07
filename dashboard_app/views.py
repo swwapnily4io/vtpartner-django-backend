@@ -4206,10 +4206,10 @@ def update_jcb_crane_driver_status(request):
 def update_cab_driver_status(request):
     try:
         data = json.loads(request.body)
-        print("body::",data)
-        cab_driver_id= data.get("cab_driver_id"),
-        status= data.get("status"),
-        
+        print("body::", data)
+        cab_driver_id = data.get("cab_driver_id"),
+        status = data.get("status"),
+        reason = data.get("reason"),
         
         required_fields = {
             "cab_driver_id": cab_driver_id,
@@ -4225,27 +4225,36 @@ def update_cab_driver_status(request):
             )
 
         # Prepare the update query and values
-        query = """
-            UPDATE vtpartner.cab_driverstbl
-            SET 
-                status = %s
-               
-            WHERE cab_driver_id = %s
-        """
-
         update_values = [
             status,
             cab_driver_id,
         ]
+        
+        # Add reason to the query if it is not empty
+        if reason:
+            query = """
+                UPDATE vtpartner.cab_driverstbl
+                SET 
+                    status = %s,
+                    reason = %s
+                WHERE cab_driver_id = %s
+            """
+            update_values = [status, reason, cab_driver_id]
+        else:
+            query = """
+                UPDATE vtpartner.cab_driverstbl
+                SET 
+                    status = %s
+                WHERE cab_driver_id = %s
+            """
 
         row_count = update_query(query, update_values)
 
         return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
 
     except Exception as err:
-        print("Error executing updating  query", err)
-        return JsonResponse({"message": "Error executing updating  query"}, status=500)
-
+        print("Error executing updating query", err)
+        return JsonResponse({"message": "Error executing updating query"}, status=500)
 @csrf_exempt
 def update_goods_driver_status(request):
     try:
@@ -6713,6 +6722,155 @@ def get_goods_driver_details(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt 
+def get_cab_driver_details(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        cab_driver_id = data.get("cab_driver_id")
+        
+        try:
+            if cab_driver_id is not None:
+                query = """
+                SELECT 
+                cd.cab_driver_id, 
+                cd.driver_first_name, 
+                cd.driver_last_name, 
+                cd.profile_pic, 
+                cd.is_online, 
+                cd.ratings, 
+                cd.mobile_no, 
+                cd.registration_date, 
+                cd.time, 
+                cd.r_lat, 
+                cd.r_lng, 
+                cd.current_lat, 
+                cd.current_lng, 
+                cd.status, 
+                cd.recent_online_pic, 
+                cd.is_verified, 
+                cd.category_id, 
+                cd.vehicle_id, 
+                cd.city_id, 
+                cd.aadhar_no, 
+                cd.pan_card_no, 
+                cd.house_no, 
+                cd.city_name, 
+                cd.full_address, 
+                cd.gender, 
+                cd.owner_id, 
+                cd.aadhar_card_front, 
+                cd.aadhar_card_back, 
+                cd.pan_card_front, 
+                cd.pan_card_back, 
+                cd.license_front, 
+                cd.license_back, 
+                cd.insurance_image, 
+                cd.noc_image, 
+                cd.pollution_certificate_image, 
+                cd.rc_image, 
+                cd.vehicle_image, 
+                cd.vehicle_plate_image, 
+                cd.driving_license_no, 
+                cd.vehicle_plate_no, 
+                cd.rc_no, 
+                cd.insurance_no, 
+                cd.noc_no, 
+                cd.vehicle_fuel_type, 
+                cd.authtoken, 
+                cd.otp_no, 
+                cd.bank_name,
+                cd.ifsc_code,
+                cd.account_number,
+                cd.account_name,
+                v.vehicle_name, 
+                v.weight, 
+                v.description AS vehicle_description, 
+                v.image AS vehicle_type_image, 
+                v.size_image, 
+                vt.vehicle_type_name,
+                cd.reason
+            FROM vtpartner.cab_driverstbl cd
+            LEFT JOIN vtpartner.vehiclestbl v ON cd.vehicle_id = v.vehicle_id
+            LEFT JOIN vtpartner.vehicle_types_tbl vt ON v.vehicle_type_id = vt.vehicle_type_id
+            WHERE cd.cab_driver_id = %s
+                """
+                result = select_query(query, [cab_driver_id])
+            else:
+                return JsonResponse({"message": "cab_driver_id is required"}, status=400)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            # Mapping the row to a dictionary with all the column names
+            driver_details = {
+                "cab_driver_id": result[0][0],
+                "driver_first_name": result[0][1],
+                "driver_last_name": result[0][2],
+                "profile_pic": result[0][3],
+                "is_online": result[0][4],
+                "ratings": result[0][5],
+                "mobile_no": result[0][6],
+                "registration_date": result[0][7],
+                "time": result[0][8],
+                "r_lat": result[0][9],
+                "r_lng": result[0][10],
+                "current_lat": result[0][11],
+                "current_lng": result[0][12],
+                "status": result[0][13],
+                "recent_online_pic": result[0][14],
+                "is_verified": result[0][15],
+                "category_id": result[0][16],
+                "vehicle_id": result[0][17],
+                "city_id": result[0][18],
+                "aadhar_no": result[0][19],
+                "pan_card_no": result[0][20],
+                "house_no": result[0][21],
+                "city_name": result[0][22],
+                "full_address": result[0][23],
+                "gender": result[0][24],
+                "owner_id": result[0][25],
+                "aadhar_card_front": result[0][26],
+                "aadhar_card_back": result[0][27],
+                "pan_card_front": result[0][28],
+                "pan_card_back": result[0][29],
+                "license_front": result[0][30],
+                "license_back": result[0][31],
+                "insurance_image": result[0][32],
+                "noc_image": result[0][33],
+                "pollution_certificate_image": result[0][34],
+                "rc_image": result[0][35],
+                "vehicle_image": result[0][36],
+                "vehicle_plate_image": result[0][37],
+                "driving_license_no": result[0][38],
+                "vehicle_plate_no": result[0][39],
+                "rc_no": result[0][40],
+                "insurance_no": result[0][41],
+                "noc_no": result[0][42],
+                "vehicle_fuel_type": result[0][43],
+                "authtoken": result[0][44],
+                "otp_no": result[0][45],
+                "bank_name": result[0][46],
+                "ifsc_code": result[0][47],
+                "account_number": result[0][48],
+                "account_name": result[0][49],
+                "vehicle_name": result[0][50],
+                "vehicle_weight": result[0][51],
+                "vehicle_description": result[0][52],
+                "vehicle_type_image": result[0][53],
+                "vehicle_size_image": result[0][54],
+                "vehicle_type_name": result[0][55],
+                "reason": result[0][56]
+            }
+
+            return JsonResponse({"result": driver_details}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
 
 @csrf_exempt
 def check_driver_status(request):

@@ -183,6 +183,8 @@ urlpatterns = [
     path('get_total_cab_drivers_with_count',views.get_total_cab_drivers_with_count,name='get_total_cab_drivers_with_count'),
     #Get Goods Driver Details
     path('get_goods_driver_details',views.get_goods_driver_details,name='get_goods_driver_details'),
+    #Get Cab Driver Details
+    path('get_cab_driver_details',views.get_cab_driver_details,name='get_cab_driver_details'),
     #Check Goods Driver Status
     path('check_driver_status',views.check_driver_status,name='check_driver_status'),
     #Change Goods Driver Status from Online to Offline and vice versa
