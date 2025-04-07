@@ -7937,6 +7937,240 @@ def add_wallet_transaction(request):
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt
+def get_cab_driver_recharge_history(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            driver_id = data.get("driver_id")
+            
+            if not driver_id:
+                return JsonResponse({"message": "Driver ID is required"}, status=400)
+            
+            query = """
+                SELECT 
+                    rh.recharge_history_id,
+                    rh.recharge_plan_id,
+                    rh.driver_id,
+                    rh.plan_expiry_time,
+                    rh.recharge_time,
+                    rh.recharge_date,
+                    rh.razorpay_payment_id,
+                    rp.plan_title,
+                    rp.plan_description,
+                    rp.plan_days,
+                    rp.plan_price,
+                    rp.expiry_days
+                FROM vtpartner.cab_driver_recharge_history_tbl rh
+                LEFT JOIN vtpartner.goods_driver_recharge_plans_tbl rp 
+                ON rh.recharge_plan_id = rp.recharge_plan_id
+                WHERE rh.driver_id = %s
+                ORDER BY rh.recharge_time DESC
+            """
+            
+            result = select_query(query, [driver_id])
+            
+            if not result:
+                return JsonResponse({
+                    "message": "No recharge history found",
+                    "history": []
+                }, status=200)
+            
+            history = [{
+                "recharge_history_id": row[0],
+                "recharge_plan_id": row[1],
+                "driver_id": row[2],
+                "plan_expiry_time": row[3],
+                "recharge_time": row[4],
+                "recharge_date": str(row[5]),
+                "razorpay_payment_id": row[6],
+                "plan_title": row[7],
+                "plan_description": row[8],
+                "plan_days": row[9],
+                "plan_price": row[10],
+                "expiry_days": row[11]
+            } for row in result]
+            
+            return JsonResponse({
+                "status": "success",
+                "history": history
+            }, status=200)
+            
+        except Exception as e:
+            print("Error fetching recharge history:", e)
+            return JsonResponse({
+                "message": "Internal Server Error"
+            }, status=500)
+    
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_cab_driver_wallet_balance(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            driver_id = data.get("driver_id")
+            
+            if not driver_id:
+                return JsonResponse({"message": "Driver ID is required"}, status=400)
+            
+            query = """
+                SELECT 
+                    w.wallet_id,
+                    w.driver_id,
+                    w.current_balance,
+                    w.last_updated,
+                    d.driver_first_name,
+                    d.mobile_no
+                FROM vtpartner.cab_driver_wallet w
+                JOIN vtpartner.cab_driverstbl d ON w.driver_id = d.cab_driver_id
+                WHERE w.driver_id = %s
+            """
+            
+            result = select_query(query, [driver_id])
+            
+            if not result:
+                return JsonResponse({
+                    "message": "No wallet found",
+                    "wallet": None
+                }, status=200)
+            
+            wallet = {
+                "wallet_id": result[0][0],
+                "driver_id": result[0][1],
+                "current_balance": float(result[0][2]),
+                "last_updated": result[0][3],
+                "driver_name": result[0][4],
+                "mobile_no": result[0][5]
+            }
+            
+            return JsonResponse({
+                "status": "success",
+                "wallet": wallet
+            }, status=200)
+            
+        except Exception as e:
+            print("Error fetching wallet:", e)
+            return JsonResponse({
+                "message": "Internal Server Error"
+            }, status=500)
+
+@csrf_exempt
+def get_cab_wallet_transactions(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            driver_id = data.get("driver_id")
+            
+            query = """
+                SELECT 
+                    transaction_id,
+                    transaction_type,
+                    amount,
+                    status,
+                    transaction_time,
+                    transaction_date,
+                    reference_id,
+                    payment_mode,
+                    remarks
+                FROM vtpartner.cab_driver_wallet_transactions
+                WHERE driver_id = %s
+                ORDER BY transaction_time DESC
+            """
+            
+            result = select_query(query, [driver_id])
+            
+            transactions = [{
+                "transaction_id": row[0],
+                "transaction_type": row[1],
+                "amount": float(row[2]),
+                "status": row[3],
+                "transaction_time": row[4],
+                "transaction_date": str(row[5]),
+                "reference_id": row[6],
+                "payment_mode": row[7],
+                "remarks": row[8]
+            } for row in result]
+            
+            return JsonResponse({
+                "status": "success",
+                "transactions": transactions
+            }, status=200)
+            
+        except Exception as e:
+            print("Error fetching transactions:", e)
+            return JsonResponse({
+                "message": "Internal Server Error"
+            }, status=500)
+
+@csrf_exempt
+def add_cab_wallet_transaction(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            driver_id = data.get("driver_id")
+            amount = data.get("amount")
+            transaction_type = data.get("transaction_type")
+            payment_mode = data.get("payment_mode")
+            reference_id = data.get("reference_id", "NA")
+            remarks = data.get("remarks", "NA")
+            
+            # Get or create wallet
+            wallet_query = """
+                INSERT INTO vtpartner.cab_driver_wallet (driver_id)
+                VALUES (%s)
+                ON CONFLICT (driver_id) DO NOTHING
+                RETURNING wallet_id
+            """
+            wallet_result = insert_query(wallet_query, [driver_id])
+            
+            if not wallet_result:
+                wallet_query = "SELECT wallet_id FROM vtpartner.cab_driver_wallet WHERE driver_id = %s"
+                wallet_result = select_query(wallet_query, [driver_id])
+            
+            wallet_id = wallet_result[0][0]
+            
+            # Add transaction
+            transaction_query = """
+                INSERT INTO vtpartner.cab_driver_wallet_transactions
+                (wallet_id, driver_id, transaction_type, amount, status, payment_mode, reference_id, remarks)
+                VALUES (%s, %s, %s, %s, 'COMPLETED', %s, %s, %s)
+            """
+            insert_query(transaction_query, [
+                wallet_id, driver_id, transaction_type, amount, 
+                payment_mode, reference_id, remarks
+            ])
+            
+            # Update wallet balance
+            update_wallet_query = """
+                UPDATE vtpartner.cab_driver_wallet
+                SET current_balance = CASE
+                    WHEN %s = 'DEPOSIT' THEN current_balance + %s
+                    WHEN %s = 'WITHDRAWAL' THEN current_balance - %s
+                    ELSE current_balance
+                END,
+                last_updated = extract(epoch from CURRENT_TIMESTAMP)
+                WHERE wallet_id = %s
+            """
+            update_query(update_wallet_query, [
+                transaction_type, amount,
+                transaction_type, amount,
+                wallet_id
+            ])
+        
+            return JsonResponse({
+                "status": "success",
+                "message": "Transaction completed successfully"
+            }, status=200)
+            
+        except Exception as e:
+            print("Error adding transaction:", e)
+            return JsonResponse({
+                "message": "Internal Server Error"
+            }, status=500)
+    
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
 def get_customer_wallet_balance(request):
     if request.method == "POST":
         try:
