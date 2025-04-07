@@ -48,7 +48,8 @@ def get_agent_app_firebase_access_token(request):
     print("agent_app_token_fetched")
     try:
         # Create a service account credential dictionary
-        load_dotenv('/root/.env_vtpartner')
+        # load_dotenv('/root/.env_vtpartner')
+        load_dotenv('/root/.env_vtpartner_agent')
         credentials_dict = {
             "type": "service_account",
             "project_id": os.getenv('FIREBASE_PROJECT_ID'),
@@ -59,7 +60,8 @@ def get_agent_app_firebase_access_token(request):
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
             "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-            "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{os.getenv('FIREBASE_CLIENT_EMAIL')}"
+            "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{os.getenv('FIREBASE_CLIENT_EMAIL')}",
+             "universe_domain": "googleapis.com"
         }
 
         credentials = service_account.Credentials.from_service_account_info(
