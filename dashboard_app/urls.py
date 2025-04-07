@@ -304,4 +304,13 @@ urlpatterns = [
     path('get_total_handyman_orders_and_earnings', views.get_total_handyman_orders_and_earnings, name='get_total_handyman_orders_and_earnings'),
     path('get_handyman_today_earnings', views.get_handyman_today_earnings, name='get_handyman_today_earnings'),
     path('get_handyman_current_month_earnings', views.get_handyman_current_month_earnings, name='get_handyman_current_month_earnings'),
+    
+    # Cab Booking URLs
+    path('get_cab_all_ongoing_bookings_details', views.get_cab_all_ongoing_bookings_details, name='get_cab_all_ongoing_bookings_details'),
+    path('get_cab_all_cancelled_bookings_details', views.get_cab_all_cancelled_bookings_details, name='get_cab_all_cancelled_bookings_details'),
+    path('get_cab_all_completed_orders_details', views.get_cab_all_completed_orders_details, name='get_cab_all_completed_orders_details'),
+    path('get_cab_booking_detail_with_id', views.get_cab_booking_detail_with_id, name='get_cab_booking_detail_with_id'),
+    path('get_cab_order_detail_with_id', views.get_cab_order_detail_with_id, name='get_cab_order_detail_with_id'),
+    path('get_cab_booking_detail_history_with_id', views.get_cab_booking_detail_history_with_id, name='get_cab_booking_detail_history_with_id'),
+    path('cab_driver_current_location', views.cab_driver_current_location, name='cab_driver_current_location'),
 ]

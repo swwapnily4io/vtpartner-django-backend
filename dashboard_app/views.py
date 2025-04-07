@@ -11043,3 +11043,701 @@ def get_handyman_current_month_earnings(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
     return JsonResponse({"message": "Method not allowed"}, status=405)
 #
+
+@csrf_exempt
+def get_cab_all_ongoing_bookings_details(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+            allBookings = data.get("allBookings")
+            
+            base_query = """
+                SELECT 
+                    bookings_tbl.booking_id,
+                    bookings_tbl.customer_id,
+                    bookings_tbl.driver_id,
+                    bookings_tbl.pickup_lat,
+                    bookings_tbl.pickup_lng,
+                    bookings_tbl.destination_lat,
+                    bookings_tbl.destination_lng,
+                    bookings_tbl.distance,
+                    bookings_tbl.time,
+                    bookings_tbl.total_price,
+                    bookings_tbl.base_price,
+                    bookings_tbl.booking_timing,
+                    bookings_tbl.booking_date,
+                    bookings_tbl.booking_status,
+                    bookings_tbl.driver_arrival_time,
+                    bookings_tbl.otp,
+                    bookings_tbl.gst_amount,
+                    bookings_tbl.igst_amount,
+                    bookings_tbl.payment_method,
+                    bookings_tbl.city_id,
+                    bookings_tbl.cancelled_reason,
+                    bookings_tbl.cancel_time,
+                    bookings_tbl.order_id,
+                    bookings_tbl.pickup_address,
+                    bookings_tbl.drop_address,
+                    cab_driverstbl.driver_first_name,
+                    cab_driverstbl.authtoken AS driver_authtoken,
+                    customers_tbl.customer_name,
+                    customers_tbl.authtoken AS customer_authtoken,
+                    customers_tbl.mobile_no AS customer_mobile_no,
+                    cab_driverstbl.mobile_no AS driver_mobile_no,
+                    vehiclestbl.vehicle_id,
+                    vehiclestbl.vehicle_name,
+                    vehiclestbl.image
+                FROM 
+                    vtpartner.cab_bookings_tbl bookings_tbl
+                INNER JOIN 
+                    vtpartner.cab_driverstbl 
+                    ON cab_driverstbl.cab_driver_id = bookings_tbl.driver_id
+                INNER JOIN 
+                    vtpartner.customers_tbl 
+                    ON customers_tbl.customer_id = bookings_tbl.customer_id
+                INNER JOIN 
+                    vtpartner.vehiclestbl 
+                    ON vehiclestbl.vehicle_id = cab_driverstbl.vehicle_id
+            """
+
+            if key is not None:
+                query = base_query + """
+                    WHERE bookings_tbl.booking_status!='Cancelled' 
+                    AND bookings_tbl.booking_status!='End Trip'
+                    ORDER BY bookings_tbl.booking_id DESC LIMIT 10;
+                """
+            elif allBookings is not None:
+                query = base_query + """
+                    ORDER BY bookings_tbl.booking_id DESC;
+                """
+            else:
+                query = base_query + """
+                    WHERE bookings_tbl.booking_status!='Cancelled' 
+                    AND bookings_tbl.booking_status!='End Trip'
+                    ORDER BY bookings_tbl.booking_id DESC;
+                """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                mapped_results.append({
+                    "booking_id": str(row[0]),
+                    "customer_id": str(row[1]),
+                    "driver_id": str(row[2]),
+                    "pickup_lat": str(row[3]),
+                    "pickup_lng": str(row[4]),
+                    "destination_lat": str(row[5]),
+                    "destination_lng": str(row[6]),
+                    "distance": str(row[7]),
+                    "total_time": str(row[8]),
+                    "total_price": str(row[9]),
+                    "base_price": str(row[10]),
+                    "booking_timing": str(row[11]),
+                    "booking_date": str(row[12]),
+                    "booking_status": str(row[13]),
+                    "driver_arrival_time": str(row[14]),
+                    "otp": str(row[15]),
+                    "gst_amount": str(row[16]),
+                    "igst_amount": str(row[17]),
+                    "payment_method": str(row[18]),
+                    "city_id": str(row[19]),
+                    "cancelled_reason": str(row[20]),
+                    "cancel_time": str(row[21]),
+                    "order_id": str(row[22]),
+                    "pickup_address": str(row[23]),
+                    "drop_address": str(row[24]),
+                    "driver_first_name": str(row[25]),
+                    "cab_driver_auth_token": str(row[26]),
+                    "customer_name": str(row[27]),
+                    "customers_auth_token": str(row[28]),
+                    "customer_mobile_no": str(row[29]),
+                    "driver_mobile_no": str(row[30]),
+                    "vehicle_id": str(row[31]),
+                    "vehicle_name": str(row[32]),
+                    "vehicle_image": str(row[33]),
+                })
+
+            return JsonResponse({"results": mapped_results}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_cab_all_cancelled_bookings_details(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+            
+            query = """
+                SELECT 
+                    bookings_tbl.booking_id,
+                    bookings_tbl.customer_id,
+                    bookings_tbl.driver_id,
+                    bookings_tbl.pickup_lat,
+                    bookings_tbl.pickup_lng,
+                    bookings_tbl.destination_lat,
+                    bookings_tbl.destination_lng,
+                    bookings_tbl.distance,
+                    bookings_tbl.time,
+                    bookings_tbl.total_price,
+                    bookings_tbl.base_price,
+                    bookings_tbl.booking_timing,
+                    bookings_tbl.booking_date,
+                    bookings_tbl.booking_status,
+                    bookings_tbl.driver_arrival_time,
+                    bookings_tbl.otp,
+                    bookings_tbl.gst_amount,
+                    bookings_tbl.igst_amount,
+                    bookings_tbl.payment_method,
+                    bookings_tbl.city_id,
+                    bookings_tbl.cancelled_reason,
+                    bookings_tbl.cancel_time,
+                    bookings_tbl.order_id,
+                    bookings_tbl.pickup_address,
+                    bookings_tbl.drop_address,
+                    cab_driverstbl.driver_first_name,
+                    cab_driverstbl.authtoken AS driver_authtoken,
+                    customers_tbl.customer_name,
+                    customers_tbl.authtoken AS customer_authtoken,
+                    customers_tbl.mobile_no AS customer_mobile_no,
+                    cab_driverstbl.mobile_no AS driver_mobile_no,
+                    vehiclestbl.vehicle_id,
+                    vehiclestbl.vehicle_name,
+                    vehiclestbl.image
+                FROM 
+                    vtpartner.cab_bookings_tbl bookings_tbl
+                INNER JOIN 
+                    vtpartner.cab_driverstbl 
+                    ON cab_driverstbl.cab_driver_id = bookings_tbl.driver_id
+                INNER JOIN 
+                    vtpartner.customers_tbl 
+                    ON customers_tbl.customer_id = bookings_tbl.customer_id
+                INNER JOIN 
+                    vtpartner.vehiclestbl 
+                    ON vehiclestbl.vehicle_id = cab_driverstbl.vehicle_id
+                WHERE bookings_tbl.booking_status='Cancelled'
+            """
+            
+            if key is not None:
+                query += " ORDER BY bookings_tbl.booking_id DESC LIMIT 10;"
+            else:
+                query += " ORDER BY bookings_tbl.booking_id DESC;"
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                mapped_results.append({
+                    "booking_id": str(row[0]),
+                    "customer_id": str(row[1]),
+                    "driver_id": str(row[2]),
+                    "pickup_lat": str(row[3]),
+                    "pickup_lng": str(row[4]),
+                    "destination_lat": str(row[5]),
+                    "destination_lng": str(row[6]),
+                    "distance": str(row[7]),
+                    "total_time": str(row[8]),
+                    "total_price": str(row[9]),
+                    "base_price": str(row[10]),
+                    "booking_timing": str(row[11]),
+                    "booking_date": str(row[12]),
+                    "booking_status": str(row[13]),
+                    "driver_arrival_time": str(row[14]),
+                    "otp": str(row[15]),
+                    "gst_amount": str(row[16]),
+                    "igst_amount": str(row[17]),
+                    "payment_method": str(row[18]),
+                    "city_id": str(row[19]),
+                    "cancelled_reason": str(row[20]),
+                    "cancel_time": str(row[21]),
+                    "order_id": str(row[22]),
+                    "pickup_address": str(row[23]),
+                    "drop_address": str(row[24]),
+                    "driver_first_name": str(row[25]),
+                    "cab_driver_auth_token": str(row[26]),
+                    "customer_name": str(row[27]),
+                    "customers_auth_token": str(row[28]),
+                    "customer_mobile_no": str(row[29]),
+                    "driver_mobile_no": str(row[30]),
+                    "vehicle_id": str(row[31]),
+                    "vehicle_name": str(row[32]),
+                    "vehicle_image": str(row[33]),
+                })
+
+            return JsonResponse({"results": mapped_results}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_cab_all_completed_orders_details(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            key = data.get("key")
+            
+            query = """
+                SELECT 
+                    orders_tbl.booking_id,
+                    orders_tbl.customer_id,
+                    orders_tbl.driver_id,
+                    orders_tbl.pickup_lat,
+                    orders_tbl.pickup_lng,
+                    orders_tbl.destination_lat,
+                    orders_tbl.destination_lng,
+                    orders_tbl.distance,
+                    orders_tbl.time,
+                    orders_tbl.total_price,
+                    orders_tbl.base_price,
+                    orders_tbl.booking_timing,
+                    orders_tbl.booking_date,
+                    orders_tbl.booking_status,
+                    orders_tbl.driver_arrival_time,
+                    orders_tbl.otp,
+                    orders_tbl.gst_amount,
+                    orders_tbl.igst_amount,
+                    orders_tbl.payment_method,
+                    orders_tbl.city_id,
+                    orders_tbl.order_id,
+                    orders_tbl.pickup_address,
+                    orders_tbl.drop_address,
+                    cab_driverstbl.driver_first_name,
+                    cab_driverstbl.authtoken AS driver_authtoken,
+                    customers_tbl.customer_name,
+                    customers_tbl.authtoken AS customer_authtoken,
+                    customers_tbl.mobile_no AS customer_mobile_no,
+                    cab_driverstbl.mobile_no AS driver_mobile_no,
+                    vehiclestbl.vehicle_id,
+                    vehiclestbl.vehicle_name,
+                    vehiclestbl.image
+                FROM 
+                    vtpartner.cab_orders_tbl orders_tbl
+                INNER JOIN 
+                    vtpartner.cab_driverstbl 
+                    ON cab_driverstbl.cab_driver_id = orders_tbl.driver_id
+                INNER JOIN 
+                    vtpartner.customers_tbl 
+                    ON customers_tbl.customer_id = orders_tbl.customer_id
+                INNER JOIN 
+                    vtpartner.vehiclestbl 
+                    ON vehiclestbl.vehicle_id = cab_driverstbl.vehicle_id
+            """
+            
+            if key is not None:
+                query += " ORDER BY orders_tbl.order_id DESC LIMIT 10;"
+            else:
+                query += " ORDER BY orders_tbl.order_id DESC;"
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                mapped_results.append({
+                    "booking_id": str(row[0]),
+                    "customer_id": str(row[1]),
+                    "driver_id": str(row[2]),
+                    "pickup_lat": str(row[3]),
+                    "pickup_lng": str(row[4]),
+                    "destination_lat": str(row[5]),
+                    "destination_lng": str(row[6]),
+                    "distance": str(row[7]),
+                    "total_time": str(row[8]),
+                    "total_price": str(row[9]),
+                    "base_price": str(row[10]),
+                    "booking_timing": str(row[11]),
+                    "booking_date": str(row[12]),
+                    "booking_status": str(row[13]),
+                    "driver_arrival_time": str(row[14]),
+                    "otp": str(row[15]),
+                    "gst_amount": str(row[16]),
+                    "igst_amount": str(row[17]),
+                    "payment_method": str(row[18]),
+                    "city_id": str(row[19]),
+                    "order_id": str(row[20]),
+                    "pickup_address": str(row[21]),
+                    "drop_address": str(row[22]),
+                    "driver_first_name": str(row[23]),
+                    "cab_driver_auth_token": str(row[24]),
+                    "customer_name": str(row[25]),
+                    "customers_auth_token": str(row[26]),
+                    "customer_mobile_no": str(row[27]),
+                    "driver_mobile_no": str(row[28]),
+                    "vehicle_id": str(row[29]),
+                    "vehicle_name": str(row[30]),
+                    "vehicle_image": str(row[31]),
+                })
+
+            return JsonResponse({"results": mapped_results}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_cab_booking_detail_with_id(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            booking_id = data.get("booking_id")
+            
+            # List of required fields
+            required_fields = {
+                "booking_id": booking_id,
+            }
+            
+            # Check for missing fields
+            missing_fields = check_missing_fields(required_fields)
+            
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+                
+            query = """
+                SELECT 
+                    bookings_tbl.booking_id,
+                    bookings_tbl.customer_id,
+                    bookings_tbl.driver_id,
+                    bookings_tbl.pickup_lat,
+                    bookings_tbl.pickup_lng,
+                    bookings_tbl.destination_lat,
+                    bookings_tbl.destination_lng,
+                    bookings_tbl.distance,
+                    bookings_tbl.time,
+                    bookings_tbl.total_price,
+                    bookings_tbl.base_price,
+                    bookings_tbl.booking_timing,
+                    bookings_tbl.booking_date,
+                    bookings_tbl.booking_status,
+                    bookings_tbl.driver_arrival_time,
+                    bookings_tbl.otp,
+                    bookings_tbl.gst_amount,
+                    bookings_tbl.igst_amount,
+                    bookings_tbl.payment_method,
+                    bookings_tbl.city_id,
+                    bookings_tbl.cancelled_reason,
+                    bookings_tbl.cancel_time,
+                    bookings_tbl.order_id,
+                    bookings_tbl.pickup_address,
+                    bookings_tbl.drop_address,
+                    cab_driverstbl.driver_first_name,
+                    cab_driverstbl.authtoken AS driver_authtoken,
+                    customers_tbl.customer_name,
+                    customers_tbl.authtoken AS customer_authtoken,
+                    customers_tbl.mobile_no AS customer_mobile_no,
+                    cab_driverstbl.mobile_no AS driver_mobile_no,
+                    vehiclestbl.vehicle_id,
+                    vehiclestbl.vehicle_name,
+                    vehiclestbl.image,
+                    cab_driverstbl.vehicle_plate_no,
+                    cab_driverstbl.vehicle_fuel_type,
+                    cab_driverstbl.profile_pic
+                FROM 
+                    vtpartner.cab_bookings_tbl bookings_tbl
+                INNER JOIN 
+                    vtpartner.cab_driverstbl 
+                    ON cab_driverstbl.cab_driver_id = bookings_tbl.driver_id
+                INNER JOIN 
+                    vtpartner.customers_tbl 
+                    ON customers_tbl.customer_id = bookings_tbl.customer_id
+                INNER JOIN 
+                    vtpartner.vehiclestbl 
+                    ON vehiclestbl.vehicle_id = cab_driverstbl.vehicle_id
+                WHERE bookings_tbl.booking_id = %s
+            """
+
+            result = select_query(query, [booking_id])
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                mapped_results.append({
+                    "booking_id": row[0],
+                    "customer_id": row[1],
+                    "driver_id": row[2],
+                    "pickup_lat": row[3],
+                    "pickup_lng": row[4],
+                    "destination_lat": row[5],
+                    "destination_lng": row[6],
+                    "distance": row[7],
+                    "total_time": row[8],
+                    "total_price": row[9],
+                    "base_price": row[10],
+                    "booking_timing": row[11],
+                    "booking_date": row[12],
+                    "booking_status": row[13],
+                    "driver_arrival_time": row[14],
+                    "otp": row[15],
+                    "gst_amount": row[16],
+                    "igst_amount": row[17],
+                    "payment_method": row[18],
+                    "city_id": row[19],
+                    "cancelled_reason": row[20],
+                    "cancel_time": row[21],
+                    "order_id": row[22],
+                    "pickup_address": row[23],
+                    "drop_address": row[24],
+                    "driver_first_name": row[25],
+                    "cab_driver_auth_token": row[26],
+                    "customer_name": row[27],
+                    "customers_auth_token": row[28],
+                    "customer_mobile_no": row[29],
+                    "driver_mobile_no": row[30],
+                    "vehicle_id": str(row[31]),
+                    "vehicle_name": str(row[32]),
+                    "vehicle_image": str(row[33]),
+                    "vehicle_plate_no": str(row[34]),
+                    "vehicle_fuel_type": str(row[35]),
+                    "profile_pic": str(row[36]),
+                })
+
+            return JsonResponse({"results": mapped_results}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_cab_order_detail_with_id(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            order_id = data.get("order_id")
+            
+            required_fields = {
+                "order_id": order_id,
+            }
+            
+            missing_fields = check_missing_fields(required_fields)
+            
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+                
+            query = """
+                SELECT 
+                    orders_tbl.booking_id,
+                    orders_tbl.customer_id,
+                    orders_tbl.driver_id,
+                    orders_tbl.pickup_lat,
+                    orders_tbl.pickup_lng,
+                    orders_tbl.destination_lat,
+                    orders_tbl.destination_lng,
+                    orders_tbl.distance,
+                    orders_tbl.time,
+                    orders_tbl.total_price,
+                    orders_tbl.base_price,
+                    orders_tbl.booking_timing,
+                    orders_tbl.booking_date,
+                    orders_tbl.booking_status,
+                    orders_tbl.driver_arrival_time,
+                    orders_tbl.otp,
+                    orders_tbl.gst_amount,
+                    orders_tbl.igst_amount,
+                    orders_tbl.payment_method,
+                    orders_tbl.city_id,
+                    orders_tbl.order_id,
+                    orders_tbl.pickup_address,
+                    orders_tbl.drop_address,
+                    cab_driverstbl.driver_first_name,
+                    cab_driverstbl.authtoken AS driver_authtoken,
+                    customers_tbl.customer_name,
+                    customers_tbl.authtoken AS customer_authtoken,
+                    customers_tbl.mobile_no AS customer_mobile_no,
+                    cab_driverstbl.mobile_no AS driver_mobile_no,
+                    vehiclestbl.vehicle_id,
+                    vehiclestbl.vehicle_name,
+                    vehiclestbl.image,
+                    cab_driverstbl.vehicle_plate_no,
+                    cab_driverstbl.vehicle_fuel_type,
+                    cab_driverstbl.profile_pic
+                FROM 
+                    vtpartner.cab_orders_tbl orders_tbl
+                INNER JOIN 
+                    vtpartner.cab_driverstbl 
+                    ON cab_driverstbl.cab_driver_id = orders_tbl.driver_id
+                INNER JOIN 
+                    vtpartner.customers_tbl 
+                    ON customers_tbl.customer_id = orders_tbl.customer_id
+                INNER JOIN 
+                    vtpartner.vehiclestbl 
+                    ON vehiclestbl.vehicle_id = cab_driverstbl.vehicle_id
+                WHERE orders_tbl.order_id = %s
+            """
+
+            result = select_query(query, [order_id])
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                mapped_results.append({
+                    "booking_id": row[0],
+                    "customer_id": row[1],
+                    "driver_id": row[2],
+                    "pickup_lat": row[3],
+                    "pickup_lng": row[4],
+                    "destination_lat": row[5],
+                    "destination_lng": row[6],
+                    "distance": row[7],
+                    "total_time": row[8],
+                    "total_price": row[9],
+                    "base_price": row[10],
+                    "booking_timing": row[11],
+                    "booking_date": row[12],
+                    "booking_status": row[13],
+                    "driver_arrival_time": row[14],
+                    "otp": row[15],
+                    "gst_amount": row[16],
+                    "igst_amount": row[17],
+                    "payment_method": row[18],
+                    "city_id": row[19],
+                    "order_id": row[20],
+                    "pickup_address": row[21],
+                    "drop_address": row[22],
+                    "driver_first_name": row[23],
+                    "cab_driver_auth_token": row[24],
+                    "customer_name": row[25],
+                    "customers_auth_token": row[26],
+                    "customer_mobile_no": row[27],
+                    "driver_mobile_no": row[28],
+                    "vehicle_id": str(row[29]),
+                    "vehicle_name": str(row[30]),
+                    "vehicle_image": str(row[31]),
+                    "vehicle_plate_no": str(row[32]),
+                    "vehicle_fuel_type": str(row[33]),
+                    "profile_pic": str(row[34]),
+                })
+
+            return JsonResponse({"results": mapped_results}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_cab_booking_detail_history_with_id(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            booking_id = data.get("booking_id")
+            
+            required_fields = {
+                "booking_id": booking_id,
+            }
+            
+            missing_fields = check_missing_fields(required_fields)
+            
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+                
+            query = """
+                SELECT 
+                    booking_history_id,
+                    status,
+                    time,
+                    date 
+                FROM vtpartner.cab_bookings_history_tbl 
+                WHERE booking_id = %s 
+                ORDER BY booking_history_id ASC
+            """
+
+            result = select_query(query, [booking_id])
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                mapped_results.append({
+                    "booking_history_id": row[0],
+                    "status": row[1],
+                    "time": row[2],
+                    "date": row[3],
+                })
+
+            return JsonResponse({"results": mapped_results}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def cab_driver_current_location(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            driver_id = data.get("driver_id")
+            
+            required_fields = {
+                "driver_id": driver_id,
+            }
+            
+            missing_fields = check_missing_fields(required_fields)
+            
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+                
+            query = """
+                SELECT 
+                    current_lat,
+                    current_lng 
+                FROM vtpartner.active_cab_drivertbl 
+                WHERE cab_driver_id = %s
+            """
+
+            result = select_query(query, [driver_id])
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            services_details = [{
+                "current_lat": row[0],
+                "current_lng": row[1],
+            } for row in result]
+
+            return JsonResponse({"results": services_details}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
