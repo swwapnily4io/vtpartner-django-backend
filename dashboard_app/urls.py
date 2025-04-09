@@ -181,6 +181,15 @@ urlpatterns = [
     path('get_total_goods_drivers_with_count',views.get_total_goods_drivers_with_count,name='get_total_goods_drivers_with_count'),
     #Cab Driver All verified not verified
     path('get_total_cab_drivers_with_count',views.get_total_cab_drivers_with_count,name='get_total_cab_drivers_with_count'),
+    # JCB/Crane Driver All verified not verified
+    path('get_total_jcb_crane_drivers_with_count', views.get_total_jcb_crane_drivers_with_count, name='get_total_jcb_crane_drivers_with_count'),
+
+    # Other Driver All verified not verified
+    path('get_total_other_drivers_with_count', views.get_total_other_drivers_with_count, name='get_total_other_drivers_with_count'),
+
+    # Handyman All verified not verified
+    path('get_total_handymen_with_count', views.get_total_handymen_with_count, name='get_total_handymen_with_count'),
+    
     #Get Goods Driver Details
     path('get_goods_driver_details',views.get_goods_driver_details,name='get_goods_driver_details'),
     #Get Cab Driver Details
@@ -209,6 +218,13 @@ urlpatterns = [
     path('get_offline_drivers',views.get_offline_drivers,name='get_offline_drivers'),
     #
     path('get_offline_cab_drivers',views.get_offline_cab_drivers,name='get_offline_cab_drivers'),
+    #    
+    path('get_offline_jcb_crane_drivers', views.get_offline_jcb_crane_drivers, name='get_offline_jcb_crane_drivers'),
+    #
+    path('get_offline_other_drivers', views.get_offline_other_drivers, name='get_offline_other_drivers'),
+    #
+    path('get_offline_handymen', views.get_offline_handymen, name='get_offline_handymen'),
+    
     #
     path('get_driver_recharge_history',views.get_driver_recharge_history,name='get_driver_recharge_history'),
     #
