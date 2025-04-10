@@ -1145,7 +1145,7 @@ def vehicle_prices(request):
             query = """
                 SELECT price_id, vehicle_city_wise_price_tbl.city_id, vehicle_city_wise_price_tbl.vehicle_id,
                        starting_price_per_km, minimum_time, vehicle_city_wise_price_tbl.price_type_id,
-                       city_name, price_type, bg_image, time_created_at
+                       city_name, price_type, bg_image, time_created_at,outstation_distance
                 FROM vtpartner.available_citys_tbl
                 JOIN vtpartner.vehicle_city_wise_price_tbl ON vehicle_city_wise_price_tbl.city_id = available_citys_tbl.city_id
                 JOIN vtpartner.vehiclestbl ON vehicle_city_wise_price_tbl.vehicle_id = vehiclestbl.vehicle_id
@@ -1171,6 +1171,7 @@ def vehicle_prices(request):
                     "price_type": row[7],
                     "bg_image": row[8],
                     "time_created_at": row[9],
+                    "outstation_distance": row[10],
                 }
                 for row in result
             ]
@@ -1223,6 +1224,7 @@ def add_vehicle_price(request):
             starting_price_km = data.get('starting_price_km')
             minimum_time = data.get('minimum_time')
             price_type_id = data.get('price_type_id')
+            outstation_distance = data.get('outstation_distance')  # New field
 
             # List of required fields
             required_fields = {
@@ -1232,6 +1234,17 @@ def add_vehicle_price(request):
                 'minimum_time': minimum_time,
                 'price_type_id': price_type_id,
             }
+            
+            # Check if price type is Local, then outstation_distance is required
+            is_local_price_type = False
+            try:
+                query_check_price_type = "SELECT price_type FROM vtpartner.vehicle_price_type_tbl WHERE price_type_id = %s"
+                result_price_type = select_query(query_check_price_type, [price_type_id])
+                if result_price_type and result_price_type[0][0] == "Local":
+                    is_local_price_type = True
+                    required_fields['outstation_distance'] = outstation_distance
+            except Exception as e:
+                print("Error checking price type:", e)
 
             # Check for missing fields
             missing_fields = check_missing_fields(required_fields)  # Assuming this function is defined
@@ -1261,13 +1274,22 @@ def add_vehicle_price(request):
                 print("City Name already exists")
                 return JsonResponse({"message": "City Name already exists"}, status=409)
 
-            # Proceed to insert the new price
-            query = """
-                INSERT INTO vtpartner.vehicle_city_wise_price_tbl 
-                (city_id, vehicle_id, starting_price_per_km, minimum_time, price_type_id) 
-                VALUES (%s, %s, %s, %s, %s)
-            """
-            values = (city_id, vehicle_id, starting_price_km, minimum_time, price_type_id)
+            # Proceed to insert the new price - with outstation_distance if applicable
+            if is_local_price_type:
+                query = """
+                    INSERT INTO vtpartner.vehicle_city_wise_price_tbl 
+                    (city_id, vehicle_id, starting_price_per_km, minimum_time, price_type_id, outstation_distance) 
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """
+                values = (city_id, vehicle_id, starting_price_km, minimum_time, price_type_id, outstation_distance)
+            else:
+                query = """
+                    INSERT INTO vtpartner.vehicle_city_wise_price_tbl 
+                    (city_id, vehicle_id, starting_price_per_km, minimum_time, price_type_id) 
+                    VALUES (%s, %s, %s, %s, %s)
+                """
+                values = (city_id, vehicle_id, starting_price_km, minimum_time, price_type_id)
+                
             row_count = insert_query(query, values)  # Assuming insert_query is defined
 
             # Send success response for insertion
@@ -1278,6 +1300,77 @@ def add_vehicle_price(request):
             return JsonResponse({"message": "Error executing add new price to vehicle query"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
+# @csrf_exempt  # Disable CSRF protection for this view
+# def edit_vehicle_price(request):
+#     if request.method == "POST":
+#         try:
+#             data = json.loads(request.body)
+#             price_id = data.get('price_id')
+#             city_id = data.get('city_id')
+#             vehicle_id = data.get('vehicle_id')
+#             starting_price_km = data.get('starting_price_km')
+#             minimum_time = data.get('minimum_time')
+#             price_type_id = data.get('price_type_id')
+
+#             # List of required fields
+#             required_fields = {
+#                 'city_id': city_id,
+#                 'vehicle_id': vehicle_id,
+#                 'starting_price_km': starting_price_km,
+#                 'minimum_time': minimum_time,
+#                 'price_type_id': price_type_id,
+#             }
+
+#             # Check for missing fields
+#             missing_fields = check_missing_fields(required_fields)  # Assuming this function is defined
+
+#             # If there are missing fields, return an error response
+#             if missing_fields:
+#                 return JsonResponse({
+#                     "message": f"Missing required fields: {', '.join(missing_fields)}"
+#                 }, status=400)
+
+#             # Validating to avoid duplication
+#             query_duplicate_check = """
+#                 SELECT COUNT(*) 
+#                 FROM vtpartner.available_citys_tbl,
+#                      vtpartner.vehicle_city_wise_price_tbl 
+#                 WHERE available_citys_tbl.city_id = vehicle_city_wise_price_tbl.city_id 
+#                 AND available_citys_tbl.city_id = %s 
+#                 AND vehicle_id = %s 
+#                 AND price_id != %s 
+#                 AND price_type_id = %s
+#             """
+#             values_duplicate_check = (city_id, vehicle_id, price_id, price_type_id)
+#             result = select_query(query_duplicate_check, values_duplicate_check)  # Assuming select_query is defined
+
+#             # Check if the result is greater than 0 to determine if the entry already exists
+#             if result and result[0][0] > 0:
+#                 return JsonResponse({"message": "City Name already exists"}, status=409)
+
+#             # Proceed to update the price
+#             query = """
+#                 UPDATE vtpartner.vehicle_city_wise_price_tbl 
+#                 SET city_id = %s, 
+#                     vehicle_id = %s, 
+#                     starting_price_per_km = %s, 
+#                     minimum_time = %s, 
+#                     price_type_id = %s,
+#                     time_created_at = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) 
+#                 WHERE price_id = %s
+#             """
+#             values = (city_id, vehicle_id, starting_price_km, minimum_time, price_type_id, price_id)
+#             row_count = update_query(query, values)  # Assuming update_query is defined
+
+#             # Send success response
+#             return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
+
+#         except Exception as err:
+#             print("Error executing updating price to vehicle query:", err)
+#             return JsonResponse({"message": "Error executing updating price to vehicle query"}, status=500)
+
+#     return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt  # Disable CSRF protection for this view
 def edit_vehicle_price(request):
@@ -1290,7 +1383,8 @@ def edit_vehicle_price(request):
             starting_price_km = data.get('starting_price_km')
             minimum_time = data.get('minimum_time')
             price_type_id = data.get('price_type_id')
-
+            outstation_distance = data.get('outstation_distance')  # New field
+            
             # List of required fields
             required_fields = {
                 'city_id': city_id,
@@ -1299,6 +1393,17 @@ def edit_vehicle_price(request):
                 'minimum_time': minimum_time,
                 'price_type_id': price_type_id,
             }
+            
+            # Check if price type is Local, then outstation_distance is required
+            is_local_price_type = False
+            try:
+                query_check_price_type = "SELECT price_type FROM vtpartner.vehicle_price_type_tbl WHERE price_type_id = %s"
+                result_price_type = select_query(query_check_price_type, [price_type_id])
+                if result_price_type and result_price_type[0][0] == "Local":
+                    is_local_price_type = True
+                    required_fields['outstation_distance'] = outstation_distance
+            except Exception as e:
+                print("Error checking price type:", e)
 
             # Check for missing fields
             missing_fields = check_missing_fields(required_fields)  # Assuming this function is defined
@@ -1327,18 +1432,34 @@ def edit_vehicle_price(request):
             if result and result[0][0] > 0:
                 return JsonResponse({"message": "City Name already exists"}, status=409)
 
-            # Proceed to update the price
-            query = """
-                UPDATE vtpartner.vehicle_city_wise_price_tbl 
-                SET city_id = %s, 
-                    vehicle_id = %s, 
-                    starting_price_per_km = %s, 
-                    minimum_time = %s, 
-                    price_type_id = %s,
-                    time_created_at = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) 
-                WHERE price_id = %s
-            """
-            values = (city_id, vehicle_id, starting_price_km, minimum_time, price_type_id, price_id)
+            # Proceed to update the price based on whether it's a Local price type or not
+            if is_local_price_type:
+                query = """
+                    UPDATE vtpartner.vehicle_city_wise_price_tbl 
+                    SET city_id = %s, 
+                        vehicle_id = %s, 
+                        starting_price_per_km = %s, 
+                        minimum_time = %s, 
+                        price_type_id = %s,
+                        outstation_distance = %s,
+                        time_created_at = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) 
+                    WHERE price_id = %s
+                """
+                values = (city_id, vehicle_id, starting_price_km, minimum_time, price_type_id, outstation_distance, price_id)
+            else:
+                query = """
+                    UPDATE vtpartner.vehicle_city_wise_price_tbl 
+                    SET city_id = %s, 
+                        vehicle_id = %s, 
+                        starting_price_per_km = %s, 
+                        minimum_time = %s, 
+                        price_type_id = %s,
+                        outstation_distance = 0,
+                        time_created_at = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) 
+                    WHERE price_id = %s
+                """
+                values = (city_id, vehicle_id, starting_price_km, minimum_time, price_type_id, price_id)
+                
             row_count = update_query(query, values)  # Assuming update_query is defined
 
             # Send success response
@@ -1349,7 +1470,6 @@ def edit_vehicle_price(request):
             return JsonResponse({"message": "Error executing updating price to vehicle query"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
-
 
 @csrf_exempt
 def add_peak_hour_price(request):
