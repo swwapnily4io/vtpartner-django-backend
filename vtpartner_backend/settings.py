@@ -69,7 +69,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.vtpartner.in",
     "https://www.kaps9.in",
     "http://www.kaps9.in",
-    "http://100.24.44.74/",
+    "https://100.24.44.74/",
     'http://localhost:3004'
 ]
 
