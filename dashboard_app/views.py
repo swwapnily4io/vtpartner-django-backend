@@ -11149,10 +11149,10 @@ def get_total_other_drivers_verified_with_count(request):
                 # Add sub category details if available
                 if row[17] != -1:  # if sub_cat_id is not -1
                     driver_data["sub_category_details"] = {
-                        "sub_cat_name": row[35] if row[35] else "NA",
-                        "sub_cat_image": row[36] if row[36] else "NA",
-                        "sub_cat_price_per_hour": float(row[37]) if row[37] else 0.0,
-                        "sub_cat_service_base_price": float(row[38]) if row[38] else 0.0,
+                        "sub_cat_name": row[40] if row[40] else "NA",
+                        "sub_cat_image": row[41] if row[41] else "NA",
+                        "sub_cat_price_per_hour": float(row[42]) if row[42] else 0.0,
+                        "sub_cat_service_base_price": float(row[43]) if row[43] else 0.0,
                     }
                 else:
                     driver_data["sub_category_details"] = None
@@ -11160,10 +11160,10 @@ def get_total_other_drivers_verified_with_count(request):
                 # Add service details if available
                 if row[18] != -1:  # if service_id is not -1
                     driver_data["service_details"] = {
-                        "service_name": row[39] if row[39] else "NA",
-                        "service_image": row[40] if row[40] else "NA",
-                        "service_price_per_hour": float(row[41]) if row[41] else 0.0,
-                        "service_base_price": float(row[42]) if row[42] else 0.0,
+                        "service_name": row[44] if row[44] else "NA",
+                        "service_image": row[45] if row[45] else "NA",
+                        "service_price_per_hour": float(row[46]) if row[46] else 0.0,
+                        "service_base_price": float(row[47]) if row[47] else 0.0,
                     }
                 else:
                     driver_data["service_details"] = None
