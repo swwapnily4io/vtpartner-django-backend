@@ -21,6 +21,8 @@ urlpatterns = [
     #Admin Login
     path('add_new_pincode',views.add_new_pincode,name='add_new_pincode'),
     #Admin Login
+    path('add_multiple_pincodes',views.add_multiple_pincodes,name='add_multiple_pincodes'),
+    #Admin Login
     path('edit_pincode',views.edit_pincode,name='edit_pincode'),
     #Admin Login
     path('service_types',views.service_types,name='service_types'),

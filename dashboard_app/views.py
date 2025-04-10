@@ -644,6 +644,90 @@ def add_new_pincode(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+@csrf_exempt
+def add_multiple_pincodes(request):
+    if request.method == "POST":
+        try:
+            # Extracting data from the request body
+            data = json.loads(request.body)
+            city_id = data.get('city_id')
+            pincodes = data.get('pincodes', [])
+            pincode_status = data.get('pincode_status', 1)  # Default to active status (1)
+
+            # Validate required fields
+            if not city_id:
+                return JsonResponse({"message": "Missing required field: city_id"}, status=400)
+            
+            if not pincodes or not isinstance(pincodes, list):
+                return JsonResponse({"message": "Missing or invalid pincodes list"}, status=400)
+
+            # Initialize counters for tracking the operation
+            added_count = 0
+            existing_count = 0
+            failed_count = 0
+
+            # Process each pincode
+            for pincode in pincodes:
+                try:
+                    # Skip invalid pincodes (should be 6 digits)
+                    if not pincode or not re.match(r'^\d{6}$', str(pincode)):
+                        failed_count += 1
+                        continue
+
+                    # Check if pincode already exists
+                    query_duplicate_check = """
+                        SELECT COUNT(*) FROM vtpartner.allowed_pincodes_tbl 
+                        WHERE pincode = %s AND city_id = %s
+                    """
+                    values_duplicate_check = [pincode, city_id]
+                    result = select_query(query_duplicate_check, values_duplicate_check)
+
+                    # If pincode already exists, skip it and increment counter
+                    if result and result[0][0] > 0:
+                        existing_count += 1
+                        continue
+
+                    # Insert the new pincode
+                    query = """
+                        INSERT INTO vtpartner.allowed_pincodes_tbl (pincode, city_id, status) 
+                        VALUES (%s, %s, %s)
+                    """
+                    params = [pincode, city_id, pincode_status]
+                    insert_result = insert_query(query, params)
+                    
+                    # If insert was successful, increment added counter
+                    if insert_result:
+                        added_count += 1
+                    else:
+                        failed_count += 1
+
+                except Exception as e:
+                    print(f"Error adding pincode {pincode}:", e)
+                    failed_count += 1
+
+            # Log the results for debugging
+            print(f"Pincodes processed: Added={added_count}, Existing={existing_count}, Failed={failed_count}")
+
+            # Return success response with detailed counts
+            return JsonResponse({
+                "message": "Pincodes processing completed",
+                "added_count": added_count,
+                "existing_count": existing_count,
+                "failed_count": failed_count,
+                "total_processed": len(pincodes)
+            }, status=200)
+
+        except Exception as err:
+            import traceback
+            print("Error executing add multiple pincodes query:", err)
+            traceback.print_exc()
+            return JsonResponse({
+                "message": "Error processing pincodes",
+                "error": str(err)
+            }, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
 @csrf_exempt  # Disable CSRF protection for this view
 def edit_pincode(request):
     if request.method == "POST":
