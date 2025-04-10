@@ -345,4 +345,36 @@ urlpatterns = [
     path('get_cab_order_detail_with_id', views.get_cab_order_detail_with_id, name='get_cab_order_detail_with_id'),
     path('get_cab_booking_detail_history_with_id', views.get_cab_booking_detail_history_with_id, name='get_cab_booking_detail_history_with_id'),
     path('cab_driver_current_location', views.cab_driver_current_location, name='cab_driver_current_location'),
+    
+    # Other Drivers Bookings and Order Details Paths
+    path('get_other_driver_all_ongoing_bookings_details', views.get_other_driver_all_ongoing_bookings_details, name='get_other_driver_all_ongoing_bookings_details'),
+    path('get_other_driver_all_cancelled_bookings_details', views.get_other_driver_all_cancelled_bookings_details, name='get_other_driver_all_cancelled_bookings_details'),
+    path('get_other_driver_all_completed_orders_details', views.get_other_driver_all_completed_orders_details, name='get_other_driver_all_completed_orders_details'),
+    path('get_other_driver_booking_detail_with_id', views.get_other_driver_booking_detail_with_id, name='get_other_driver_booking_detail_with_id'),
+    path('get_other_driver_order_detail_with_id', views.get_other_driver_order_detail_with_id, name='get_other_driver_order_detail_with_id'),
+    path('get_other_driver_booking_detail_history_with_id', views.get_other_driver_booking_detail_history_with_id, name='get_other_driver_booking_detail_history_with_id'),
+    path('other_driver_current_location', views.other_driver_current_location, name='other_driver_current_location'),
+    
+    # Jcb Crane Drivers Bookings and Order Details Paths
+     path('get_jcb_crane_driver_all_ongoing_bookings_details', views.get_jcb_crane_driver_all_ongoing_bookings_details, name='get_jcb_crane_driver_all_ongoing_bookings_details'),
+    path('get_jcb_crane_driver_all_cancelled_bookings_details', views.get_jcb_crane_driver_all_cancelled_bookings_details, name='get_jcb_crane_driver_all_cancelled_bookings_details'),
+    path('get_jcb_crane_driver_all_completed_orders_details', views.get_jcb_crane_driver_all_completed_orders_details, name='get_jcb_crane_driver_all_completed_orders_details'),
+    path('get_jcb_crane_driver_booking_detail_with_id', views.get_jcb_crane_driver_booking_detail_with_id, name='get_jcb_crane_driver_booking_detail_with_id'),
+    path('get_jcb_crane_driver_order_detail_with_id', views.get_jcb_crane_driver_order_detail_with_id, name='get_jcb_crane_driver_order_detail_with_id'),
+    path('get_jcb_crane_driver_booking_detail_history_with_id', views.get_jcb_crane_driver_booking_detail_history_with_id, name='get_jcb_crane_driver_booking_detail_history_with_id'),
+    path('jcb_crane_driver_current_location', views.jcb_crane_driver_current_location, name='jcb_crane_driver_current_location'),
+    
+    # Handyman Bookings and Order Details Paths
+    path('get_handyman_all_ongoing_bookings_details', views.get_handyman_all_ongoing_bookings_details, name='get_handyman_all_ongoing_bookings_details'),
+    path('get_handyman_all_cancelled_bookings_details', views.get_handyman_all_cancelled_bookings_details, name='get_handyman_all_cancelled_bookings_details'),
+    path('get_handyman_all_completed_orders_details', views.get_handyman_all_completed_orders_details, name='get_handyman_all_completed_orders_details'),
+    path('get_handyman_booking_detail_with_id', views.get_handyman_booking_detail_with_id, name='get_handyman_booking_detail_with_id'),
+    path('get_handyman_order_detail_with_id', views.get_handyman_order_detail_with_id, name='get_handyman_order_detail_with_id'),
+    path('get_handyman_booking_detail_history_with_id', views.get_handyman_booking_detail_history_with_id, name='get_handyman_booking_detail_history_with_id'),
+    path('handyman_current_location', views.handyman_current_location, name='handyman_current_location'),
+    
+    
+    
+    
+    
 ]
