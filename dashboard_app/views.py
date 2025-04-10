@@ -10649,79 +10649,124 @@ def get_total_jcb_crane_drivers_verified_with_count(request):
 
             mapped_results = []
             for row in result:
-                driver_data = {
-                    "jcb_crane_driver_id": row[0],
-                    "driver_name": row[1],
-                    "profile_pic": row[2],
-                    "is_online": row[3],
-                    "ratings": row[4],
-                    "mobile_no": row[5],
-                    "registration_date": row[6],
-                    "r_lat": row[7],
-                    "r_lng": row[8],
-                    "current_lat": row[9],
-                    "current_lng": row[10],
-                    "status": row[11],
-                    "recent_online_pic": row[12],
-                    "is_verified": row[13],
-                    "category_id": row[14],
-                    "sub_cat_id": row[15],
-                    "service_id": row[16],
-                    "vehicle_id": row[17],
-                    "city_id": row[18],
-                    "time": row[19],
-                    "pan_card_no": row[20],
-                    "aadhar_no": row[21],
-                    "house_no": row[22],
-                    "city_name": row[23],
-                    "full_address": row[24],
-                    "gender": row[25],
-                    "aadhar_card_front": row[26],
-                    "aadhar_card_back": row[27],
-                    "pan_card_front": row[28],
-                    "pan_card_back": row[29],
-                    "license_front": row[30],
-                    "license_back": row[31],
-                    "insurance_image": row[32],
-                    "noc_image": row[33],
-                    "pollution_certificate_image": row[34],
-                    "rc_image": row[35],
-                    "vehicle_image": row[36],
-                    "owner_id": row[37],
-                    "vehicle_plate_image": row[38],
-                    "driving_license_no": row[39],
-                    "vehicle_plate_no": row[40],
-                    "rc_no": row[41],
-                    "insurance_no": row[42],
-                    "noc_no": row[43],
-                    "vehicle_fuel_type": row[44],
-                    "authtoken": row[45],
-                    "otp_no": row[46],
-                }
-
-                # Add sub category details if available
-                if row[15] != -1:  # if sub_cat_id is not -1
-                    driver_data["sub_category_details"] = {
-                        "sub_cat_name": row[47] if row[47] else "NA",
-                        "sub_cat_image": row[48] if row[48] else "NA",
-                        "sub_cat_price_per_hour": float(row[49]) if row[49] else 0.0,
-                        "sub_cat_service_base_price": float(row[50]) if row[50] else 0.0,
+                try:
+                    driver_data = {
+                        "jcb_crane_driver_id": row[0],
+                        "driver_name": row[1],
+                        "profile_pic": row[2],
+                        "is_online": row[3],
+                        "ratings": row[4],
+                        "mobile_no": row[5],
+                        "registration_date": row[6],
+                        "r_lat": row[7],
+                        "r_lng": row[8],
+                        "current_lat": row[9],
+                        "current_lng": row[10],
+                        "status": row[11],
+                        "recent_online_pic": row[12],
+                        "is_verified": row[13],
+                        "category_id": row[14],
+                        "sub_cat_id": row[15],
+                        "service_id": row[16],
+                        "vehicle_id": row[17],
+                        "city_id": row[18],
+                        "time": row[19],
+                        "pan_card_no": row[20],
+                        "aadhar_no": row[21],
+                        "house_no": row[22],
+                        "city_name": row[23],
+                        "full_address": row[24],
+                        "gender": row[25],
+                        "aadhar_card_front": row[26],
+                        "aadhar_card_back": row[27],
+                        "pan_card_front": row[28],
+                        "pan_card_back": row[29],
+                        "license_front": row[30],
+                        "license_back": row[31],
+                        "insurance_image": row[32],
+                        "noc_image": row[33],
+                        "pollution_certificate_image": row[34],
+                        "rc_image": row[35],
+                        "vehicle_image": row[36],
+                        "owner_id": row[37],
+                        "vehicle_plate_image": row[38],
+                        "driving_license_no": row[39],
+                        "vehicle_plate_no": row[40],
+                        "rc_no": row[41],
+                        "insurance_no": row[42],
+                        "noc_no": row[43],
+                        "vehicle_fuel_type": row[44],
+                        "authtoken": row[45],
+                        "otp_no": row[46],
+                        "reason": row[47],              # Added missing field
+                        "bank_name": row[48],           # Added missing field
+                        "ifsc_code": row[49],           # Added missing field
+                        "account_number": row[50],      # Added missing field
+                        "account_name": row[51],        # Added missing field
                     }
-                else:
-                    driver_data["sub_category_details"] = None
 
-                # Add service details if available
-                if row[16] != -1:  # if service_id is not -1
-                    driver_data["service_details"] = {
-                        "service_name": row[51] if row[51] else "NA",
-                        "service_image": row[52] if row[52] else "NA",
-                        "service_price_per_hour": float(row[53]) if row[53] else 0.0,
-                        "service_base_price": float(row[54]) if row[54] else 0.0,
-                    }
-                else:
-                    driver_data["service_details"] = None
+                    # Add sub category details if available
+                    if row[15] != -1:  # if sub_cat_id is not -1
+                        try:
+                            sub_cat_price_per_hour = 0.0
+                            if row[52 + 2] and row[52 + 2] != 'NA':
+                                try:
+                                    sub_cat_price_per_hour = float(row[52 + 2])
+                                except (ValueError, TypeError):
+                                    pass  # Keep default 0.0
+                                    
+                            sub_cat_service_base_price = 0.0
+                            if row[52 + 3] and row[52 + 3] != 'NA':
+                                try:
+                                    sub_cat_service_base_price = float(row[52 + 3])
+                                except (ValueError, TypeError):
+                                    pass  # Keep default 0.0
+                            
+                            driver_data["sub_category_details"] = {
+                                "sub_cat_name": row[52] if row[52] and row[52] != 'NA' else "NA",
+                                "sub_cat_image": row[52 + 1] if row[52 + 1] and row[52 + 1] != 'NA' else "NA",
+                                "sub_cat_price_per_hour": sub_cat_price_per_hour,
+                                "sub_cat_service_base_price": sub_cat_service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing sub_category_details for driver {row[0]}: {e}")
+                            driver_data["sub_category_details"] = None
+                    else:
+                        driver_data["sub_category_details"] = None
 
-                mapped_results.append(driver_data)
+                    # Add service details if available
+                    if row[16] != -1:  # if service_id is not -1
+                        try:
+                            service_price_per_hour = 0.0
+                            if row[52 + 6] and row[52 + 6] != 'NA':
+                                try:
+                                    service_price_per_hour = float(row[52 + 6])
+                                except (ValueError, TypeError):
+                                    pass  # Keep default 0.0
+                                    
+                            service_base_price = 0.0
+                            if row[52 + 7] and row[52 + 7] != 'NA':
+                                try:
+                                    service_base_price = float(row[52 + 7])
+                                except (ValueError, TypeError):
+                                    pass  # Keep default 0.0
+                            
+                            driver_data["service_details"] = {
+                                "service_name": row[52 + 4] if row[52 + 4] and row[52 + 4] != 'NA' else "NA",
+                                "service_image": row[52 + 5] if row[52 + 5] and row[52 + 5] != 'NA' else "NA",
+                                "service_price_per_hour": service_price_per_hour,
+                                "service_base_price": service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing service_details for driver {row[0]}: {e}")
+                            driver_data["service_details"] = None
+                    else:
+                        driver_data["service_details"] = None
+
+                    mapped_results.append(driver_data)
+                except Exception as e:
+                    print(f"Error processing row for driver {row[0] if len(row) > 0 else 'unknown'}: {e}")
+                    continue
 
             return JsonResponse({
                 "drivers": mapped_results, 
@@ -10729,10 +10774,13 @@ def get_total_jcb_crane_drivers_verified_with_count(request):
             }, status=200)
 
         except Exception as err:
+            import traceback
             print("Error executing query:", err)
+            traceback.print_exc()
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 @csrf_exempt
 def get_total_jcb_crane_drivers_un_verified_with_count(request):
     if request.method == "POST":
@@ -10788,80 +10836,124 @@ def get_total_jcb_crane_drivers_un_verified_with_count(request):
 
             mapped_results = []
             for row in result:
-                driver_data = {
-                    # Same driver fields as in verified function
-                    "jcb_crane_driver_id": row[0],
-                    "driver_name": row[1],
-                    "profile_pic": row[2],
-                    "is_online": row[3],
-                    "ratings": row[4],
-                    "mobile_no": row[5],
-                    "registration_date": row[6],
-                    "r_lat": row[7],
-                    "r_lng": row[8],
-                    "current_lat": row[9],
-                    "current_lng": row[10],
-                    "status": row[11],
-                    "recent_online_pic": row[12],
-                    "is_verified": row[13],
-                    "category_id": row[14],
-                    "sub_cat_id": row[15],
-                    "service_id": row[16],
-                    "vehicle_id": row[17],
-                    "city_id": row[18],
-                    "time": row[19],
-                    "pan_card_no": row[20],
-                    "aadhar_no": row[21],
-                    "house_no": row[22],
-                    "city_name": row[23],
-                    "full_address": row[24],
-                    "gender": row[25],
-                    "aadhar_card_front": row[26],
-                    "aadhar_card_back": row[27],
-                    "pan_card_front": row[28],
-                    "pan_card_back": row[29],
-                    "license_front": row[30],
-                    "license_back": row[31],
-                    "insurance_image": row[32],
-                    "noc_image": row[33],
-                    "pollution_certificate_image": row[34],
-                    "rc_image": row[35],
-                    "vehicle_image": row[36],
-                    "owner_id": row[37],
-                    "vehicle_plate_image": row[38],
-                    "driving_license_no": row[39],
-                    "vehicle_plate_no": row[40],
-                    "rc_no": row[41],
-                    "insurance_no": row[42],
-                    "noc_no": row[43],
-                    "vehicle_fuel_type": row[44],
-                    "authtoken": row[45],
-                    "otp_no": row[46],
-                }
-
-                # Add sub category details if available
-                if row[15] != -1:
-                    driver_data["sub_category_details"] = {
-                        "sub_cat_name": row[47] if row[47] else "NA",
-                        "sub_cat_image": row[48] if row[48] else "NA",
-                        "sub_cat_price_per_hour": float(row[49]) if row[49] else 0.0,
-                        "sub_cat_service_base_price": float(row[50]) if row[50] else 0.0,
+                try:
+                    driver_data = {
+                        "jcb_crane_driver_id": row[0],
+                        "driver_name": row[1],
+                        "profile_pic": row[2],
+                        "is_online": row[3],
+                        "ratings": row[4],
+                        "mobile_no": row[5],
+                        "registration_date": str(row[6]) if row[6] else "",  # Convert date to string
+                        "r_lat": row[7],
+                        "r_lng": row[8],
+                        "current_lat": row[9],
+                        "current_lng": row[10],
+                        "status": row[11],
+                        "recent_online_pic": row[12],
+                        "is_verified": row[13],
+                        "category_id": row[14],
+                        "sub_cat_id": row[15],
+                        "service_id": row[16],
+                        "vehicle_id": row[17],
+                        "city_id": row[18],
+                        "time": row[19],
+                        "pan_card_no": row[20],
+                        "aadhar_no": row[21],
+                        "house_no": row[22],
+                        "city_name": row[23],
+                        "full_address": row[24],
+                        "gender": row[25],
+                        "aadhar_card_front": row[26],
+                        "aadhar_card_back": row[27],
+                        "pan_card_front": row[28],
+                        "pan_card_back": row[29],
+                        "license_front": row[30],
+                        "license_back": row[31],
+                        "insurance_image": row[32],
+                        "noc_image": row[33],
+                        "pollution_certificate_image": row[34],
+                        "rc_image": row[35],
+                        "vehicle_image": row[36],
+                        "owner_id": row[37],
+                        "vehicle_plate_image": row[38],
+                        "driving_license_no": row[39],
+                        "vehicle_plate_no": row[40],
+                        "rc_no": row[41],
+                        "insurance_no": row[42],
+                        "noc_no": row[43],
+                        "vehicle_fuel_type": row[44],
+                        "authtoken": row[45],
+                        "otp_no": row[46],
+                        "reason": row[47],              # Added missing field
+                        "bank_name": row[48],           # Added missing field
+                        "ifsc_code": row[49],           # Added missing field
+                        "account_number": row[50],      # Added missing field
+                        "account_name": row[51],        # Added missing field
                     }
-                else:
-                    driver_data["sub_category_details"] = None
 
-                # Add service details if available
-                if row[16] != -1:
-                    driver_data["service_details"] = {
-                        "service_name": row[51] if row[51] else "NA",
-                        "service_image": row[52] if row[52] else "NA",
-                        "service_price_per_hour": float(row[53]) if row[53] else 0.0,
-                        "service_base_price": float(row[54]) if row[54] else 0.0,
-                    }
-                else:
-                    driver_data["service_details"] = None
+                    # Add sub category details if available with safe float conversion
+                    if row[15] != -1:
+                        try:
+                            sub_cat_price_per_hour = 0.0
+                            if row[52 + 2] and row[52 + 2] != 'NA':
+                                try:
+                                    sub_cat_price_per_hour = float(row[52 + 2])
+                                except (ValueError, TypeError):
+                                    pass
+                                    
+                            sub_cat_service_base_price = 0.0
+                            if row[52 + 3] and row[52 + 3] != 'NA':
+                                try:
+                                    sub_cat_service_base_price = float(row[52 + 3])
+                                except (ValueError, TypeError):
+                                    pass
+                            
+                            driver_data["sub_category_details"] = {
+                                "sub_cat_name": row[52] if row[52] and row[52] != 'NA' else "NA",
+                                "sub_cat_image": row[52 + 1] if row[52 + 1] and row[52 + 1] != 'NA' else "NA",
+                                "sub_cat_price_per_hour": sub_cat_price_per_hour,
+                                "sub_cat_service_base_price": sub_cat_service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing sub_category_details for driver {row[0]}: {e}")
+                            driver_data["sub_category_details"] = None
+                    else:
+                        driver_data["sub_category_details"] = None
 
-                mapped_results.append(driver_data)
+                    # Add service details if available with safe float conversion
+                    if row[16] != -1:
+                        try:
+                            service_price_per_hour = 0.0
+                            if row[52 + 6] and row[52 + 6] != 'NA':
+                                try:
+                                    service_price_per_hour = float(row[52 + 6])
+                                except (ValueError, TypeError):
+                                    pass
+                                    
+                            service_base_price = 0.0
+                            if row[52 + 7] and row[52 + 7] != 'NA':
+                                try:
+                                    service_base_price = float(row[52 + 7])
+                                except (ValueError, TypeError):
+                                    pass
+                            
+                            driver_data["service_details"] = {
+                                "service_name": row[52 + 4] if row[52 + 4] and row[52 + 4] != 'NA' else "NA",
+                                "service_image": row[52 + 5] if row[52 + 5] and row[52 + 5] != 'NA' else "NA",
+                                "service_price_per_hour": service_price_per_hour,
+                                "service_base_price": service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing service_details for driver {row[0]}: {e}")
+                            driver_data["service_details"] = None
+                    else:
+                        driver_data["service_details"] = None
+
+                    mapped_results.append(driver_data)
+                except Exception as e:
+                    print(f"Error processing row for driver {row[0] if len(row) > 0 else 'unknown'}: {e}")
+                    continue
 
             return JsonResponse({
                 "drivers": mapped_results,
@@ -10869,7 +10961,9 @@ def get_total_jcb_crane_drivers_un_verified_with_count(request):
             }, status=200)
 
         except Exception as err:
+            import traceback
             print("Error executing query:", err)
+            traceback.print_exc()
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
@@ -10929,37 +11023,124 @@ def get_total_jcb_crane_drivers_blocked_with_count(request):
 
             mapped_results = []
             for row in result:
-                driver_data = {
-                    # Same driver fields as above
-                    "jcb_crane_driver_id": row[0],
-                    "driver_name": row[1],
-                    # ... (same fields as above)
-                    "otp_no": row[46],
-                }
-
-                # Add sub category details if available
-                if row[15] != -1:
-                    driver_data["sub_category_details"] = {
-                        "sub_cat_name": row[47] if row[47] else "NA",
-                        "sub_cat_image": row[48] if row[48] else "NA",
-                        "sub_cat_price_per_hour": float(row[49]) if row[49] else 0.0,
-                        "sub_cat_service_base_price": float(row[50]) if row[50] else 0.0,
+                try:
+                    driver_data = {
+                        "jcb_crane_driver_id": row[0],
+                        "driver_name": row[1],
+                        "profile_pic": row[2],
+                        "is_online": row[3],
+                        "ratings": row[4],
+                        "mobile_no": row[5],
+                        "registration_date": str(row[6]) if row[6] else "",
+                        "r_lat": row[7],
+                        "r_lng": row[8],
+                        "current_lat": row[9],
+                        "current_lng": row[10],
+                        "status": row[11],
+                        "recent_online_pic": row[12],
+                        "is_verified": row[13],
+                        "category_id": row[14],
+                        "sub_cat_id": row[15],
+                        "service_id": row[16],
+                        "vehicle_id": row[17],
+                        "city_id": row[18],
+                        "time": row[19],
+                        "pan_card_no": row[20],
+                        "aadhar_no": row[21],
+                        "house_no": row[22],
+                        "city_name": row[23],
+                        "full_address": row[24],
+                        "gender": row[25],
+                        "aadhar_card_front": row[26],
+                        "aadhar_card_back": row[27],
+                        "pan_card_front": row[28],
+                        "pan_card_back": row[29],
+                        "license_front": row[30],
+                        "license_back": row[31],
+                        "insurance_image": row[32],
+                        "noc_image": row[33],
+                        "pollution_certificate_image": row[34],
+                        "rc_image": row[35],
+                        "vehicle_image": row[36],
+                        "owner_id": row[37],
+                        "vehicle_plate_image": row[38],
+                        "driving_license_no": row[39],
+                        "vehicle_plate_no": row[40],
+                        "rc_no": row[41],
+                        "insurance_no": row[42],
+                        "noc_no": row[43],
+                        "vehicle_fuel_type": row[44],
+                        "authtoken": row[45],
+                        "otp_no": row[46],
+                        "reason": row[47],              # Added missing field - important for blocked status
+                        "bank_name": row[48],           # Added missing field
+                        "ifsc_code": row[49],           # Added missing field
+                        "account_number": row[50],      # Added missing field
+                        "account_name": row[51],        # Added missing field
                     }
-                else:
-                    driver_data["sub_category_details"] = None
 
-                # Add service details if available
-                if row[16] != -1:
-                    driver_data["service_details"] = {
-                        "service_name": row[51] if row[51] else "NA",
-                        "service_image": row[52] if row[52] else "NA",
-                        "service_price_per_hour": float(row[53]) if row[53] else 0.0,
-                        "service_base_price": float(row[54]) if row[54] else 0.0,
-                    }
-                else:
-                    driver_data["service_details"] = None
+                    # Add sub category details if available with safe float conversion
+                    if row[15] != -1:
+                        try:
+                            sub_cat_price_per_hour = 0.0
+                            if row[52 + 2] and row[52 + 2] != 'NA':
+                                try:
+                                    sub_cat_price_per_hour = float(row[52 + 2])
+                                except (ValueError, TypeError):
+                                    pass
+                                    
+                            sub_cat_service_base_price = 0.0
+                            if row[52 + 3] and row[52 + 3] != 'NA':
+                                try:
+                                    sub_cat_service_base_price = float(row[52 + 3])
+                                except (ValueError, TypeError):
+                                    pass
+                            
+                            driver_data["sub_category_details"] = {
+                                "sub_cat_name": row[52] if row[52] and row[52] != 'NA' else "NA",
+                                "sub_cat_image": row[52 + 1] if row[52 + 1] and row[52 + 1] != 'NA' else "NA",
+                                "sub_cat_price_per_hour": sub_cat_price_per_hour,
+                                "sub_cat_service_base_price": sub_cat_service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing sub_category_details for driver {row[0]}: {e}")
+                            driver_data["sub_category_details"] = None
+                    else:
+                        driver_data["sub_category_details"] = None
 
-                mapped_results.append(driver_data)
+                    # Add service details if available with safe float conversion
+                    if row[16] != -1:
+                        try:
+                            service_price_per_hour = 0.0
+                            if row[52 + 6] and row[52 + 6] != 'NA':
+                                try:
+                                    service_price_per_hour = float(row[52 + 6])
+                                except (ValueError, TypeError):
+                                    pass
+                                    
+                            service_base_price = 0.0
+                            if row[52 + 7] and row[52 + 7] != 'NA':
+                                try:
+                                    service_base_price = float(row[52 + 7])
+                                except (ValueError, TypeError):
+                                    pass
+                            
+                            driver_data["service_details"] = {
+                                "service_name": row[52 + 4] if row[52 + 4] and row[52 + 4] != 'NA' else "NA",
+                                "service_image": row[52 + 5] if row[52 + 5] and row[52 + 5] != 'NA' else "NA",
+                                "service_price_per_hour": service_price_per_hour,
+                                "service_base_price": service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing service_details for driver {row[0]}: {e}")
+                            driver_data["service_details"] = None
+                    else:
+                        driver_data["service_details"] = None
+
+                    mapped_results.append(driver_data)
+                except Exception as e:
+                    print(f"Error processing row for driver {row[0] if len(row) > 0 else 'unknown'}: {e}")
+                    continue
 
             return JsonResponse({
                 "drivers": mapped_results,
@@ -10967,7 +11148,9 @@ def get_total_jcb_crane_drivers_blocked_with_count(request):
             }, status=200)
 
         except Exception as err:
+            import traceback
             print("Error executing query:", err)
+            traceback.print_exc()
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
@@ -11027,37 +11210,125 @@ def get_total_jcb_crane_drivers_rejected_with_count(request):
 
             mapped_results = []
             for row in result:
-                driver_data = {
-                    # Same driver fields as above
-                    "jcb_crane_driver_id": row[0],
-                    "driver_name": row[1],
-                    # ... (same fields as above)
-                    "otp_no": row[46],
-                }
-
-                # Add sub category details if available
-                if row[15] != -1:
-                    driver_data["sub_category_details"] = {
-                        "sub_cat_name": row[47] if row[47] else "NA",
-                        "sub_cat_image": row[48] if row[48] else "NA",
-                        "sub_cat_price_per_hour": float(row[49]) if row[49] else 0.0,
-                        "sub_cat_service_base_price": float(row[50]) if row[50] else 0.0,
+                try:
+                    # Include all fields from the table
+                    driver_data = {
+                        "jcb_crane_driver_id": row[0],
+                        "driver_name": row[1],
+                        "profile_pic": row[2],
+                        "is_online": row[3],
+                        "ratings": row[4],
+                        "mobile_no": row[5],
+                        "registration_date": str(row[6]) if row[6] else "",
+                        "r_lat": row[7],
+                        "r_lng": row[8],
+                        "current_lat": row[9],
+                        "current_lng": row[10],
+                        "status": row[11],
+                        "recent_online_pic": row[12],
+                        "is_verified": row[13],
+                        "category_id": row[14],
+                        "sub_cat_id": row[15],
+                        "service_id": row[16],
+                        "vehicle_id": row[17],
+                        "city_id": row[18],
+                        "time": row[19],
+                        "pan_card_no": row[20],
+                        "aadhar_no": row[21],
+                        "house_no": row[22],
+                        "city_name": row[23],
+                        "full_address": row[24],
+                        "gender": row[25],
+                        "aadhar_card_front": row[26],
+                        "aadhar_card_back": row[27],
+                        "pan_card_front": row[28],
+                        "pan_card_back": row[29],
+                        "license_front": row[30],
+                        "license_back": row[31],
+                        "insurance_image": row[32],
+                        "noc_image": row[33],
+                        "pollution_certificate_image": row[34],
+                        "rc_image": row[35],
+                        "vehicle_image": row[36],
+                        "owner_id": row[37],
+                        "vehicle_plate_image": row[38],
+                        "driving_license_no": row[39],
+                        "vehicle_plate_no": row[40],
+                        "rc_no": row[41],
+                        "insurance_no": row[42],
+                        "noc_no": row[43],
+                        "vehicle_fuel_type": row[44],
+                        "authtoken": row[45],
+                        "otp_no": row[46],
+                        "reason": row[47],              # Added missing field - important for rejected status
+                        "bank_name": row[48],           # Added missing field
+                        "ifsc_code": row[49],           # Added missing field
+                        "account_number": row[50],      # Added missing field
+                        "account_name": row[51],        # Added missing field
                     }
-                else:
-                    driver_data["sub_category_details"] = None
 
-                # Add service details if available
-                if row[16] != -1:
-                    driver_data["service_details"] = {
-                        "service_name": row[51] if row[51] else "NA",
-                        "service_image": row[52] if row[52] else "NA",
-                        "service_price_per_hour": float(row[53]) if row[53] else 0.0,
-                        "service_base_price": float(row[54]) if row[54] else 0.0,
-                    }
-                else:
-                    driver_data["service_details"] = None
+                    # Add sub category details if available with safe float conversion
+                    if row[15] != -1:  # Check sub_cat_id
+                        try:
+                            sub_cat_price_per_hour = 0.0
+                            if row[52 + 2] and row[52 + 2] != 'NA':
+                                try:
+                                    sub_cat_price_per_hour = float(row[52 + 2])
+                                except (ValueError, TypeError):
+                                    pass
+                                    
+                            sub_cat_service_base_price = 0.0
+                            if row[52 + 3] and row[52 + 3] != 'NA':
+                                try:
+                                    sub_cat_service_base_price = float(row[52 + 3])
+                                except (ValueError, TypeError):
+                                    pass
+                            
+                            driver_data["sub_category_details"] = {
+                                "sub_cat_name": row[52] if row[52] and row[52] != 'NA' else "NA",
+                                "sub_cat_image": row[52 + 1] if row[52 + 1] and row[52 + 1] != 'NA' else "NA",
+                                "sub_cat_price_per_hour": sub_cat_price_per_hour,
+                                "sub_cat_service_base_price": sub_cat_service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing sub_category_details for driver {row[0]}: {e}")
+                            driver_data["sub_category_details"] = None
+                    else:
+                        driver_data["sub_category_details"] = None
 
-                mapped_results.append(driver_data)
+                    # Add service details if available with safe float conversion
+                    if row[16] != -1:  # Check service_id
+                        try:
+                            service_price_per_hour = 0.0
+                            if row[52 + 6] and row[52 + 6] != 'NA':
+                                try:
+                                    service_price_per_hour = float(row[52 + 6])
+                                except (ValueError, TypeError):
+                                    pass
+                                    
+                            service_base_price = 0.0
+                            if row[52 + 7] and row[52 + 7] != 'NA':
+                                try:
+                                    service_base_price = float(row[52 + 7])
+                                except (ValueError, TypeError):
+                                    pass
+                            
+                            driver_data["service_details"] = {
+                                "service_name": row[52 + 4] if row[52 + 4] and row[52 + 4] != 'NA' else "NA",
+                                "service_image": row[52 + 5] if row[52 + 5] and row[52 + 5] != 'NA' else "NA",
+                                "service_price_per_hour": service_price_per_hour,
+                                "service_base_price": service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing service_details for driver {row[0]}: {e}")
+                            driver_data["service_details"] = None
+                    else:
+                        driver_data["service_details"] = None
+
+                    mapped_results.append(driver_data)
+                except Exception as e:
+                    print(f"Error processing row for driver {row[0] if len(row) > 0 else 'unknown'}: {e}")
+                    continue
 
             return JsonResponse({
                 "drivers": mapped_results,
@@ -11065,10 +11336,13 @@ def get_total_jcb_crane_drivers_rejected_with_count(request):
             }, status=200)
 
         except Exception as err:
+            import traceback
             print("Error executing query:", err)
+            traceback.print_exc()
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 
 @csrf_exempt
 def get_total_other_drivers_verified_with_count(request):
@@ -11108,67 +11382,112 @@ def get_total_other_drivers_verified_with_count(request):
 
             mapped_results = []
             for row in result:
-                driver_data = {
-                    "other_driver_id": row[0],
-                    "driver_first_name": row[1],
-                    "driver_last_name": row[2],
-                    "profile_pic": row[3],
-                    "is_online": row[4],
-                    "ratings": row[5],
-                    "mobile_no": row[6],
-                    "registration_date": row[7],
-                    "time": row[8],
-                    "r_lat": row[9],
-                    "r_lng": row[10],
-                    "current_lat": row[11],
-                    "current_lng": row[12],
-                    "status": row[13],
-                    "recent_online_pic": row[14],
-                    "is_verified": row[15],
-                    "category_id": row[16],
-                    "sub_cat_id": row[17],
-                    "service_id": row[18],
-                    "city_id": row[19],
-                    "house_no": row[20],
-                    "city_name": row[21],
-                    "full_address": row[22],
-                    "aadhar_no": row[23],
-                    "pan_card_no": row[24],
-                    "gender": row[25],
-                    "aadhar_card_front": row[26],
-                    "aadhar_card_back": row[27],
-                    "pan_card_front": row[28],
-                    "pan_card_back": row[29],
-                    "driving_license_no": row[30],
-                    "license_front": row[31],
-                    "license_back": row[32],
-                    "authtoken": row[33],
-                    "otp_no": row[34],
-                }
-
-                # Add sub category details if available
-                if row[17] != -1:  # if sub_cat_id is not -1
-                    driver_data["sub_category_details"] = {
-                        "sub_cat_name": row[40] if row[40] else "NA",
-                        "sub_cat_image": row[41] if row[41] else "NA",
-                        "sub_cat_price_per_hour": float(row[42]) if row[42] else 0.0,
-                        "sub_cat_service_base_price": float(row[43]) if row[43] else 0.0,
+                try:
+                    driver_data = {
+                        "other_driver_id": row[0],
+                        "driver_first_name": row[1],
+                        "driver_last_name": row[2],
+                        "profile_pic": row[3],
+                        "is_online": row[4],
+                        "ratings": row[5],
+                        "mobile_no": row[6],
+                        "registration_date": str(row[7]) if row[7] else "",
+                        "time": row[8],
+                        "r_lat": row[9],
+                        "r_lng": row[10],
+                        "current_lat": row[11],
+                        "current_lng": row[12],
+                        "status": row[13],
+                        "recent_online_pic": row[14],
+                        "is_verified": row[15],
+                        "category_id": row[16],
+                        "sub_cat_id": row[17],
+                        "service_id": row[18],
+                        "city_id": row[19],
+                        "house_no": row[20],
+                        "city_name": row[21],
+                        "full_address": row[22],
+                        "aadhar_no": row[23],
+                        "pan_card_no": row[24],
+                        "gender": row[25],
+                        "aadhar_card_front": row[26],
+                        "aadhar_card_back": row[27],
+                        "pan_card_front": row[28],
+                        "pan_card_back": row[29],
+                        "driving_license_no": row[30],
+                        "license_front": row[31],
+                        "license_back": row[32],
+                        "authtoken": row[33],
+                        "otp_no": row[34],
+                        "reason": row[35],           # Added missing field
+                        "bank_name": row[36],        # Added missing field
+                        "ifsc_code": row[37],        # Added missing field
+                        "account_number": row[38],   # Added missing field
+                        "account_name": row[39],     # Added missing field
                     }
-                else:
-                    driver_data["sub_category_details"] = None
 
-                # Add service details if available
-                if row[18] != -1:  # if service_id is not -1
-                    driver_data["service_details"] = {
-                        "service_name": row[44] if row[44] else "NA",
-                        "service_image": row[45] if row[45] else "NA",
-                        "service_price_per_hour": float(row[46]) if row[46] else 0.0,
-                        "service_base_price": float(row[47]) if row[47] else 0.0,
-                    }
-                else:
-                    driver_data["service_details"] = None
+                    # Add sub category details if available with safe float conversion
+                    if row[17] != -1:  # if sub_cat_id is not -1
+                        try:
+                            sub_cat_price_per_hour = 0.0
+                            if row[42] and row[42] != 'NA':
+                                try:
+                                    sub_cat_price_per_hour = float(row[42])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            sub_cat_service_base_price = 0.0
+                            if row[43] and row[43] != 'NA':
+                                try:
+                                    sub_cat_service_base_price = float(row[43])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            driver_data["sub_category_details"] = {
+                                "sub_cat_name": row[40] if row[40] and row[40] != 'NA' else "NA",
+                                "sub_cat_image": row[41] if row[41] and row[41] != 'NA' else "NA",
+                                "sub_cat_price_per_hour": sub_cat_price_per_hour,
+                                "sub_cat_service_base_price": sub_cat_service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing sub_category_details for driver {row[0]}: {e}")
+                            driver_data["sub_category_details"] = None
+                    else:
+                        driver_data["sub_category_details"] = None
 
-                mapped_results.append(driver_data)
+                    # Add service details if available with safe float conversion
+                    if row[18] != -1:  # if service_id is not -1
+                        try:
+                            service_price_per_hour = 0.0
+                            if row[46] and row[46] != 'NA':
+                                try:
+                                    service_price_per_hour = float(row[46])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            service_base_price = 0.0
+                            if row[47] and row[47] != 'NA':
+                                try:
+                                    service_base_price = float(row[47])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            driver_data["service_details"] = {
+                                "service_name": row[44] if row[44] and row[44] != 'NA' else "NA",
+                                "service_image": row[45] if row[45] and row[45] != 'NA' else "NA",
+                                "service_price_per_hour": service_price_per_hour,
+                                "service_base_price": service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing service_details for driver {row[0]}: {e}")
+                            driver_data["service_details"] = None
+                    else:
+                        driver_data["service_details"] = None
+
+                    mapped_results.append(driver_data)
+                except Exception as e:
+                    print(f"Error processing row for driver {row[0] if len(row) > 0 else 'unknown'}: {e}")
+                    continue
 
             return JsonResponse({
                 "drivers": mapped_results, 
@@ -11176,7 +11495,9 @@ def get_total_other_drivers_verified_with_count(request):
             }, status=200)
 
         except Exception as err:
+            import traceback
             print("Error executing query:", err)
+            traceback.print_exc()
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
@@ -11236,67 +11557,112 @@ def get_total_other_drivers_un_verified_with_count(request):
 
             mapped_results = []
             for row in result:
-                driver_data = {
-                    "other_driver_id": row[0],
-                    "driver_first_name": row[1],
-                    "driver_last_name": row[2],
-                    "profile_pic": row[3],
-                    "is_online": row[4],
-                    "ratings": row[5],
-                    "mobile_no": row[6],
-                    "registration_date": row[7],
-                    "time": row[8],
-                    "r_lat": row[9],
-                    "r_lng": row[10],
-                    "current_lat": row[11],
-                    "current_lng": row[12],
-                    "status": row[13],
-                    "recent_online_pic": row[14],
-                    "is_verified": row[15],
-                    "category_id": row[16],
-                    "sub_cat_id": row[17],
-                    "service_id": row[18],
-                    "city_id": row[19],
-                    "house_no": row[20],
-                    "city_name": row[21],
-                    "full_address": row[22],
-                    "aadhar_no": row[23],
-                    "pan_card_no": row[24],
-                    "gender": row[25],
-                    "aadhar_card_front": row[26],
-                    "aadhar_card_back": row[27],
-                    "pan_card_front": row[28],
-                    "pan_card_back": row[29],
-                    "driving_license_no": row[30],
-                    "license_front": row[31],
-                    "license_back": row[32],
-                    "authtoken": row[33],
-                    "otp_no": row[34],
-                }
-
-                # Add sub category details if available
-                if row[17] != -1:
-                    driver_data["sub_category_details"] = {
-                        "sub_cat_name": row[35] if row[35] else "NA",
-                        "sub_cat_image": row[36] if row[36] else "NA",
-                        "sub_cat_price_per_hour": float(row[37]) if row[37] else 0.0,
-                        "sub_cat_service_base_price": float(row[38]) if row[38] else 0.0,
+                try:
+                    driver_data = {
+                        "other_driver_id": row[0],
+                        "driver_first_name": row[1],
+                        "driver_last_name": row[2],
+                        "profile_pic": row[3],
+                        "is_online": row[4],
+                        "ratings": row[5],
+                        "mobile_no": row[6],
+                        "registration_date": str(row[7]) if row[7] else "",
+                        "time": row[8],
+                        "r_lat": row[9],
+                        "r_lng": row[10],
+                        "current_lat": row[11],
+                        "current_lng": row[12],
+                        "status": row[13],
+                        "recent_online_pic": row[14],
+                        "is_verified": row[15],
+                        "category_id": row[16],
+                        "sub_cat_id": row[17],
+                        "service_id": row[18],
+                        "city_id": row[19],
+                        "house_no": row[20],
+                        "city_name": row[21],
+                        "full_address": row[22],
+                        "aadhar_no": row[23],
+                        "pan_card_no": row[24],
+                        "gender": row[25],
+                        "aadhar_card_front": row[26],
+                        "aadhar_card_back": row[27],
+                        "pan_card_front": row[28],
+                        "pan_card_back": row[29],
+                        "driving_license_no": row[30],
+                        "license_front": row[31],
+                        "license_back": row[32],
+                        "authtoken": row[33],
+                        "otp_no": row[34],
+                        "reason": row[35],           # Added missing field
+                        "bank_name": row[36],        # Added missing field
+                        "ifsc_code": row[37],        # Added missing field
+                        "account_number": row[38],   # Added missing field
+                        "account_name": row[39],     # Added missing field
                     }
-                else:
-                    driver_data["sub_category_details"] = None
 
-                # Add service details if available
-                if row[18] != -1:
-                    driver_data["service_details"] = {
-                        "service_name": row[39] if row[39] else "NA",
-                        "service_image": row[40] if row[40] else "NA",
-                        "service_price_per_hour": float(row[41]) if row[41] else 0.0,
-                        "service_base_price": float(row[42]) if row[42] else 0.0,
-                    }
-                else:
-                    driver_data["service_details"] = None
+                    # Add sub category details if available with safe float conversion
+                    if row[17] != -1:  # if sub_cat_id is not -1
+                        try:
+                            sub_cat_price_per_hour = 0.0
+                            if row[42] and row[42] != 'NA':
+                                try:
+                                    sub_cat_price_per_hour = float(row[42])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            sub_cat_service_base_price = 0.0
+                            if row[43] and row[43] != 'NA':
+                                try:
+                                    sub_cat_service_base_price = float(row[43])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            driver_data["sub_category_details"] = {
+                                "sub_cat_name": row[40] if row[40] and row[40] != 'NA' else "NA",
+                                "sub_cat_image": row[41] if row[41] and row[41] != 'NA' else "NA",
+                                "sub_cat_price_per_hour": sub_cat_price_per_hour,
+                                "sub_cat_service_base_price": sub_cat_service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing sub_category_details for driver {row[0]}: {e}")
+                            driver_data["sub_category_details"] = None
+                    else:
+                        driver_data["sub_category_details"] = None
 
-                mapped_results.append(driver_data)
+                    # Add service details if available with safe float conversion
+                    if row[18] != -1:  # if service_id is not -1
+                        try:
+                            service_price_per_hour = 0.0
+                            if row[46] and row[46] != 'NA':
+                                try:
+                                    service_price_per_hour = float(row[46])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            service_base_price = 0.0
+                            if row[47] and row[47] != 'NA':
+                                try:
+                                    service_base_price = float(row[47])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            driver_data["service_details"] = {
+                                "service_name": row[44] if row[44] and row[44] != 'NA' else "NA",
+                                "service_image": row[45] if row[45] and row[45] != 'NA' else "NA",
+                                "service_price_per_hour": service_price_per_hour,
+                                "service_base_price": service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing service_details for driver {row[0]}: {e}")
+                            driver_data["service_details"] = None
+                    else:
+                        driver_data["service_details"] = None
+
+                    mapped_results.append(driver_data)
+                except Exception as e:
+                    print(f"Error processing row for driver {row[0] if len(row) > 0 else 'unknown'}: {e}")
+                    continue
 
             return JsonResponse({
                 "drivers": mapped_results,
@@ -11304,10 +11670,13 @@ def get_total_other_drivers_un_verified_with_count(request):
             }, status=200)
 
         except Exception as err:
+            import traceback
             print("Error executing query:", err)
+            traceback.print_exc()
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 
 @csrf_exempt
 def get_total_other_drivers_blocked_with_count(request):
@@ -11364,67 +11733,112 @@ def get_total_other_drivers_blocked_with_count(request):
 
             mapped_results = []
             for row in result:
-                driver_data = {
-                    "other_driver_id": row[0],
-                    "driver_first_name": row[1],
-                    "driver_last_name": row[2],
-                    "profile_pic": row[3],
-                    "is_online": row[4],
-                    "ratings": row[5],
-                    "mobile_no": row[6],
-                    "registration_date": row[7],
-                    "time": row[8],
-                    "r_lat": row[9],
-                    "r_lng": row[10],
-                    "current_lat": row[11],
-                    "current_lng": row[12],
-                    "status": row[13],
-                    "recent_online_pic": row[14],
-                    "is_verified": row[15],
-                    "category_id": row[16],
-                    "sub_cat_id": row[17],
-                    "service_id": row[18],
-                    "city_id": row[19],
-                    "house_no": row[20],
-                    "city_name": row[21],
-                    "full_address": row[22],
-                    "aadhar_no": row[23],
-                    "pan_card_no": row[24],
-                    "gender": row[25],
-                    "aadhar_card_front": row[26],
-                    "aadhar_card_back": row[27],
-                    "pan_card_front": row[28],
-                    "pan_card_back": row[29],
-                    "driving_license_no": row[30],
-                    "license_front": row[31],
-                    "license_back": row[32],
-                    "authtoken": row[33],
-                    "otp_no": row[34],
-                }
-
-                # Add sub category details if available
-                if row[17] != -1:
-                    driver_data["sub_category_details"] = {
-                        "sub_cat_name": row[35] if row[35] else "NA",
-                        "sub_cat_image": row[36] if row[36] else "NA",
-                        "sub_cat_price_per_hour": float(row[37]) if row[37] else 0.0,
-                        "sub_cat_service_base_price": float(row[38]) if row[38] else 0.0,
+                try:
+                    driver_data = {
+                        "other_driver_id": row[0],
+                        "driver_first_name": row[1],
+                        "driver_last_name": row[2],
+                        "profile_pic": row[3],
+                        "is_online": row[4],
+                        "ratings": row[5],
+                        "mobile_no": row[6],
+                        "registration_date": str(row[7]) if row[7] else "",
+                        "time": row[8],
+                        "r_lat": row[9],
+                        "r_lng": row[10],
+                        "current_lat": row[11],
+                        "current_lng": row[12],
+                        "status": row[13],
+                        "recent_online_pic": row[14],
+                        "is_verified": row[15],
+                        "category_id": row[16],
+                        "sub_cat_id": row[17],
+                        "service_id": row[18],
+                        "city_id": row[19],
+                        "house_no": row[20],
+                        "city_name": row[21],
+                        "full_address": row[22],
+                        "aadhar_no": row[23],
+                        "pan_card_no": row[24],
+                        "gender": row[25],
+                        "aadhar_card_front": row[26],
+                        "aadhar_card_back": row[27],
+                        "pan_card_front": row[28],
+                        "pan_card_back": row[29],
+                        "driving_license_no": row[30],
+                        "license_front": row[31],
+                        "license_back": row[32],
+                        "authtoken": row[33],
+                        "otp_no": row[34],
+                        "reason": row[35],           # Added missing field
+                        "bank_name": row[36],        # Added missing field
+                        "ifsc_code": row[37],        # Added missing field
+                        "account_number": row[38],   # Added missing field
+                        "account_name": row[39],     # Added missing field
                     }
-                else:
-                    driver_data["sub_category_details"] = None
 
-                # Add service details if available
-                if row[18] != -1:
-                    driver_data["service_details"] = {
-                        "service_name": row[39] if row[39] else "NA",
-                        "service_image": row[40] if row[40] else "NA",
-                        "service_price_per_hour": float(row[41]) if row[41] else 0.0,
-                        "service_base_price": float(row[42]) if row[42] else 0.0,
-                    }
-                else:
-                    driver_data["service_details"] = None
+                    # Add sub category details if available with safe float conversion
+                    if row[17] != -1:  # if sub_cat_id is not -1
+                        try:
+                            sub_cat_price_per_hour = 0.0
+                            if row[42] and row[42] != 'NA':
+                                try:
+                                    sub_cat_price_per_hour = float(row[42])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            sub_cat_service_base_price = 0.0
+                            if row[43] and row[43] != 'NA':
+                                try:
+                                    sub_cat_service_base_price = float(row[43])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            driver_data["sub_category_details"] = {
+                                "sub_cat_name": row[40] if row[40] and row[40] != 'NA' else "NA",
+                                "sub_cat_image": row[41] if row[41] and row[41] != 'NA' else "NA",
+                                "sub_cat_price_per_hour": sub_cat_price_per_hour,
+                                "sub_cat_service_base_price": sub_cat_service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing sub_category_details for driver {row[0]}: {e}")
+                            driver_data["sub_category_details"] = None
+                    else:
+                        driver_data["sub_category_details"] = None
 
-                mapped_results.append(driver_data)
+                    # Add service details if available with safe float conversion
+                    if row[18] != -1:  # if service_id is not -1
+                        try:
+                            service_price_per_hour = 0.0
+                            if row[46] and row[46] != 'NA':
+                                try:
+                                    service_price_per_hour = float(row[46])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            service_base_price = 0.0
+                            if row[47] and row[47] != 'NA':
+                                try:
+                                    service_base_price = float(row[47])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            driver_data["service_details"] = {
+                                "service_name": row[44] if row[44] and row[44] != 'NA' else "NA",
+                                "service_image": row[45] if row[45] and row[45] != 'NA' else "NA",
+                                "service_price_per_hour": service_price_per_hour,
+                                "service_base_price": service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing service_details for driver {row[0]}: {e}")
+                            driver_data["service_details"] = None
+                    else:
+                        driver_data["service_details"] = None
+
+                    mapped_results.append(driver_data)
+                except Exception as e:
+                    print(f"Error processing row for driver {row[0] if len(row) > 0 else 'unknown'}: {e}")
+                    continue
 
             return JsonResponse({
                 "drivers": mapped_results,
@@ -11432,7 +11846,9 @@ def get_total_other_drivers_blocked_with_count(request):
             }, status=200)
 
         except Exception as err:
+            import traceback
             print("Error executing query:", err)
+            traceback.print_exc()
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
@@ -11492,67 +11908,112 @@ def get_total_other_drivers_rejected_with_count(request):
 
             mapped_results = []
             for row in result:
-                driver_data = {
-                    "other_driver_id": row[0],
-                    "driver_first_name": row[1],
-                    "driver_last_name": row[2],
-                    "profile_pic": row[3],
-                    "is_online": row[4],
-                    "ratings": row[5],
-                    "mobile_no": row[6],
-                    "registration_date": row[7],
-                    "time": row[8],
-                    "r_lat": row[9],
-                    "r_lng": row[10],
-                    "current_lat": row[11],
-                    "current_lng": row[12],
-                    "status": row[13],
-                    "recent_online_pic": row[14],
-                    "is_verified": row[15],
-                    "category_id": row[16],
-                    "sub_cat_id": row[17],
-                    "service_id": row[18],
-                    "city_id": row[19],
-                    "house_no": row[20],
-                    "city_name": row[21],
-                    "full_address": row[22],
-                    "aadhar_no": row[23],
-                    "pan_card_no": row[24],
-                    "gender": row[25],
-                    "aadhar_card_front": row[26],
-                    "aadhar_card_back": row[27],
-                    "pan_card_front": row[28],
-                    "pan_card_back": row[29],
-                    "driving_license_no": row[30],
-                    "license_front": row[31],
-                    "license_back": row[32],
-                    "authtoken": row[33],
-                    "otp_no": row[34],
-                }
-
-                # Add sub category details if available
-                if row[17] != -1:
-                    driver_data["sub_category_details"] = {
-                        "sub_cat_name": row[35] if row[35] else "NA",
-                        "sub_cat_image": row[36] if row[36] else "NA",
-                        "sub_cat_price_per_hour": float(row[37]) if row[37] else 0.0,
-                        "sub_cat_service_base_price": float(row[38]) if row[38] else 0.0,
+                try:
+                    driver_data = {
+                        "other_driver_id": row[0],
+                        "driver_first_name": row[1],
+                        "driver_last_name": row[2],
+                        "profile_pic": row[3],
+                        "is_online": row[4],
+                        "ratings": row[5],
+                        "mobile_no": row[6],
+                        "registration_date": str(row[7]) if row[7] else "",
+                        "time": row[8],
+                        "r_lat": row[9],
+                        "r_lng": row[10],
+                        "current_lat": row[11],
+                        "current_lng": row[12],
+                        "status": row[13],
+                        "recent_online_pic": row[14],
+                        "is_verified": row[15],
+                        "category_id": row[16],
+                        "sub_cat_id": row[17],
+                        "service_id": row[18],
+                        "city_id": row[19],
+                        "house_no": row[20],
+                        "city_name": row[21],
+                        "full_address": row[22],
+                        "aadhar_no": row[23],
+                        "pan_card_no": row[24],
+                        "gender": row[25],
+                        "aadhar_card_front": row[26],
+                        "aadhar_card_back": row[27],
+                        "pan_card_front": row[28],
+                        "pan_card_back": row[29],
+                        "driving_license_no": row[30],
+                        "license_front": row[31],
+                        "license_back": row[32],
+                        "authtoken": row[33],
+                        "otp_no": row[34],
+                        "reason": row[35],           # Added missing field
+                        "bank_name": row[36],        # Added missing field
+                        "ifsc_code": row[37],        # Added missing field
+                        "account_number": row[38],   # Added missing field
+                        "account_name": row[39],     # Added missing field
                     }
-                else:
-                    driver_data["sub_category_details"] = None
 
-                # Add service details if available
-                if row[18] != -1:
-                    driver_data["service_details"] = {
-                        "service_name": row[39] if row[39] else "NA",
-                        "service_image": row[40] if row[40] else "NA",
-                        "service_price_per_hour": float(row[41]) if row[41] else 0.0,
-                        "service_base_price": float(row[42]) if row[42] else 0.0,
-                    }
-                else:
-                    driver_data["service_details"] = None
+                    # Add sub category details if available with safe float conversion
+                    if row[17] != -1:  # if sub_cat_id is not -1
+                        try:
+                            sub_cat_price_per_hour = 0.0
+                            if row[42] and row[42] != 'NA':
+                                try:
+                                    sub_cat_price_per_hour = float(row[42])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            sub_cat_service_base_price = 0.0
+                            if row[43] and row[43] != 'NA':
+                                try:
+                                    sub_cat_service_base_price = float(row[43])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            driver_data["sub_category_details"] = {
+                                "sub_cat_name": row[40] if row[40] and row[40] != 'NA' else "NA",
+                                "sub_cat_image": row[41] if row[41] and row[41] != 'NA' else "NA",
+                                "sub_cat_price_per_hour": sub_cat_price_per_hour,
+                                "sub_cat_service_base_price": sub_cat_service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing sub_category_details for driver {row[0]}: {e}")
+                            driver_data["sub_category_details"] = None
+                    else:
+                        driver_data["sub_category_details"] = None
 
-                mapped_results.append(driver_data)
+                    # Add service details if available with safe float conversion
+                    if row[18] != -1:  # if service_id is not -1
+                        try:
+                            service_price_per_hour = 0.0
+                            if row[46] and row[46] != 'NA':
+                                try:
+                                    service_price_per_hour = float(row[46])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            service_base_price = 0.0
+                            if row[47] and row[47] != 'NA':
+                                try:
+                                    service_base_price = float(row[47])
+                                except (ValueError, TypeError):
+                                    pass
+                                
+                            driver_data["service_details"] = {
+                                "service_name": row[44] if row[44] and row[44] != 'NA' else "NA",
+                                "service_image": row[45] if row[45] and row[45] != 'NA' else "NA",
+                                "service_price_per_hour": service_price_per_hour,
+                                "service_base_price": service_base_price,
+                            }
+                        except (IndexError, Exception) as e:
+                            print(f"Error processing service_details for driver {row[0]}: {e}")
+                            driver_data["service_details"] = None
+                    else:
+                        driver_data["service_details"] = None
+
+                    mapped_results.append(driver_data)
+                except Exception as e:
+                    print(f"Error processing row for driver {row[0] if len(row) > 0 else 'unknown'}: {e}")
+                    continue
 
             return JsonResponse({
                 "drivers": mapped_results,
@@ -11560,7 +12021,9 @@ def get_total_other_drivers_rejected_with_count(request):
             }, status=200)
 
         except Exception as err:
+            import traceback
             print("Error executing query:", err)
+            traceback.print_exc()
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
@@ -11620,66 +12083,101 @@ def get_total_handyman_verified_with_count(request):
 
             mapped_results = []
             for row in result:
-                handyman_data = {
-                    "handyman_id": row[0],
-                    "handyman_first_name": row[1],
-                    "handyman_last_name": row[2],
-                    "profile_pic": row[3],
-                    "is_online": row[4],
-                    "ratings": row[5],
-                    "mobile_no": row[6],
-                    "registration_date": row[7],
-                    "time": row[8],
-                    "r_lat": row[9],
-                    "r_lng": row[10],
-                    "current_lat": row[11],
-                    "current_lng": row[12],
-                    "status": row[13],
-                    "recent_online_pic": row[14],
-                    "is_verified": row[15],
-                    "category_id": row[16],
-                    "sub_cat_id": row[17],
-                    "service_id": row[18],
-                    "city_id": row[19],
-                    "house_no": row[20],
-                    "city_name": row[21],
-                    "full_address": row[22],
-                    "aadhar_no": row[23],
-                    "pan_card_no": row[24],
-                    "gender": row[25],
-                    "aadhar_card_front": row[26],
-                    "aadhar_card_back": row[27],
-                    "pan_card_front": row[28],
-                    "pan_card_back": row[29],
-                    "work_permit": row[30],
-                    "work_permit_back": row[31],
-                    "authtoken": row[32],
-                    "otp_no": row[33],
-                }
-
-                # Add sub category details if available
-                if row[17] != -1:
-                    handyman_data["sub_category_details"] = {
-                        "sub_cat_name": row[39] if row[39] else "NA",
-                        "sub_cat_image": row[40] if row[40] else "NA",
-                        "sub_cat_price_per_hour": float(row[41]) if row[41] else 0.0,
-                        "sub_cat_service_base_price": float(row[42]) if row[42] else 0.0,
+                try:
+                    # Using the actual column names from your schema
+                    handyman_data = {
+                        "handyman_id": row[0],
+                        "name": row[1],                     # Instead of handyman_first_name
+                        "profile_pic": row[2],
+                        "is_online": row[3],
+                        "ratings": row[4],
+                        "mobile_no": row[5],
+                        "registration_date": row[6],
+                        "time": row[7],
+                        "r_lat": row[8],
+                        "r_lng": row[9],
+                        "current_lat": row[10],
+                        "current_lng": row[11],
+                        "status": row[12],
+                        "recent_online_pic": row[13],
+                        "is_verified": row[14],
+                        "category_id": row[15],
+                        "sub_cat_id": row[16],
+                        "service_id": row[17],
+                        "city_id": row[18],
+                        "house_no": row[19],
+                        "city_name": row[20],
+                        "full_address": row[21],
+                        "aadhar_no": row[22],
+                        "pan_card_no": row[23],
+                        "gender": row[24],
+                        "aadhar_card_front": row[25],
+                        "aadhar_card_back": row[26],
+                        "pan_card_front": row[27],
+                        "pan_card_back": row[28],
+                        "authtoken": row[29],
+                        "otp_no": row[30],
+                        "license_front": row[31],          # Added this field
+                        "license_back": row[32],           # Added this field 
+                        "reason": row[33],                 # Added this field
+                        "bank_name": row[34],              # Added this field
+                        "ifsc_code": row[35],              # Added this field
+                        "account_number": row[36],         # Added this field
+                        "account_name": row[37],           # Added this field
                     }
-                else:
-                    handyman_data["sub_category_details"] = None
 
-                # Add service details if available
-                if row[18] != -1:
-                    handyman_data["service_details"] = {
-                        "service_name": row[43] if row[43] else "NA",
-                        "service_image": row[44] if row[44] else "NA",
-                        "service_price_per_hour": float(row[45]) if row[45] else 0.0,
-                        "service_base_price": float(row[46]) if row[46] else 0.0,
-                    }
-                else:
-                    handyman_data["service_details"] = None
+                    # Add sub category details if available
+                    # The indexes for joined tables will need to be adjusted
+                    # Assuming the joined fields start after the handyman fields
+                    if row[16] != -1:  # Using sub_cat_id field
+                        # Safe float conversion for price fields
+                        try:
+                            sub_cat_price_per_hour = float(row[38 + 2]) if row[38 + 2] and row[38 + 2] != 'NA' else 0.0
+                        except (ValueError, TypeError):
+                            sub_cat_price_per_hour = 0.0
 
-                mapped_results.append(handyman_data)
+                        try:
+                            sub_cat_service_base_price = float(row[38 + 3]) if row[38 + 3] and row[38 + 3] != 'NA' else 0.0
+                        except (ValueError, TypeError):
+                            sub_cat_service_base_price = 0.0
+
+                        handyman_data["sub_category_details"] = {
+                            "sub_cat_name": row[38] if row[38] and row[38] != 'NA' else "NA",
+                            "sub_cat_image": row[38 + 1] if row[38 + 1] and row[38 + 1] != 'NA' else "NA",
+                            "sub_cat_price_per_hour": sub_cat_price_per_hour,
+                            "sub_cat_service_base_price": sub_cat_service_base_price,
+                        }
+                    else:
+                        handyman_data["sub_category_details"] = None
+
+                    # Add service details if available
+                    if row[17] != -1:  # Using service_id field
+                        # Safe float conversion for price fields
+                        try:
+                            service_price_per_hour = float(row[38 + 6]) if row[38 + 6] and row[38 + 6] != 'NA' else 0.0
+                        except (ValueError, TypeError):
+                            service_price_per_hour = 0.0
+
+                        try:
+                            service_base_price = float(row[38 + 7]) if row[38 + 7] and row[38 + 7] != 'NA' else 0.0
+                        except (ValueError, TypeError):
+                            service_base_price = 0.0
+
+                        handyman_data["service_details"] = {
+                            "service_name": row[38 + 4] if row[38 + 4] and row[38 + 4] != 'NA' else "NA",
+                            "service_image": row[38 + 5] if row[38 + 5] and row[38 + 5] != 'NA' else "NA",
+                            "service_price_per_hour": service_price_per_hour,
+                            "service_base_price": service_base_price,
+                        }
+                    else:
+                        handyman_data["service_details"] = None
+
+                    mapped_results.append(handyman_data)
+
+                except Exception as e:
+                    print(f"Error processing row {row[0]}: {e}")
+                    # Continue with next row instead of failing the entire request
+                    continue
 
             return JsonResponse({
                 "handymen": mapped_results,
@@ -11687,7 +12185,9 @@ def get_total_handyman_verified_with_count(request):
             }, status=200)
 
         except Exception as err:
+            import traceback
             print("Error executing query:", err)
+            traceback.print_exc()  # Print the full traceback for debugging
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
@@ -11730,75 +12230,95 @@ def get_total_handyman_un_verified_with_count(request):
 
             mapped_results = []
             for row in result:
-                # Map the columns according to the actual schema
-                handyman_data = {
-                    "handyman_id": row[0],
-                    "name": row[1],  # Changed from handyman_first_name
-                    "profile_pic": row[2],
-                    "is_online": row[3],
-                    "ratings": row[4],
-                    "mobile_no": row[5],
-                    "registration_date": str(row[6]) if row[6] else "",  # Convert date to string
-                    "time": row[7],
-                    "r_lat": row[8],
-                    "r_lng": row[9],
-                    "current_lat": row[10],
-                    "current_lng": row[11],
-                    "status": row[12],
-                    "recent_online_pic": row[13],
-                    "is_verified": row[14],
-                    "category_id": row[15],
-                    "sub_cat_id": row[16],
-                    "service_id": row[17],
-                    "city_id": row[18],
-                    "house_no": row[19],
-                    "city_name": row[20],
-                    "full_address": row[21],
-                    "aadhar_no": row[22],
-                    "pan_card_no": row[23],
-                    "gender": row[24],
-                    "aadhar_card_front": row[25],
-                    "aadhar_card_back": row[26],
-                    "pan_card_front": row[27],
-                    "pan_card_back": row[28],
-                    "authtoken": row[29],
-                    "otp_no": row[30],
-                    "license_front": row[31],
-                    "license_back": row[32]
-                }
-
-                # Add sub category details if available (starting at index 33)
-                if row[16] != -1:  # Check sub_cat_id
-                    handyman_data["sub_category_details"] = {
-                        "sub_cat_name": str(row[38]) if row[38] else "NA",
-                        "sub_cat_image": str(row[34]) if row[34] else "NA",
-                        "sub_cat_price_per_hour": float(row[35]) if row[35] and str(row[35]).replace('.', '', 1).isdigit() else 0.0,
-                        "sub_cat_service_base_price": float(row[36]) if row[36] and str(row[36]).replace('.', '', 1).isdigit() else 0.0
+                try:
+                    # Map the columns according to the actual schema
+                    handyman_data = {
+                        "handyman_id": row[0],
+                        "name": row[1],
+                        "profile_pic": row[2],
+                        "is_online": row[3],
+                        "ratings": row[4],
+                        "mobile_no": row[5],
+                        "registration_date": str(row[6]) if row[6] else "",  # Convert date to string
+                        "time": row[7],
+                        "r_lat": row[8],
+                        "r_lng": row[9],
+                        "current_lat": row[10],
+                        "current_lng": row[11],
+                        "status": row[12],
+                        "recent_online_pic": row[13],
+                        "is_verified": row[14],
+                        "category_id": row[15],
+                        "sub_cat_id": row[16],
+                        "service_id": row[17],
+                        "city_id": row[18],
+                        "house_no": row[19],
+                        "city_name": row[20],
+                        "full_address": row[21],
+                        "aadhar_no": row[22],
+                        "pan_card_no": row[23],
+                        "gender": row[24],
+                        "aadhar_card_front": row[25],
+                        "aadhar_card_back": row[26],
+                        "pan_card_front": row[27],
+                        "pan_card_back": row[28],
+                        "authtoken": row[29],
+                        "otp_no": row[30],
+                        "license_front": row[31],          # Added this field
+                        "license_back": row[32],           # Added this field
+                        "reason": row[33],                 # Added this field
+                        "bank_name": row[34],              # Added this field
+                        "ifsc_code": row[35],              # Added this field
+                        "account_number": row[36],         # Added this field
+                        "account_name": row[37],           # Added this field
                     }
-                else:
-                    handyman_data["sub_category_details"] = None
 
-                # Add service details if available (starting at index 37)
-                if row[17] != -1:  # Check service_id
-                    try:
-                        handyman_data["service_details"] = {
-                            "service_name": str(row[37]) if row[37] else "NA",
-                            "service_image": str(row[38]) if row[38] else "NA",
-                            "service_price_per_hour": float(row[39]) if row[39] and str(row[39]).replace('.', '', 1).isdigit() else 0.0,
-                            "service_base_price": float(row[40]) if row[40] and str(row[40]).replace('.', '', 1).isdigit() else 0.0
-                        }
-                    except (ValueError, TypeError, IndexError) as e:
-                        print(f"Error processing service details: {e}")
-                        handyman_data["service_details"] = {
-                            "service_name": "NA",
-                            "service_image": "NA",
-                            "service_price_per_hour": 0.0,
-                            "service_base_price": 0.0
-                        }
-                else:
-                    handyman_data["service_details"] = None
+                    # Add sub category details if available
+                    if row[16] != -1:  # Check sub_cat_id
+                        try:
+                            sub_cat_price_per_hour = float(row[38 + 2]) if row[38 + 2] and row[38 + 2] != 'NA' and str(row[38 + 2]).replace('.', '', 1).isdigit() else 0.0
+                        except (ValueError, TypeError):
+                            sub_cat_price_per_hour = 0.0
 
-                mapped_results.append(handyman_data)
+                        try:
+                            sub_cat_service_base_price = float(row[38 + 3]) if row[38 + 3] and row[38 + 3] != 'NA' and str(row[38 + 3]).replace('.', '', 1).isdigit() else 0.0
+                        except (ValueError, TypeError):
+                            sub_cat_service_base_price = 0.0
+
+                        handyman_data["sub_category_details"] = {
+                            "sub_cat_name": str(row[38]) if row[38] and row[38] != 'NA' else "NA",
+                            "sub_cat_image": str(row[38 + 1]) if row[38 + 1] and row[38 + 1] != 'NA' else "NA",
+                            "sub_cat_price_per_hour": sub_cat_price_per_hour,
+                            "sub_cat_service_base_price": sub_cat_service_base_price
+                        }
+                    else:
+                        handyman_data["sub_category_details"] = None
+
+                    # Add service details if available
+                    if row[17] != -1:  # Check service_id
+                        try:
+                            service_price_per_hour = float(row[38 + 6]) if row[38 + 6] and row[38 + 6] != 'NA' and str(row[38 + 6]).replace('.', '', 1).isdigit() else 0.0
+                        except (ValueError, TypeError):
+                            service_price_per_hour = 0.0
+
+                        try:
+                            service_base_price = float(row[38 + 7]) if row[38 + 7] and row[38 + 7] != 'NA' and str(row[38 + 7]).replace('.', '', 1).isdigit() else 0.0
+                        except (ValueError, TypeError):
+                            service_base_price = 0.0
+
+                        handyman_data["service_details"] = {
+                            "service_name": str(row[38 + 4]) if row[38 + 4] and row[38 + 4] != 'NA' else "NA",
+                            "service_image": str(row[38 + 5]) if row[38 + 5] and row[38 + 5] != 'NA' else "NA",
+                            "service_price_per_hour": service_price_per_hour,
+                            "service_base_price": service_base_price
+                        }
+                    else:
+                        handyman_data["service_details"] = None
+
+                    mapped_results.append(handyman_data)
+                except Exception as e:
+                    print(f"Error processing row {row[0]}: {e}")
+                    continue
 
             return JsonResponse({
                 "handymen": mapped_results,
@@ -11806,10 +12326,13 @@ def get_total_handyman_un_verified_with_count(request):
             }, status=200)
 
         except Exception as err:
+            import traceback
             print("Error executing handyman un verified agents query:", err)
+            traceback.print_exc()
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 
 @csrf_exempt
 def get_total_handyman_blocked_with_count(request):
@@ -11866,66 +12389,95 @@ def get_total_handyman_blocked_with_count(request):
 
             mapped_results = []
             for row in result:
-                handyman_data = {
-                    "handyman_id": row[0],
-                    "handyman_first_name": row[1],
-                    "handyman_last_name": row[2],
-                    "profile_pic": row[3],
-                    "is_online": row[4],
-                    "ratings": row[5],
-                    "mobile_no": row[6],
-                    "registration_date": row[7],
-                    "time": row[8],
-                    "r_lat": row[9],
-                    "r_lng": row[10],
-                    "current_lat": row[11],
-                    "current_lng": row[12],
-                    "status": row[13],
-                    "recent_online_pic": row[14],
-                    "is_verified": row[15],
-                    "category_id": row[16],
-                    "sub_cat_id": row[17],
-                    "service_id": row[18],
-                    "city_id": row[19],
-                    "house_no": row[20],
-                    "city_name": row[21],
-                    "full_address": row[22],
-                    "aadhar_no": row[23],
-                    "pan_card_no": row[24],
-                    "gender": row[25],
-                    "aadhar_card_front": row[26],
-                    "aadhar_card_back": row[27],
-                    "pan_card_front": row[28],
-                    "pan_card_back": row[29],
-                    "work_permit": row[30],
-                    "work_permit_back": row[31],
-                    "authtoken": row[32],
-                    "otp_no": row[33],
-                }
-
-                # Add sub category details if available
-                if row[17] != -1:
-                    handyman_data["sub_category_details"] = {
-                        "sub_cat_name": row[34] if row[34] else "NA",
-                        "sub_cat_image": row[35] if row[35] else "NA",
-                        "sub_cat_price_per_hour": float(row[36]) if row[36] else 0.0,
-                        "sub_cat_service_base_price": float(row[37]) if row[37] else 0.0,
+                try:
+                    # Map the columns according to the actual schema
+                    handyman_data = {
+                        "handyman_id": row[0],
+                        "name": row[1],
+                        "profile_pic": row[2],
+                        "is_online": row[3],
+                        "ratings": row[4],
+                        "mobile_no": row[5],
+                        "registration_date": str(row[6]) if row[6] else "",  # Convert date to string
+                        "time": row[7],
+                        "r_lat": row[8],
+                        "r_lng": row[9],
+                        "current_lat": row[10],
+                        "current_lng": row[11],
+                        "status": row[12],
+                        "recent_online_pic": row[13],
+                        "is_verified": row[14],
+                        "category_id": row[15],
+                        "sub_cat_id": row[16],
+                        "service_id": row[17],
+                        "city_id": row[18],
+                        "house_no": row[19],
+                        "city_name": row[20],
+                        "full_address": row[21],
+                        "aadhar_no": row[22],
+                        "pan_card_no": row[23],
+                        "gender": row[24],
+                        "aadhar_card_front": row[25],
+                        "aadhar_card_back": row[26],
+                        "pan_card_front": row[27],
+                        "pan_card_back": row[28],
+                        "authtoken": row[29],
+                        "otp_no": row[30],
+                        "license_front": row[31],          # Added this field
+                        "license_back": row[32],           # Added this field
+                        "reason": row[33],                 # Added this field - important for blocked status
+                        "bank_name": row[34],              # Added this field
+                        "ifsc_code": row[35],              # Added this field
+                        "account_number": row[36],         # Added this field
+                        "account_name": row[37],           # Added this field
                     }
-                else:
-                    handyman_data["sub_category_details"] = None
 
-                # Add service details if available
-                if row[18] != -1:
-                    handyman_data["service_details"] = {
-                        "service_name": row[38] if row[38] else "NA",
-                        "service_image": row[39] if row[39] else "NA",
-                        "service_price_per_hour": float(row[40]) if row[40] else 0.0,
-                        "service_base_price": float(row[41]) if row[41] else 0.0,
-                    }
-                else:
-                    handyman_data["service_details"] = None
+                    # Add sub category details if available
+                    if row[16] != -1:  # Check sub_cat_id
+                        try:
+                            sub_cat_price_per_hour = float(row[38 + 2]) if row[38 + 2] and row[38 + 2] != 'NA' and str(row[38 + 2]).replace('.', '', 1).isdigit() else 0.0
+                        except (ValueError, TypeError):
+                            sub_cat_price_per_hour = 0.0
 
-                mapped_results.append(handyman_data)
+                        try:
+                            sub_cat_service_base_price = float(row[38 + 3]) if row[38 + 3] and row[38 + 3] != 'NA' and str(row[38 + 3]).replace('.', '', 1).isdigit() else 0.0
+                        except (ValueError, TypeError):
+                            sub_cat_service_base_price = 0.0
+
+                        handyman_data["sub_category_details"] = {
+                            "sub_cat_name": str(row[38]) if row[38] and row[38] != 'NA' else "NA",
+                            "sub_cat_image": str(row[38 + 1]) if row[38 + 1] and row[38 + 1] != 'NA' else "NA",
+                            "sub_cat_price_per_hour": sub_cat_price_per_hour,
+                            "sub_cat_service_base_price": sub_cat_service_base_price
+                        }
+                    else:
+                        handyman_data["sub_category_details"] = None
+
+                    # Add service details if available
+                    if row[17] != -1:  # Check service_id
+                        try:
+                            service_price_per_hour = float(row[38 + 6]) if row[38 + 6] and row[38 + 6] != 'NA' and str(row[38 + 6]).replace('.', '', 1).isdigit() else 0.0
+                        except (ValueError, TypeError):
+                            service_price_per_hour = 0.0
+
+                        try:
+                            service_base_price = float(row[38 + 7]) if row[38 + 7] and row[38 + 7] != 'NA' and str(row[38 + 7]).replace('.', '', 1).isdigit() else 0.0
+                        except (ValueError, TypeError):
+                            service_base_price = 0.0
+
+                        handyman_data["service_details"] = {
+                            "service_name": str(row[38 + 4]) if row[38 + 4] and row[38 + 4] != 'NA' else "NA",
+                            "service_image": str(row[38 + 5]) if row[38 + 5] and row[38 + 5] != 'NA' else "NA",
+                            "service_price_per_hour": service_price_per_hour,
+                            "service_base_price": service_base_price
+                        }
+                    else:
+                        handyman_data["service_details"] = None
+
+                    mapped_results.append(handyman_data)
+                except Exception as e:
+                    print(f"Error processing row {row[0]}: {e}")
+                    continue
 
             return JsonResponse({
                 "handymen": mapped_results,
@@ -11933,10 +12485,13 @@ def get_total_handyman_blocked_with_count(request):
             }, status=200)
 
         except Exception as err:
-            print("Error executing query:", err)
+            import traceback
+            print("Error executing blocked handyman query:", err)
+            traceback.print_exc()
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 
 @csrf_exempt
 def get_total_handyman_rejected_with_count(request):
@@ -11993,66 +12548,95 @@ def get_total_handyman_rejected_with_count(request):
 
             mapped_results = []
             for row in result:
-                handyman_data = {
-                    "handyman_id": row[0],
-                    "handyman_first_name": row[1],
-                    "handyman_last_name": row[2],
-                    "profile_pic": row[3],
-                    "is_online": row[4],
-                    "ratings": row[5],
-                    "mobile_no": row[6],
-                    "registration_date": row[7],
-                    "time": row[8],
-                    "r_lat": row[9],
-                    "r_lng": row[10],
-                    "current_lat": row[11],
-                    "current_lng": row[12],
-                    "status": row[13],
-                    "recent_online_pic": row[14],
-                    "is_verified": row[15],
-                    "category_id": row[16],
-                    "sub_cat_id": row[17],
-                    "service_id": row[18],
-                    "city_id": row[19],
-                    "house_no": row[20],
-                    "city_name": row[21],
-                    "full_address": row[22],
-                    "aadhar_no": row[23],
-                    "pan_card_no": row[24],
-                    "gender": row[25],
-                    "aadhar_card_front": row[26],
-                    "aadhar_card_back": row[27],
-                    "pan_card_front": row[28],
-                    "pan_card_back": row[29],
-                    "work_permit": row[30],
-                    "work_permit_back": row[31],
-                    "authtoken": row[32],
-                    "otp_no": row[33],
-                }
-
-                # Add sub category details if available
-                if row[17] != -1:
-                    handyman_data["sub_category_details"] = {
-                        "sub_cat_name": row[34] if row[34] else "NA",
-                        "sub_cat_image": row[35] if row[35] else "NA",
-                        "sub_cat_price_per_hour": float(row[36]) if row[36] else 0.0,
-                        "sub_cat_service_base_price": float(row[37]) if row[37] else 0.0,
+                try:
+                    # Map the columns according to the actual schema
+                    handyman_data = {
+                        "handyman_id": row[0],
+                        "name": row[1],
+                        "profile_pic": row[2],
+                        "is_online": row[3],
+                        "ratings": row[4],
+                        "mobile_no": row[5],
+                        "registration_date": str(row[6]) if row[6] else "",  # Convert date to string
+                        "time": row[7],
+                        "r_lat": row[8],
+                        "r_lng": row[9],
+                        "current_lat": row[10],
+                        "current_lng": row[11],
+                        "status": row[12],
+                        "recent_online_pic": row[13],
+                        "is_verified": row[14],
+                        "category_id": row[15],
+                        "sub_cat_id": row[16],
+                        "service_id": row[17],
+                        "city_id": row[18],
+                        "house_no": row[19],
+                        "city_name": row[20],
+                        "full_address": row[21],
+                        "aadhar_no": row[22],
+                        "pan_card_no": row[23],
+                        "gender": row[24],
+                        "aadhar_card_front": row[25],
+                        "aadhar_card_back": row[26],
+                        "pan_card_front": row[27],
+                        "pan_card_back": row[28],
+                        "authtoken": row[29],
+                        "otp_no": row[30],
+                        "license_front": row[31],          # Added this field
+                        "license_back": row[32],           # Added this field
+                        "reason": row[33],                 # Added this field - important for rejected status
+                        "bank_name": row[34],              # Added this field
+                        "ifsc_code": row[35],              # Added this field
+                        "account_number": row[36],         # Added this field
+                        "account_name": row[37],           # Added this field
                     }
-                else:
-                    handyman_data["sub_category_details"] = None
 
-                # Add service details if available
-                if row[18] != -1:
-                    handyman_data["service_details"] = {
-                        "service_name": row[38] if row[38] else "NA",
-                        "service_image": row[39] if row[39] else "NA",
-                        "service_price_per_hour": float(row[40]) if row[40] else 0.0,
-                        "service_base_price": float(row[41]) if row[41] else 0.0,
-                    }
-                else:
-                    handyman_data["service_details"] = None
+                    # Add sub category details if available
+                    if row[16] != -1:  # Check sub_cat_id
+                        try:
+                            sub_cat_price_per_hour = float(row[38 + 2]) if row[38 + 2] and row[38 + 2] != 'NA' and str(row[38 + 2]).replace('.', '', 1).isdigit() else 0.0
+                        except (ValueError, TypeError):
+                            sub_cat_price_per_hour = 0.0
 
-                mapped_results.append(handyman_data)
+                        try:
+                            sub_cat_service_base_price = float(row[38 + 3]) if row[38 + 3] and row[38 + 3] != 'NA' and str(row[38 + 3]).replace('.', '', 1).isdigit() else 0.0
+                        except (ValueError, TypeError):
+                            sub_cat_service_base_price = 0.0
+
+                        handyman_data["sub_category_details"] = {
+                            "sub_cat_name": str(row[38]) if row[38] and row[38] != 'NA' else "NA",
+                            "sub_cat_image": str(row[38 + 1]) if row[38 + 1] and row[38 + 1] != 'NA' else "NA",
+                            "sub_cat_price_per_hour": sub_cat_price_per_hour,
+                            "sub_cat_service_base_price": sub_cat_service_base_price
+                        }
+                    else:
+                        handyman_data["sub_category_details"] = None
+
+                    # Add service details if available
+                    if row[17] != -1:  # Check service_id
+                        try:
+                            service_price_per_hour = float(row[38 + 6]) if row[38 + 6] and row[38 + 6] != 'NA' and str(row[38 + 6]).replace('.', '', 1).isdigit() else 0.0
+                        except (ValueError, TypeError):
+                            service_price_per_hour = 0.0
+
+                        try:
+                            service_base_price = float(row[38 + 7]) if row[38 + 7] and row[38 + 7] != 'NA' and str(row[38 + 7]).replace('.', '', 1).isdigit() else 0.0
+                        except (ValueError, TypeError):
+                            service_base_price = 0.0
+
+                        handyman_data["service_details"] = {
+                            "service_name": str(row[38 + 4]) if row[38 + 4] and row[38 + 4] != 'NA' else "NA",
+                            "service_image": str(row[38 + 5]) if row[38 + 5] and row[38 + 5] != 'NA' else "NA",
+                            "service_price_per_hour": service_price_per_hour,
+                            "service_base_price": service_base_price
+                        }
+                    else:
+                        handyman_data["service_details"] = None
+
+                    mapped_results.append(handyman_data)
+                except Exception as e:
+                    print(f"Error processing row {row[0]}: {e}")
+                    continue
 
             return JsonResponse({
                 "handymen": mapped_results,
@@ -12060,10 +12644,13 @@ def get_total_handyman_rejected_with_count(request):
             }, status=200)
 
         except Exception as err:
-            print("Error executing query:", err)
+            import traceback
+            print("Error executing rejected handyman query:", err)
+            traceback.print_exc()
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 
 # CAB DRIVERS APIs
 @csrf_exempt
