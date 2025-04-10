@@ -1145,7 +1145,7 @@ def vehicle_prices(request):
             query = """
                 SELECT price_id, vehicle_city_wise_price_tbl.city_id, vehicle_city_wise_price_tbl.vehicle_id,
                        starting_price_per_km, minimum_time, vehicle_city_wise_price_tbl.price_type_id,
-                       city_name, price_type, bg_image, time_created_at,outstation_distance
+                       city_name, price_type, bg_image, time_created_at,vehicle_city_wise_price_tbl.outstation_distance
                 FROM vtpartner.available_citys_tbl
                 JOIN vtpartner.vehicle_city_wise_price_tbl ON vehicle_city_wise_price_tbl.city_id = available_citys_tbl.city_id
                 JOIN vtpartner.vehiclestbl ON vehicle_city_wise_price_tbl.vehicle_id = vehiclestbl.vehicle_id
