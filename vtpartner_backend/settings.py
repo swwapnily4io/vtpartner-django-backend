@@ -94,26 +94,28 @@ WSGI_APPLICATION = 'vtpartner_backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#         'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'vtpartnerdb',
-#         'USER': 'myuser',
-#         'PASSWORD': 'Vtpartner@786',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
 DATABASES = {
         'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'kapsdb',
-        'USER': 'mysuperuser',
-        'PASSWORD': 'Vtpartner786',
-        'HOST': 'kaps-database-1.c27aay0ieaae.us-east-1.rds.amazonaws.com',
+        'NAME': 'vtpartnerdb',
+        'USER': 'myuser',
+        'PASSWORD': 'Vtpartner@786',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }
+
+#AWS DB
+# DATABASES = {
+#         'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'kapsdb',
+#         'USER': 'mysuperuser',
+#         'PASSWORD': 'Vtpartner786',
+#         'HOST': 'kaps-database-1.c27aay0ieaae.us-east-1.rds.amazonaws.com',
+#         'PORT': '5432',
+#     }
+# }
 
 
 # Password validation
@@ -159,17 +161,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# MEDIA_URL = 'https://vtpartner.org/media/'
-# MEDIA_ROOT = '/var/www/vtpartner/media/'
+MEDIA_URL = 'https://vtpartner.org/media/'
+MEDIA_ROOT = '/var/www/vtpartner/media/'
 #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
 
 
-AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = 'kaps-storeage-bucket'
-AWS_S3_SIGNATURE_NAME = 's3v4',
-AWS_S3_REGION_NAME = 'us-east-1'
-AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL = None
-AWS_S3_VERITY = True
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+# AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+# AWS_STORAGE_BUCKET_NAME = 'kaps-storeage-bucket'
+# AWS_S3_SIGNATURE_NAME = 's3v4',
+# AWS_S3_REGION_NAME = 'us-east-1'
+# AWS_S3_FILE_OVERWRITE = False
+# AWS_DEFAULT_ACL = None
+# AWS_S3_VERITY = True
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
