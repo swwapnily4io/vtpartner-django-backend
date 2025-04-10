@@ -11148,58 +11148,22 @@ def get_total_other_drivers_verified_with_count(request):
 
                 # Add sub category details if available
                 if row[17] != -1:  # if sub_cat_id is not -1
-                    # Fix: Safely convert price values to float, handling 'NA' or None cases
-                    sub_cat_price_per_hour = 0.0
-                    sub_cat_service_base_price = 0.0
-                    
-                    # Check if price_per_hour exists and is a valid number
-                    if row[37] is not None and row[37] != 'NA':
-                        try:
-                            sub_cat_price_per_hour = float(row[37])
-                        except (ValueError, TypeError):
-                            sub_cat_price_per_hour = 0.0
-                    
-                    # Check if service_base_price exists and is a valid number
-                    if row[38] is not None and row[38] != 'NA':
-                        try:
-                            sub_cat_service_base_price = float(row[38])
-                        except (ValueError, TypeError):
-                            sub_cat_service_base_price = 0.0
-                    
                     driver_data["sub_category_details"] = {
-                        "sub_cat_name": row[35] if row[35] and row[35] != 'NA' else "NA",
-                        "sub_cat_image": row[36] if row[36] and row[36] != 'NA' else "NA",
-                        "sub_cat_price_per_hour": sub_cat_price_per_hour,
-                        "sub_cat_service_base_price": sub_cat_service_base_price,
+                        "sub_cat_name": row[35] if row[35] else "NA",
+                        "sub_cat_image": row[36] if row[36] else "NA",
+                        "sub_cat_price_per_hour": float(row[37]) if row[37] else 0.0,
+                        "sub_cat_service_base_price": float(row[38]) if row[38] else 0.0,
                     }
                 else:
                     driver_data["sub_category_details"] = None
 
                 # Add service details if available
                 if row[18] != -1:  # if service_id is not -1
-                    # Fix: Safely convert price values to float, handling 'NA' or None cases
-                    service_price_per_hour = 0.0
-                    service_base_price = 0.0
-                    
-                    # Check if price_per_hour exists and is a valid number
-                    if row[41] is not None and row[41] != 'NA':
-                        try:
-                            service_price_per_hour = float(row[41])
-                        except (ValueError, TypeError):
-                            service_price_per_hour = 0.0
-                    
-                    # Check if service_base_price exists and is a valid number
-                    if row[42] is not None and row[42] != 'NA':
-                        try:
-                            service_base_price = float(row[42])
-                        except (ValueError, TypeError):
-                            service_base_price = 0.0
-                    
                     driver_data["service_details"] = {
-                        "service_name": row[39] if row[39] and row[39] != 'NA' else "NA",
-                        "service_image": row[40] if row[40] and row[40] != 'NA' else "NA",
-                        "service_price_per_hour": service_price_per_hour,
-                        "service_base_price": service_base_price,
+                        "service_name": row[39] if row[39] else "NA",
+                        "service_image": row[40] if row[40] else "NA",
+                        "service_price_per_hour": float(row[41]) if row[41] else 0.0,
+                        "service_base_price": float(row[42]) if row[42] else 0.0,
                     }
                 else:
                     driver_data["service_details"] = None
@@ -11213,14 +11177,9 @@ def get_total_other_drivers_verified_with_count(request):
 
         except Exception as err:
             print("Error executing query:", err)
-            # Add more detailed error logging for debugging
-            import traceback
-            traceback.print_exc()
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
-
-
 
 @csrf_exempt
 def get_total_other_drivers_un_verified_with_count(request):
