@@ -7372,6 +7372,298 @@ def toggle_cab_driver_online_status(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+# JCB/Crane Drivers APIs
+@csrf_exempt
+def check_jcb_crane_driver_status(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            driver_id = data.get('driver_id')
+
+            if not driver_id:
+                return JsonResponse({"message": "Driver ID is required"}, status=400)
+
+            query = """
+                SELECT current_booking_id 
+                FROM vtpartner.active_jcb_crane_drivertbl 
+                WHERE jcb_crane_driver_id = %s
+            """
+            result = select_query(query, (driver_id,))
+
+            if not result:
+                return JsonResponse({"is_free": True}, status=200)
+
+            is_free = result[0][0] == -1
+            return JsonResponse({"is_free": is_free}, status=200)
+
+        except Exception as err:
+            print("Error checking JCB/Crane driver status:", err)
+            return JsonResponse({"message": str(err)}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def toggle_jcb_crane_driver_online_status(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            driver_id = data.get('driver_id')
+            new_status = data.get('online_status')
+            current_lat = data.get('current_lat', 0)
+            current_lng = data.get('current_lng', 0)
+
+            if not driver_id:
+                return JsonResponse({"message": "Driver ID is required"}, status=400)
+
+            if new_status == 0:
+                check_query = """
+                    SELECT current_booking_id 
+                    FROM vtpartner.active_jcb_crane_drivertbl 
+                    WHERE jcb_crane_driver_id = %s AND current_booking_id != -1
+                """
+                result = select_query(check_query, (driver_id,))
+                
+                if result:
+                    return JsonResponse({
+                        "message": "Driver has active bookings and cannot go offline"
+                    }, status=400)
+
+                delete_driver_query = """
+                    DELETE FROM vtpartner.active_jcb_crane_drivertbl 
+                    WHERE jcb_crane_driver_id = %s
+                """
+                delete_values = (driver_id,)
+                delete_query(delete_driver_query, delete_values)
+
+            else:
+                insert_driver_query = """
+                    INSERT INTO vtpartner.active_jcb_crane_drivertbl 
+                    (jcb_crane_driver_id, current_lat, current_lng, current_status, current_booking_id) 
+                    VALUES (%s, %s, %s, 1, -1)
+                    ON CONFLICT (jcb_crane_driver_id) 
+                    DO UPDATE SET 
+                        current_lat = EXCLUDED.current_lat,
+                        current_lng = EXCLUDED.current_lng,
+                        entry_time = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP),
+                        date = CURRENT_DATE,
+                        current_status = 1
+                """
+                insert_values = (driver_id, current_lat, current_lng)
+                insert_query(insert_driver_query, insert_values)
+
+            update_driver_query = """
+                UPDATE vtpartner.jcb_crane_driverstbl 
+                SET is_online = %s 
+                WHERE jcb_crane_driver_id = %s
+            """
+            update_values = (new_status, driver_id)
+            update_query(update_driver_query, update_values)
+
+            return JsonResponse({
+                "message": f"Driver status updated to {'online' if new_status == 1 else 'offline'}"
+            }, status=200)
+
+        except Exception as err:
+            print("Error toggling JCB/Crane driver status:", err)
+            return JsonResponse({"message": str(err)}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+# Other Drivers APIs
+@csrf_exempt
+def check_other_driver_status(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            driver_id = data.get('driver_id')
+
+            if not driver_id:
+                return JsonResponse({"message": "Driver ID is required"}, status=400)
+
+            query = """
+                SELECT current_booking_id 
+                FROM vtpartner.active_other_drivertbl 
+                WHERE other_driver_id = %s
+            """
+            result = select_query(query, (driver_id,))
+
+            if not result:
+                return JsonResponse({"is_free": True}, status=200)
+
+            is_free = result[0][0] == -1
+            return JsonResponse({"is_free": is_free}, status=200)
+
+        except Exception as err:
+            print("Error checking other driver status:", err)
+            return JsonResponse({"message": str(err)}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def toggle_other_driver_online_status(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            driver_id = data.get('driver_id')
+            new_status = data.get('online_status')
+            current_lat = data.get('current_lat', 0)
+            current_lng = data.get('current_lng', 0)
+
+            if not driver_id:
+                return JsonResponse({"message": "Driver ID is required"}, status=400)
+
+            if new_status == 0:
+                check_query = """
+                    SELECT current_booking_id 
+                    FROM vtpartner.active_other_drivertbl 
+                    WHERE other_driver_id = %s AND current_booking_id != -1
+                """
+                result = select_query(check_query, (driver_id,))
+                
+                if result:
+                    return JsonResponse({
+                        "message": "Driver has active bookings and cannot go offline"
+                    }, status=400)
+
+                delete_driver_query = """
+                    DELETE FROM vtpartner.active_other_drivertbl 
+                    WHERE other_driver_id = %s
+                """
+                delete_values = (driver_id,)
+                delete_query(delete_driver_query, delete_values)
+
+            else:
+                insert_driver_query = """
+                    INSERT INTO vtpartner.active_other_drivertbl 
+                    (other_driver_id, current_lat, current_lng, current_status, current_booking_id) 
+                    VALUES (%s, %s, %s, 1, -1)
+                    ON CONFLICT (other_driver_id) 
+                    DO UPDATE SET 
+                        current_lat = EXCLUDED.current_lat,
+                        current_lng = EXCLUDED.current_lng,
+                        entry_time = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP),
+                        date = CURRENT_DATE,
+                        current_status = 1
+                """
+                insert_values = (driver_id, current_lat, current_lng)
+                insert_query(insert_driver_query, insert_values)
+
+            update_driver_query = """
+                UPDATE vtpartner.other_driverstbl 
+                SET is_online = %s 
+                WHERE other_driver_id = %s
+            """
+            update_values = (new_status, driver_id)
+            update_query(update_driver_query, update_values)
+
+            return JsonResponse({
+                "message": f"Driver status updated to {'online' if new_status == 1 else 'offline'}"
+            }, status=200)
+
+        except Exception as err:
+            print("Error toggling other driver status:", err)
+            return JsonResponse({"message": str(err)}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+# Handyman APIs
+@csrf_exempt
+def check_handyman_status(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            handyman_id = data.get('handyman_id')
+
+            if not handyman_id:
+                return JsonResponse({"message": "Handyman ID is required"}, status=400)
+
+            query = """
+                SELECT current_booking_id 
+                FROM vtpartner.active_handyman_tbl 
+                WHERE handyman_id = %s
+            """
+            result = select_query(query, (handyman_id,))
+
+            if not result:
+                return JsonResponse({"is_free": True}, status=200)
+
+            is_free = result[0][0] == -1
+            return JsonResponse({"is_free": is_free}, status=200)
+
+        except Exception as err:
+            print("Error checking handyman status:", err)
+            return JsonResponse({"message": str(err)}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def toggle_handyman_online_status(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            handyman_id = data.get('handyman_id')
+            new_status = data.get('online_status')
+            current_lat = data.get('current_lat', 0)
+            current_lng = data.get('current_lng', 0)
+
+            if not handyman_id:
+                return JsonResponse({"message": "Handyman ID is required"}, status=400)
+
+            if new_status == 0:
+                check_query = """
+                    SELECT current_booking_id 
+                    FROM vtpartner.active_handyman_tbl 
+                    WHERE handyman_id = %s AND current_booking_id != -1
+                """
+                result = select_query(check_query, (handyman_id,))
+                
+                if result:
+                    return JsonResponse({
+                        "message": "Handyman has active bookings and cannot go offline"
+                    }, status=400)
+
+                delete_handyman_query = """
+                    DELETE FROM vtpartner.active_handyman_tbl 
+                    WHERE handyman_id = %s
+                """
+                delete_values = (handyman_id,)
+                delete_query(delete_handyman_query, delete_values)
+
+            else:
+                insert_handyman_query = """
+                    INSERT INTO vtpartner.active_handyman_tbl 
+                    (handyman_id, current_lat, current_lng, current_status, current_booking_id) 
+                    VALUES (%s, %s, %s, 1, -1)
+                    ON CONFLICT (handyman_id) 
+                    DO UPDATE SET 
+                        current_lat = EXCLUDED.current_lat,
+                        current_lng = EXCLUDED.current_lng,
+                        entry_time = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP),
+                        date = CURRENT_DATE,
+                        current_status = 1
+                """
+                insert_values = (handyman_id, current_lat, current_lng)
+                insert_query(insert_handyman_query, insert_values)
+
+            update_handyman_query = """
+                UPDATE vtpartner.handymans_tbl 
+                SET is_online = %s 
+                WHERE handyman_id = %s
+            """
+            update_values = (new_status, handyman_id)
+            update_query(update_handyman_query, update_values)
+
+            return JsonResponse({
+                "message": f"Handyman status updated to {'online' if new_status == 1 else 'offline'}"
+            }, status=200)
+
+        except Exception as err:
+            print("Error toggling handyman status:", err)
+            return JsonResponse({"message": str(err)}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+
 @csrf_exempt
 def delete_estimation(request):
     try:

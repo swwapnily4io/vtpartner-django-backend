@@ -202,6 +202,15 @@ urlpatterns = [
     path('toggle_driver_online_status',views.toggle_driver_online_status,name='toggle_driver_online_status'),
     #Change cab Driver Status from Online to Offline and vice versa
     path('toggle_cab_driver_online_status',views.toggle_cab_driver_online_status,name='toggle_cab_driver_online_status'),
+    
+    
+    path('check_jcb_crane_driver_status', views.check_jcb_crane_driver_status, name='check_jcb_crane_driver_status'),
+    path('toggle_jcb_crane_driver_online_status', views.toggle_jcb_crane_driver_online_status, name='toggle_jcb_crane_driver_online_status'),
+    path('check_other_driver_status', views.check_other_driver_status, name='check_other_driver_status'),
+    path('toggle_other_driver_online_status', views.toggle_other_driver_online_status, name='toggle_other_driver_online_status'),
+    path('check_handyman_status', views.check_handyman_status, name='check_handyman_status'),
+    path('toggle_handyman_online_status', views.toggle_handyman_online_status, name='toggle_handyman_online_status'),
+    
     #
     path('get_recharge_plans',views.get_recharge_plans,name='get_recharge_plans'),
     #
