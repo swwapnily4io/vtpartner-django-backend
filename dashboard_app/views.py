@@ -649,19 +649,35 @@ def add_new_pincode(request):
 def add_multiple_pincodes(request):
     if request.method == "POST":
         try:
+            # Print raw request body for debugging
+            print("Raw request body:", request.body)
+            
             # Extracting data from the request body
-            data = json.loads(request.body)
+            try:
+                data = json.loads(request.body)
+                print("Parsed request data:", data)
+            except json.JSONDecodeError as e:
+                return JsonResponse({"message": f"Invalid JSON: {str(e)}"}, status=400)
+            
             city_id = data.get('city_id')
             pincodes = data.get('pincodes', [])
-            pincode_status = data.get('pincode_status', 1)  # Default to active status (1)
-
-            # Validate required fields
+            pincode_status = data.get('pincode_status', 1)
+            
+            # Detailed validation with better error messages
             if not city_id:
                 return JsonResponse({"message": "Missing required field: city_id"}, status=400)
             
-            if not pincodes or not isinstance(pincodes, list):
-                return JsonResponse({"message": "Missing or invalid pincodes list"}, status=400)
-
+            if not isinstance(city_id, (int, str)):
+                return JsonResponse({"message": f"city_id must be a number or string, got {type(city_id).__name__}"}, status=400)
+            
+            if not pincodes:
+                return JsonResponse({"message": "No pincodes provided"}, status=400)
+            
+            if not isinstance(pincodes, list):
+                return JsonResponse({"message": f"pincodes must be a list, got {type(pincodes).__name__}"}, status=400)
+            
+            print(f"Processing {len(pincodes)} pincodes for city_id: {city_id}")
+            
             # Initialize counters for tracking the operation
             added_count = 0
             existing_count = 0
@@ -672,6 +688,7 @@ def add_multiple_pincodes(request):
                 try:
                     # Skip invalid pincodes (should be 6 digits)
                     if not pincode or not re.match(r'^\d{6}$', str(pincode)):
+                        print(f"Invalid pincode format: {pincode}")
                         failed_count += 1
                         continue
 
@@ -685,6 +702,7 @@ def add_multiple_pincodes(request):
 
                     # If pincode already exists, skip it and increment counter
                     if result and result[0][0] > 0:
+                        print(f"Pincode already exists: {pincode}")
                         existing_count += 1
                         continue
 
@@ -698,8 +716,10 @@ def add_multiple_pincodes(request):
                     
                     # If insert was successful, increment added counter
                     if insert_result:
+                        print(f"Successfully added pincode: {pincode}")
                         added_count += 1
                     else:
+                        print(f"Failed to insert pincode: {pincode}")
                         failed_count += 1
 
                 except Exception as e:
