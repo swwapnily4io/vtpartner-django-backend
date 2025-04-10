@@ -7170,6 +7170,292 @@ def get_cab_driver_details(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+@csrf_exempt 
+def get_jcb_crane_driver_details(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        driver_id = data.get("jcb_crane_driver_id")
+        
+        try:
+            if driver_id is not None:
+                query = """
+                SELECT 
+                    jcd.*,
+                    sc.sub_cat_name,
+                    sc.image as sub_cat_image,
+                    sc.price_per_hour as sub_cat_price_per_hour,
+                    sc.service_base_price as sub_cat_base_price,
+                    COALESCE(os.service_name, 'NA') as service_name,
+                    COALESCE(os.service_image, 'NA') as service_image,
+                    COALESCE(os.price_per_hour, 0) as service_price_per_hour,
+                    COALESCE(os.service_base_price, 0) as service_base_price
+                FROM vtpartner.jcb_crane_driverstbl jcd
+                LEFT JOIN vtpartner.sub_categorytbl sc ON jcd.sub_cat_id = sc.sub_cat_id
+                LEFT JOIN vtpartner.other_servicestbl os ON jcd.service_id = os.service_id
+                WHERE jcd.jcb_crane_driver_id = %s
+                """
+                result = select_query(query, [driver_id])
+            else:
+                return JsonResponse({"message": "jcb_crane_driver_id is required"}, status=400)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            # Get all column names from the result
+            driver_details = {
+                # Basic driver details
+                "jcb_crane_driver_id": result[0][0],
+                "driver_name": result[0][1],
+                "profile_pic": result[0][2],
+                "is_online": result[0][3],
+                "ratings": result[0][4],
+                "mobile_no": result[0][5],
+                "registration_date": result[0][6],
+                "r_lat": result[0][7],
+                "r_lng": result[0][8],
+                "current_lat": result[0][9],
+                "current_lng": result[0][10],
+                "status": result[0][11],
+                "recent_online_pic": result[0][12],
+                "is_verified": result[0][13],
+                "category_id": result[0][14],
+                "sub_cat_id": result[0][15],
+                "service_id": result[0][16],
+                "vehicle_id": result[0][17],
+                "city_id": result[0][18],
+                "time": result[0][19],
+                "pan_card_no": result[0][20],
+                "aadhar_no": result[0][21],
+                "house_no": result[0][22],
+                "city_name": result[0][23],
+                "full_address": result[0][24],
+                "gender": result[0][25],
+                "aadhar_card_front": result[0][26],
+                "aadhar_card_back": result[0][27],
+                "pan_card_front": result[0][28],
+                "pan_card_back": result[0][29],
+                "license_front": result[0][30],
+                "license_back": result[0][31],
+                "insurance_image": result[0][32],
+                "noc_image": result[0][33],
+                "pollution_certificate_image": result[0][34],
+                "rc_image": result[0][35],
+                "vehicle_image": result[0][36],
+                "owner_id": result[0][37],
+                "vehicle_plate_image": result[0][38],
+                "driving_license_no": result[0][39],
+                "vehicle_plate_no": result[0][40],
+                "rc_no": result[0][41],
+                "insurance_no": result[0][42],
+                "noc_no": result[0][43],
+                "vehicle_fuel_type": result[0][44],
+                "authtoken": result[0][45],
+                "otp_no": result[0][46],
+                "reason": result[0][47],
+                "bank_name": result[0][48],
+                "ifsc_code": result[0][49],
+                "account_number": result[0][50],
+                "account_name": result[0][51],
+                # Service and subcategory details
+                "sub_cat_name": result[0][52],
+                "sub_cat_image": result[0][53],
+                "sub_cat_price_per_hour": float(result[0][54]),
+                "sub_cat_base_price": float(result[0][55]),
+                "service_name": result[0][56],
+                "service_image": result[0][57],
+                "service_price_per_hour": float(result[0][58]),
+                "service_base_price": float(result[0][59])
+            }
+
+            return JsonResponse({"result": driver_details}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt 
+def get_other_driver_details(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        driver_id = data.get("other_driver_id")
+        
+        try:
+            if driver_id is not None:
+                query = """
+                SELECT 
+                    od.*,
+                    sc.sub_cat_name,
+                    sc.image as sub_cat_image,
+                    sc.price_per_hour as sub_cat_price_per_hour,
+                    sc.service_base_price as sub_cat_base_price,
+                    COALESCE(os.service_name, 'NA') as service_name,
+                    COALESCE(os.service_image, 'NA') as service_image,
+                    COALESCE(os.price_per_hour, 0) as service_price_per_hour,
+                    COALESCE(os.service_base_price, 0) as service_base_price
+                FROM vtpartner.other_driverstbl od
+                LEFT JOIN vtpartner.sub_categorytbl sc ON od.sub_cat_id = sc.sub_cat_id
+                LEFT JOIN vtpartner.other_servicestbl os ON od.service_id = os.service_id
+                WHERE od.other_driver_id = %s
+                """
+                result = select_query(query, [driver_id])
+            else:
+                return JsonResponse({"message": "other_driver_id is required"}, status=400)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            driver_details = {
+                # Basic driver details
+                "other_driver_id": result[0][0],
+                "driver_first_name": result[0][1],
+                "driver_last_name": result[0][2],
+                "profile_pic": result[0][3],
+                "is_online": result[0][4],
+                "ratings": result[0][5],
+                "mobile_no": result[0][6],
+                "registration_date": result[0][7],
+                "time": result[0][8],
+                "r_lat": result[0][9],
+                "r_lng": result[0][10],
+                "current_lat": result[0][11],
+                "current_lng": result[0][12],
+                "status": result[0][13],
+                "recent_online_pic": result[0][14],
+                "is_verified": result[0][15],
+                "category_id": result[0][16],
+                "sub_cat_id": result[0][17],
+                "service_id": result[0][18],
+                "city_id": result[0][19],
+                "house_no": result[0][20],
+                "city_name": result[0][21],
+                "full_address": result[0][22],
+                "aadhar_no": result[0][23],
+                "pan_card_no": result[0][24],
+                "gender": result[0][25],
+                "aadhar_card_front": result[0][26],
+                "aadhar_card_back": result[0][27],
+                "pan_card_front": result[0][28],
+                "pan_card_back": result[0][29],
+                "driving_license_no": result[0][30],
+                "license_front": result[0][31],
+                "license_back": result[0][32],
+                "authtoken": result[0][33],
+                "otp_no": result[0][34],
+                "reason": result[0][35],
+                "bank_name": result[0][36],
+                "ifsc_code": result[0][37],
+                "account_number": result[0][38],
+                "account_name": result[0][39],
+                # Service and subcategory details
+                "sub_cat_name": result[0][40],
+                "sub_cat_image": result[0][41],
+                "sub_cat_price_per_hour": float(result[0][42]),
+                "sub_cat_base_price": float(result[0][43]),
+                "service_name": result[0][44],
+                "service_image": result[0][45],
+                "service_price_per_hour": float(result[0][46]),
+                "service_base_price": float(result[0][47])
+            }
+
+            return JsonResponse({"result": driver_details}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt 
+def get_handyman_details(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        handyman_id = data.get("handyman_id")
+        
+        try:
+            if handyman_id is not None:
+                query = """
+                SELECT 
+                    h.*,
+                    sc.sub_cat_name,
+                    sc.image as sub_cat_image,
+                    sc.price_per_hour as sub_cat_price_per_hour,
+                    sc.service_base_price as sub_cat_base_price,
+                    COALESCE(os.service_name, 'NA') as service_name,
+                    COALESCE(os.service_image, 'NA') as service_image,
+                    COALESCE(os.price_per_hour, 0) as service_price_per_hour,
+                    COALESCE(os.service_base_price, 0) as service_base_price
+                FROM vtpartner.handymans_tbl h
+                LEFT JOIN vtpartner.sub_categorytbl sc ON h.sub_cat_id = sc.sub_cat_id
+                LEFT JOIN vtpartner.other_servicestbl os ON h.service_id = os.service_id
+                WHERE h.handyman_id = %s
+                """
+                result = select_query(query, [handyman_id])
+            else:
+                return JsonResponse({"message": "handyman_id is required"}, status=400)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            handyman_details = {
+                # Basic handyman details
+                "handyman_id": result[0][0],
+                "name": result[0][1],
+                "profile_pic": result[0][2],
+                "is_online": result[0][3],
+                "ratings": result[0][4],
+                "mobile_no": result[0][5],
+                "registration_date": result[0][6],
+                "time": result[0][7],
+                "r_lat": result[0][8],
+                "r_lng": result[0][9],
+                "current_lat": result[0][10],
+                "current_lng": result[0][11],
+                "status": result[0][12],
+                "recent_online_pic": result[0][13],
+                "is_verified": result[0][14],
+                "category_id": result[0][15],
+                "sub_cat_id": result[0][16],
+                "service_id": result[0][17],
+                "city_id": result[0][18],
+                "house_no": result[0][19],
+                "city_name": result[0][20],
+                "full_address": result[0][21],
+                "aadhar_no": result[0][22],
+                "pan_card_no": result[0][23],
+                "gender": result[0][24],
+                "aadhar_card_front": result[0][25],
+                "aadhar_card_back": result[0][26],
+                "pan_card_front": result[0][27],
+                "pan_card_back": result[0][28],
+                "authtoken": result[0][29],
+                "otp_no": result[0][30],
+                "license_front": result[0][31],
+                "license_back": result[0][32],
+                "reason": result[0][33],
+                "bank_name": result[0][34],
+                "ifsc_code": result[0][35],
+                "account_number": result[0][36],
+                "account_name": result[0][37],
+                # Service and subcategory details
+                "sub_cat_name": result[0][38],
+                "sub_cat_image": result[0][39],
+                "sub_cat_price_per_hour": float(result[0][40]),
+                "sub_cat_base_price": float(result[0][41]),
+                "service_name": result[0][42],
+                "service_image": result[0][43],
+                "service_price_per_hour": float(result[0][44]),
+                "service_base_price": float(result[0][45])
+            }
+
+            return JsonResponse({"result": handyman_details}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt
 def check_driver_status(request):

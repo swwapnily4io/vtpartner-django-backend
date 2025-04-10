@@ -194,6 +194,11 @@ urlpatterns = [
     path('get_goods_driver_details',views.get_goods_driver_details,name='get_goods_driver_details'),
     #Get Cab Driver Details
     path('get_cab_driver_details',views.get_cab_driver_details,name='get_cab_driver_details'),
+    
+    path('get_jcb_crane_driver_details', views.get_jcb_crane_driver_details, name='get_jcb_crane_driver_details'),
+    path('get_other_driver_details', views.get_other_driver_details, name='get_other_driver_details'),
+    path('get_handyman_details', views.get_handyman_details, name='get_handyman_details'),
+    
     #Check Goods Driver Status
     path('check_driver_status',views.check_driver_status,name='check_driver_status'),
     #Check Cab Driver Status
