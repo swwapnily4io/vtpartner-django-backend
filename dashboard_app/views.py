@@ -4083,7 +4083,7 @@ def update_handyman_status(request):
         
         required_fields = {
             "handyman_id": handyman_id,
-            "status": status,
+            # "status": status,
         }
 
         missing_fields = check_missing_fields(required_fields)
@@ -4133,7 +4133,7 @@ def update_other_driver_status(request):
         
         required_fields = {
             "other_driver_id": other_driver_id,
-            "status": status,
+            # "status": status,
         }
 
         missing_fields = check_missing_fields(required_fields)
@@ -4183,7 +4183,7 @@ def update_jcb_crane_driver_status(request):
         
         required_fields = {
             "jcb_crane_driver_id": jcb_crane_driver_id,
-            "status": status,
+            # "status": status,
         }
 
         missing_fields = check_missing_fields(required_fields)
