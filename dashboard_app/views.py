@@ -11660,10 +11660,10 @@ def get_total_handyman_verified_with_count(request):
                 # Add sub category details if available
                 if row[17] != -1:
                     handyman_data["sub_category_details"] = {
-                        "sub_cat_name": row[34] if row[34] else "NA",
-                        "sub_cat_image": row[35] if row[35] else "NA",
-                        "sub_cat_price_per_hour": float(row[36]) if row[36] else 0.0,
-                        "sub_cat_service_base_price": float(row[37]) if row[37] else 0.0,
+                        "sub_cat_name": row[39] if row[39] else "NA",
+                        "sub_cat_image": row[40] if row[40] else "NA",
+                        "sub_cat_price_per_hour": float(row[41]) if row[41] else 0.0,
+                        "sub_cat_service_base_price": float(row[42]) if row[42] else 0.0,
                     }
                 else:
                     handyman_data["sub_category_details"] = None
@@ -11671,10 +11671,10 @@ def get_total_handyman_verified_with_count(request):
                 # Add service details if available
                 if row[18] != -1:
                     handyman_data["service_details"] = {
-                        "service_name": row[38] if row[38] else "NA",
-                        "service_image": row[39] if row[39] else "NA",
-                        "service_price_per_hour": float(row[40]) if row[40] else 0.0,
-                        "service_base_price": float(row[41]) if row[41] else 0.0,
+                        "service_name": row[43] if row[43] else "NA",
+                        "service_image": row[44] if row[44] else "NA",
+                        "service_price_per_hour": float(row[45]) if row[45] else 0.0,
+                        "service_base_price": float(row[46]) if row[46] else 0.0,
                     }
                 else:
                     handyman_data["service_details"] = None
@@ -11770,7 +11770,7 @@ def get_total_handyman_un_verified_with_count(request):
                 # Add sub category details if available (starting at index 33)
                 if row[16] != -1:  # Check sub_cat_id
                     handyman_data["sub_category_details"] = {
-                        "sub_cat_name": str(row[33]) if row[33] else "NA",
+                        "sub_cat_name": str(row[38]) if row[38] else "NA",
                         "sub_cat_image": str(row[34]) if row[34] else "NA",
                         "sub_cat_price_per_hour": float(row[35]) if row[35] and str(row[35]).replace('.', '', 1).isdigit() else 0.0,
                         "sub_cat_service_base_price": float(row[36]) if row[36] and str(row[36]).replace('.', '', 1).isdigit() else 0.0
