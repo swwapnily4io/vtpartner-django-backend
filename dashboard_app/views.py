@@ -27,6 +27,7 @@ from storages.backends.s3boto3 import S3Boto3Storage
 from django.conf import settings
 import boto3
 from botocore.exceptions import ClientError
+import re
 
 from PIL import Image  # Pillow library for image processing
 
