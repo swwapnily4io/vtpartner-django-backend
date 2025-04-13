@@ -43,6 +43,40 @@ mapKey = "AIzaSyAAlmEtjJOpSaJ7YVkMKwdSuMTbTx39l_o"
 #     print("missing_fields::",missing_fields)
 #     return missing_fields if missing_fields else None
 
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime, timedelta
+
+scheduler = BackgroundScheduler()
+scheduler.start()
+
+def process_scheduled_bookings():
+    """Check for scheduled bookings that are due and process them"""
+    current_time = datetime.now()
+    query = """
+        SELECT booking_id, pickup_lat, pickup_lng, city_id, vehicle_id, body_type
+        FROM vtpartner.bookings_tbl
+        WHERE is_scheduled = true 
+        AND scheduled_time <= %s
+        AND booking_status = 'Pending'
+    """
+    
+    scheduled_bookings = select_query(query, [current_time])
+    
+    for booking in scheduled_bookings:
+        booking_id = booking[0]
+        # Process each scheduled booking similar to immediate bookings
+        # Find nearby drivers and send notifications
+        process_booking(booking)
+
+# Run the scheduler every minute
+scheduler.add_job(process_scheduled_bookings, 'interval', minutes=1)
+
+def process_booking(booking):
+    """Process a single scheduled booking"""
+    # Implementation similar to immediate booking processing
+    # Find nearby drivers and send notifications
+    pass
+
 @csrf_exempt
 def get_agent_app_firebase_access_token(request):
     print("agent_app_token_fetched")
@@ -6278,7 +6312,7 @@ ORDER BY distance;
     
 
 @csrf_exempt
-def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(request):
+def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token_old(request):
     if request.method == "POST":
         data = json.loads(request.body)
         # lat = data.get("lat")
@@ -6512,6 +6546,256 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                             print(f"Skipped notification for driver ID {driver[1]} due to missing auth token")
                     except Exception as err:
                         print(f"Error sending notification to driver ID {driver[1]}: {err}")
+
+
+                return JsonResponse({"result": response_value}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "An error occurred"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        # lat = data.get("lat")
+        # lng = data.get("lng")
+        # city_id = data.get("city_id")
+        price_type = data.get("price_type", 1)
+        radius_km = data.get("radius_km", 5)  # Radius in kilometers
+        vehicle_id = data.get("vehicle_id")  # Vehicle ID
+        # Read the individual fields from the JSON data
+        customer_id = data.get("customer_id")
+        pickup_lat = data.get("pickup_lat")
+        pickup_lng = data.get("pickup_lng")
+        destination_lat = data.get("destination_lat")
+        destination_lng = data.get("destination_lng")
+        distance = data.get("distance")
+        time = data.get("time")
+        total_price = data.get("total_price")
+        base_price = data.get("base_price")
+        otp = random.randint(1000, 9999)  # Generate a random 4-digit OTP
+        gst_amount = data.get("gst_amount")
+        igst_amount = data.get("igst_amount")
+        goods_type_id = data.get("goods_type_id")
+        payment_method = data.get("payment_method")
+        city_id = data.get("city_id")
+        sender_name = data.get("sender_name")
+        sender_number = data.get("sender_number")
+        receiver_name = data.get("receiver_name")
+        receiver_number = data.get("receiver_number")
+        pickup_address = data.get("pickup_address")
+        drop_address = data.get("drop_address")
+        server_access_token = data.get("server_access_token")
+        
+        coupon_applied = data.get("coupon_applied")
+        coupon_id = data.get("coupon_id")
+        coupon_amount = data.get("coupon_amount")
+        before_coupon_amount = data.get("before_coupon_amount")
+        
+        # New fields for scheduling and multiple drops
+        is_scheduled = data.get("is_scheduled", False)
+        scheduled_time = data.get("scheduled_time")
+        drop_locations = data.get("drop_locations", [])
+        drop_contacts = data.get("drop_contacts", [])
+        multiple_drops = data.get("multiple_drops", 0)
+        body_type = data.get("body_type", "Any")
+
+        # List of required fields
+        required_fields = {
+            "city_id":city_id,
+            "price_type":price_type,
+            "radius_km":radius_km,
+            "vehicle_id":vehicle_id,
+            "customer_id":customer_id,
+            "pickup_lat":pickup_lat,
+            "pickup_lng":pickup_lng,
+            "destination_lat":destination_lat,
+            "destination_lng":destination_lng,
+            "distance":distance,
+            "time":time,
+            "total_price":total_price,
+            "base_price":base_price,
+            "otp":str(otp),
+            "gst_amount":gst_amount,
+            "igst_amount":igst_amount,
+            "goods_type_id":goods_type_id,
+            "payment_method":payment_method,
+            "city_id":city_id,
+            "sender_name":sender_name,
+            "sender_number":sender_number,
+            "receiver_name":receiver_name,
+            "receiver_number":receiver_number,
+            "pickup_address":pickup_address,
+            "drop_address":drop_address,
+            "server_access_token":server_access_token,
+            "is_scheduled": is_scheduled,
+            "body_type": body_type
+        }
+
+        # Check for missing fields
+        missing_fields = check_missing_fields(required_fields)
+        
+        if missing_fields:
+            return JsonResponse(
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
+        
+        
+
+        
+        
+        
+        
+
+        if pickup_lat is None or pickup_lng is None:
+            return JsonResponse({"message": "Latitude and Longitude are required"}, status=400)
+
+        try:
+            
+            # Insert record in the booking table
+            query_insert = """
+                INSERT INTO vtpartner.bookings_tbl (
+                    customer_id, driver_id, pickup_lat, pickup_lng, destination_lat, destination_lng, 
+                    distance, time, total_price, base_price, booking_timing, booking_date, 
+                    otp, gst_amount, igst_amount, 
+                    payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
+                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,
+                    is_scheduled, scheduled_time, drop_locations, drop_contacts,
+                    multiple_drops, body_type
+                ) 
+                VALUES (
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                    EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
+                    %s, %s,%s, %s,%s, %s,%s, %s,%s,%s,%s,%s,
+                    %s, %s, %s, %s, %s, %s
+                ) 
+                RETURNING booking_id;
+            """
+            
+            # Convert scheduled_time to datetime if provided
+            if scheduled_time:
+                scheduled_time = datetime.strptime(scheduled_time, '%H:%M:%S')
+                # Combine with current date
+                current_date = datetime.now().date()
+                scheduled_time = datetime.combine(current_date, scheduled_time.time())
+            
+            # Convert drop locations and contacts to JSON strings
+            drop_locations_json = json.dumps(drop_locations)
+            drop_contacts_json = json.dumps(drop_contacts)
+
+            insert_values = [
+                customer_id, '-1', pickup_lat, pickup_lng, destination_lat, destination_lng, 
+                distance, time, total_price, base_price, otp, 
+                gst_amount, igst_amount, payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
+                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,
+                is_scheduled, scheduled_time, drop_locations_json, drop_contacts_json,
+                multiple_drops, body_type
+            ]
+
+            # Assuming insert_query is a function that runs the query
+            new_result = insert_query(query_insert, insert_values)
+            
+            if new_result:
+                booking_id = new_result[0][0]  # Extracting booking_id from the result
+                response_value = [{"booking_id": booking_id}]
+                
+                #send notification to all goods driver
+                fcm_data = {
+                    'intent':'driver',
+                    'booking_id':str(booking_id)
+                }
+                # Only send notifications if not a scheduled booking
+                if not is_scheduled:
+                    query = """
+                        SELECT 
+                        main.active_id, 
+                        main.goods_driver_id, 
+                        main.current_lat, 
+                        main.current_lng, 
+                        main.entry_time, 
+                        main.current_status, 
+                        goods_driverstbl.driver_first_name,
+                        goods_driverstbl.profile_pic, 
+                        vehiclestbl.image AS vehicle_image, 
+                        vehiclestbl.vehicle_name,
+                        vehiclestbl.weight,
+                        vehicle_city_wise_price_tbl.starting_price_per_km,
+                        vehicle_city_wise_price_tbl.base_fare,
+                        vehiclestbl.vehicle_id,
+                        vehiclestbl.size_image,
+                        goods_driverstbl.authtoken,
+                        (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) AS distance
+                    FROM vtpartner.active_goods_drivertbl AS main
+                    INNER JOIN (
+                        SELECT goods_driver_id, MAX(entry_time) AS max_entry_time
+                        FROM vtpartner.active_goods_drivertbl
+                        GROUP BY goods_driver_id
+                    ) AS latest ON main.goods_driver_id = latest.goods_driver_id
+                                AND main.entry_time = latest.max_entry_time
+                    JOIN vtpartner.goods_driverstbl ON main.goods_driver_id = goods_driverstbl.goods_driver_id
+                    JOIN vtpartner.vehiclestbl ON goods_driverstbl.vehicle_id = vehiclestbl.vehicle_id
+                    JOIN vtpartner.vehicle_city_wise_price_tbl ON vehiclestbl.vehicle_id = vehicle_city_wise_price_tbl.vehicle_id
+                    AND vehicle_city_wise_price_tbl.city_id = %s  AND vehicle_city_wise_price_tbl.price_type_id=%s
+                    WHERE main.current_status = 1
+                    AND (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) <= %s
+                    AND goods_driverstbl.category_id = vehiclestbl.category_id
+                    AND goods_driverstbl.category_id = '1' AND  goods_driverstbl.vehicle_id=%s
+                    AND (CASE 
+                            WHEN %s != 'Any' THEN goods_driverstbl.body_type = %s
+                            ELSE TRUE
+                        END)
+                    ORDER BY distance;
+
+                    """
+                    values = [pickup_lat, pickup_lng, pickup_lat,city_id,price_type, pickup_lat, pickup_lng, pickup_lat, radius_km,vehicle_id,
+                              body_type, body_type]
+
+                    # Execute the query
+                    nearby_drivers = select_query(query, values)
+                
+
+                    # Format drop locations for notification
+                    drop_locations_text = "\n".join([
+                        f"Drop {i+1}: {loc.get('address', '')}"
+                        for i, loc in enumerate(drop_locations)
+                    ]) if drop_locations else drop_address
+
+                
+                    for driver in nearby_drivers:
+                        try:
+                            driver_auth_token = get_goods_driver_auth_token2(driver[1])
+                            print(f"driver_auth_token ->{driver[1]} {driver_auth_token}")
+                            if driver_auth_token:
+                                message = (
+                                    f"You have a new Ride Request\n"
+                                    f"Pickup: {pickup_address}\n"
+                                    f"Drops: {drop_locations_text}"
+                                )
+                                sendFMCMsg(
+                                    driver_auth_token,
+                                    message,
+                                    "New Goods Ride Request",
+                                    fcm_data,
+                                    server_access_token,
+                                    "Agent"
+                                )
+                                print(f"Notification sent to driver ID {driver[1]}")
+                            else:
+                                print(f"Skipped notification for driver ID {driver[1]} due to missing auth token")
+                        except Exception as err:
+                            print(f"Error sending notification to driver ID {driver[1]}: {err}")
 
 
                 return JsonResponse({"result": response_value}, status=200)
