@@ -53,7 +53,7 @@ def process_scheduled_bookings():
     """Check for scheduled bookings that are due and process them"""
     current_time = datetime.now()
     query = """
-        SELECT booking_id, pickup_lat, pickup_lng, city_id, vehicle_id, body_type
+        SELECT booking_id, pickup_lat, pickup_lng, city_id, body_type
         FROM vtpartner.bookings_tbl
         WHERE is_scheduled = true 
         AND scheduled_time <= %s
