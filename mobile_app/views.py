@@ -365,18 +365,27 @@ def get_agent_app_firebase_access_token(request):
         # Create a service account credential dictionary
         # load_dotenv('/root/.env_vtpartner')
         load_dotenv('/root/.env_vtpartner_agent')
+        project_id = os.getenv('FIREBASE_PROJECT_ID')
+        private_key = os.getenv('FIREBASE_PRIVATE_KEY')
+        client_email = os.getenv('FIREBASE_CLIENT_EMAIL')
+        
+        if not all([project_id, private_key, client_email]):
+            return JsonResponse({
+                "status": "error",
+                "message": "Missing required environment variables"
+            }, status=500)
+
         credentials_dict = {
             "type": "service_account",
-            "project_id": os.getenv('FIREBASE_PROJECT_ID'),
+            "project_id": project_id,
             "private_key_id": os.getenv('FIREBASE_PRIVATE_KEY_ID'),
-            "private_key": os.getenv('FIREBASE_PRIVATE_KEY'),
-            "client_email": os.getenv('FIREBASE_CLIENT_EMAIL'),
+            "private_key": private_key.replace('\\n', '\n'),
+            "client_email": client_email,
             "client_id": os.getenv('FIREBASE_CLIENT_ID'),
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
             "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-            "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{os.getenv('FIREBASE_CLIENT_EMAIL')}",
-             "universe_domain": "googleapis.com"
+            "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{client_email}"
         }
 
         credentials = service_account.Credentials.from_service_account_info(
