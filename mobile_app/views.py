@@ -52,30 +52,251 @@ scheduler.start()
 def process_scheduled_bookings():
     """Check for scheduled bookings that are due and process them"""
     current_time = datetime.now()
+    
+    # Get bookings that are scheduled and due (or past due)
     query = """
         SELECT booking_id, pickup_lat, pickup_lng, city_id, body_type
         FROM vtpartner.bookings_tbl
         WHERE is_scheduled = true 
         AND scheduled_time <= %s
         AND booking_status = 'Pending'
+        AND (retry_count IS NULL OR retry_count < 5)
+        LIMIT 10
     """
     
-    scheduled_bookings = select_query(query, [current_time])
-    
-    for booking in scheduled_bookings:
-        booking_id = booking[0]
-        # Process each scheduled booking similar to immediate bookings
-        # Find nearby drivers and send notifications
-        process_booking(booking)
+    try:
+        scheduled_bookings = select_query(query, [current_time])
+        
+        if scheduled_bookings:
+            print(f"Processing {len(scheduled_bookings)} scheduled bookings")
+            for booking in scheduled_bookings:
+                booking_id = booking[0]
+                process_booking(booking, booking_id)
+        
+        # Also handle retries for bookings that failed to find drivers
+        retry_query = """
+            SELECT booking_id, pickup_lat, pickup_lng, city_id, body_type
+            FROM vtpartner.bookings_tbl
+            WHERE is_scheduled = true 
+            AND booking_status = 'Pending'
+            AND retry_count > 0
+            AND retry_count < 5
+            AND EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - last_retry_time)) > 300
+            LIMIT 5
+        """
+        
+        retry_bookings = select_query(retry_query, [])
+        if retry_bookings:
+            print(f"Retrying {len(retry_bookings)} scheduled bookings")
+            for booking in retry_bookings:
+                booking_id = booking[0]
+                # Update last retry time
+                update_query(
+                    "UPDATE vtpartner.bookings_tbl SET last_retry_time = CURRENT_TIMESTAMP WHERE booking_id = %s",
+                    [booking_id]
+                )
+                process_booking(booking, booking_id)
+        
+        # Handle expired bookings (too many retries or too old)
+        expire_query = """
+            UPDATE vtpartner.bookings_tbl
+            SET booking_status = 'Expired'
+            WHERE is_scheduled = true
+            AND booking_status = 'Pending'
+            AND (
+                retry_count >= 5
+                OR EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - scheduled_time)) > 7200
+            )
+            RETURNING booking_id
+        """
+        
+        expired_bookings = select_query(expire_query, [])
+        if expired_bookings:
+            print(f"Expired {len(expired_bookings)} scheduled bookings")
+            
+    except Exception as err:
+        print(f"Error in scheduled booking processing: {err}")
 
 # Run the scheduler every minute
 scheduler.add_job(process_scheduled_bookings, 'interval', minutes=1)
 
-def process_booking(booking):
+def process_booking(booking, booking_id):
     """Process a single scheduled booking"""
-    # Implementation similar to immediate booking processing
-    # Find nearby drivers and send notifications
-    pass
+    try:
+        # Extract booking details
+        pickup_lat = booking[1]
+        pickup_lng = booking[2]
+        city_id = booking[3]
+        body_type = booking[4]
+        
+        # Get additional booking details needed for notifications
+        booking_details_query = """
+            SELECT 
+                customer_id, pickup_address, drop_address, 
+                drop_locations, drop_contacts, vehicle_id,
+                price_type, radius_km
+            FROM vtpartner.bookings_tbl
+            WHERE booking_id = %s
+        """
+        booking_details = select_query(booking_details_query, [booking_id])
+        
+        if not booking_details or len(booking_details) == 0:
+            print(f"No details found for booking {booking_id}")
+            return
+            
+        # Extract booking data
+        details = booking_details[0]
+        customer_id = details[0]
+        pickup_address = details[1]
+        drop_address = details[2]
+        drop_locations_json = details[3]
+        drop_contacts_json = details[4]
+        vehicle_id = details[5]
+        price_type = details[6] or 1
+        radius_km = details[7] or 5
+        
+        # Parse JSON data
+        try:
+            drop_locations = json.loads(drop_locations_json) if drop_locations_json else []
+            drop_contacts = json.loads(drop_contacts_json) if drop_contacts_json else []
+        except:
+            drop_locations = []
+            drop_contacts = []
+            
+        # Format drop locations for notification
+        drop_locations_text = "\n".join([
+            f"Drop {i+1}: {loc.get('address', '')}"
+            for i, loc in enumerate(drop_locations)
+        ]) if drop_locations else drop_address
+        
+        # Find nearby drivers
+        query = """
+            SELECT 
+            main.active_id, 
+            main.goods_driver_id, 
+            main.current_lat, 
+            main.current_lng, 
+            main.entry_time, 
+            main.current_status, 
+            goods_driverstbl.driver_first_name,
+            goods_driverstbl.profile_pic, 
+            vehiclestbl.image AS vehicle_image, 
+            vehiclestbl.vehicle_name,
+            vehiclestbl.weight,
+            vehicle_city_wise_price_tbl.starting_price_per_km,
+            vehicle_city_wise_price_tbl.base_fare,
+            vehiclestbl.vehicle_id,
+            vehiclestbl.size_image,
+            goods_driverstbl.authtoken,
+            (6371 * acos(
+                cos(radians(%s)) * cos(radians(main.current_lat)) *
+                cos(radians(main.current_lng) - radians(%s)) +
+                sin(radians(%s)) * sin(radians(main.current_lat))
+            )) AS distance
+        FROM vtpartner.active_goods_drivertbl AS main
+        INNER JOIN (
+            SELECT goods_driver_id, MAX(entry_time) AS max_entry_time
+            FROM vtpartner.active_goods_drivertbl
+            GROUP BY goods_driver_id
+        ) AS latest ON main.goods_driver_id = latest.goods_driver_id
+                    AND main.entry_time = latest.max_entry_time
+        JOIN vtpartner.goods_driverstbl ON main.goods_driver_id = goods_driverstbl.goods_driver_id
+        JOIN vtpartner.vehiclestbl ON goods_driverstbl.vehicle_id = vehiclestbl.vehicle_id
+        JOIN vtpartner.vehicle_city_wise_price_tbl ON vehiclestbl.vehicle_id = vehicle_city_wise_price_tbl.vehicle_id
+        AND vehicle_city_wise_price_tbl.city_id = %s AND vehicle_city_wise_price_tbl.price_type_id = %s
+        WHERE main.current_status = 1
+        AND (6371 * acos(
+                cos(radians(%s)) * cos(radians(main.current_lat)) *
+                cos(radians(main.current_lng) - radians(%s)) +
+                sin(radians(%s)) * sin(radians(main.current_lat))
+            )) <= %s
+        AND goods_driverstbl.category_id = vehiclestbl.category_id
+        AND goods_driverstbl.category_id = '1' AND goods_driverstbl.vehicle_id = %s
+        AND (CASE 
+                WHEN %s != 'Any' THEN goods_driverstbl.body_type = %s
+                ELSE TRUE
+            END)
+        ORDER BY distance;
+        """
+        
+        values = [
+            pickup_lat, pickup_lng, pickup_lat, 
+            city_id, price_type, 
+            pickup_lat, pickup_lng, pickup_lat, 
+            radius_km, vehicle_id,
+            body_type, body_type
+        ]
+        
+        # Execute the query
+        nearby_drivers = select_query(query, values)
+        
+        # Prepare FCM data
+        fcm_data = {
+            'intent': 'driver',
+            'booking_id': str(booking_id)
+        }
+        
+        # Get server access token
+        server_access_token = get_agent_app_firebase_access_token()
+        
+        # Update booking status
+        update_query(
+            "UPDATE vtpartner.bookings_tbl SET booking_status = 'Processing' WHERE booking_id = %s",
+            [booking_id]
+        )
+        
+        # Send notifications to all nearby drivers
+        notification_count = 0
+        for driver in nearby_drivers:
+            try:
+                driver_id = driver[1]
+                driver_auth_token = get_goods_driver_auth_token2(driver_id)
+                print(f"Driver {driver_id} token: {driver_auth_token}")
+                
+                if driver_auth_token:
+                    message = (
+                        f"You have a new Scheduled Ride Request\n"
+                        f"Pickup: {pickup_address}\n"
+                        f"Drops: {drop_locations_text}"
+                    )
+                    
+                    sendFMCMsg(
+                        driver_auth_token,
+                        message,
+                        "New Scheduled Ride Request",
+                        fcm_data,
+                        server_access_token,
+                        "Agent"
+                    )
+                    
+                    notification_count += 1
+                    print(f"Scheduled booking notification sent to driver ID {driver_id}")
+                else:
+                    print(f"Skipped notification for driver ID {driver_id} due to missing auth token")
+            except Exception as err:
+                print(f"Error sending notification to driver ID {driver[1]}: {err}")
+        
+        # Log the processing
+        print(f"Processed scheduled booking ID {booking_id}: Sent {notification_count} notifications")
+        
+        # If no drivers available, mark booking for retry
+        if notification_count == 0:
+            update_query(
+                "UPDATE vtpartner.bookings_tbl SET booking_status = 'Pending', retry_count = COALESCE(retry_count, 0) + 1 WHERE booking_id = %s",
+                [booking_id]
+            )
+            print(f"No drivers available for booking {booking_id}, marked for retry")
+        
+    except Exception as err:
+        print(f"Error processing scheduled booking {booking_id}: {err}")
+        # Update booking status to indicate error
+        try:
+            update_query(
+                "UPDATE vtpartner.bookings_tbl SET booking_status = 'Error', error_message = %s WHERE booking_id = %s",
+                [str(err)[:255], booking_id]
+            )
+        except Exception as update_err:
+            print(f"Error updating booking status: {update_err}")
 
 @csrf_exempt
 def get_agent_app_firebase_access_token(request):
@@ -6545,40 +6766,7 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token_old(
                 nearby_drivers = select_query(query, values)
                 
 
-                # Format response
-                # drivers_list = [
-                #     {
-                #         "active_id": driver[0],
-                #         "goods_driver_id": driver[1],
-                #         "latitude": driver[2],
-                #         "longitude": driver[3],
-                #         "entry_time": driver[4],
-                #         "current_status": driver[5],
-                #         "driver_name": driver[6],
-                #         "driver_profile_pic": driver[7],
-                #         "vehicle_image": driver[8],
-                #         "vehicle_name": driver[9],
-                #         "weight": driver[10],
-                #         "starting_price_per_km": driver[11],
-                #         "base_fare": driver[12],
-                #         "vehicle_id": driver[13],
-                #         "size_image": driver[14],
-                #         "auth_token": driver[15],
-                #         "distance": driver[16]
-                #     }
-                #     for driver in nearby_drivers
-                # ]
-
-                # Send notifications to all the online drivers
-                # for driver in nearby_drivers:
-                #     driver_auth_token = get_goods_driver_auth_token(driver[1])
-                #     sendFMCMsg(
-                #         driver_auth_token,
-                #         f'You have a new Ride Request for \nPickup Location: {pickup_address}. \nDrop Location: {drop_address}',
-                #         'New Goods Ride Request',
-                #         fcm_data,
-                #         server_access_token
-                #     )
+               
                 for driver in nearby_drivers:
                     try:
                         driver_auth_token = get_goods_driver_auth_token2(driver[1])  # driver[1] assumed to be goods_driver_id
