@@ -7576,7 +7576,7 @@ def booking_details_for_ride_acceptance(request):
                 }
                 for row in result
             ]
-
+            print("booking_details::",booking_details)
             return JsonResponse({"results": booking_details}, status=200)
 
         except Exception as err:
