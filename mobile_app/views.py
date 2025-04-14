@@ -244,7 +244,7 @@ def process_booking(booking, booking_id):
         }
         
         # Get server access token
-        server_access_token = get_agent_app_firebase_access_token()
+        server_access_token = get_agent_app_firebase_access_token_internal()
         
         # Update booking status
         update_query(
@@ -323,6 +323,41 @@ def validate_drop_locations(drop_locations, drop_contacts):
     
     return True, None
 
+def get_agent_app_firebase_access_token_internal():
+    print("agent_app_token_fetched")
+    try:
+        # Create a service account credential dictionary
+        # load_dotenv('/root/.env_vtpartner')
+        load_dotenv('/root/.env_vtpartner_agent')
+        credentials_dict = {
+            "type": "service_account",
+            "project_id": os.getenv('FIREBASE_PROJECT_ID'),
+            "private_key_id": os.getenv('FIREBASE_PRIVATE_KEY_ID'),
+            "private_key": os.getenv('FIREBASE_PRIVATE_KEY'),
+            "client_email": os.getenv('FIREBASE_CLIENT_EMAIL'),
+            "client_id": os.getenv('FIREBASE_CLIENT_ID'),
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{os.getenv('FIREBASE_CLIENT_EMAIL')}",
+             "universe_domain": "googleapis.com"
+        }
+
+        credentials = service_account.Credentials.from_service_account_info(
+            credentials_dict,
+            scopes=['https://www.googleapis.com/auth/firebase.messaging']
+        )
+        
+        if not credentials.valid:
+            credentials.refresh(Request())
+            
+        return credentials.token
+
+    except Exception as e:
+        print(f"Error getting Firebase access token: {str(e)}")
+        return str(e)
+        
+        
 @csrf_exempt
 def get_agent_app_firebase_access_token(request):
     print("agent_app_token_fetched")
