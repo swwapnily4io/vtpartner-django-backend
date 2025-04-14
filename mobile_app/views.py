@@ -775,10 +775,10 @@ def sendFMCMsg(deviceToken, msg, title, data, serverToken, app_type):
         payload = {
             "message": {
                 "token": deviceToken,
-                "notification": {
-                    "title": title,
-                    "body": msg
-                },
+                # "notification": {
+                #     "title": title,
+                #     "body": msg
+                # },
                 "data": data,
                 "android": {
                     "priority": "high",
