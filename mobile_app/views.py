@@ -297,6 +297,24 @@ def process_booking(booking, booking_id):
             )
         except Exception as update_err:
             print(f"Error updating booking status: {update_err}")
+            
+def validate_drop_locations(drop_locations, drop_contacts):
+    """Validate drop locations and contacts data"""
+    if len(drop_locations) != len(drop_contacts):
+        return False, "Number of drop locations and contacts don't match"
+    
+    required_fields = ['lat', 'lng', 'address']
+    contact_fields = ['name', 'mobile']
+    
+    for location in drop_locations:
+        if not all(field in location for field in required_fields):
+            return False, "Missing required fields in drop location"
+    
+    for contact in drop_contacts:
+        if not all(field in contact for field in contact_fields):
+            return False, "Missing required fields in drop contact"
+    
+    return True, None
 
 @csrf_exempt
 def get_agent_app_firebase_access_token(request):
