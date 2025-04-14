@@ -6995,13 +6995,13 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                     payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
                     coupon_applied,coupon_id,coupon_amount,before_coupon_amount,
                     is_scheduled, scheduled_time, drop_locations, drop_contacts,
-                    multiple_drops, body_type,vehicle_price_type, vehicle_radius_km
+                    multiple_drops, body_type,vehicle_price_type, vehicle_radius_km,goods_vehicle_id
                 ) 
                 VALUES (
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
                     %s, %s,%s, %s,%s, %s,%s, %s,%s,%s,%s,%s,
-                    %s, %s, %s, %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, %s, %s, %s, %s,%s
                 ) 
                 RETURNING booking_id;
             """
@@ -7023,7 +7023,7 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                 gst_amount, igst_amount, payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
                 coupon_applied,coupon_id,coupon_amount,before_coupon_amount,
                 is_scheduled, scheduled_time, drop_locations_json, drop_contacts_json,
-                multiple_drops, body_type,price_type,5
+                multiple_drops, body_type,price_type,5,vehicle_id
             ]
 
             # Assuming insert_query is a function that runs the query
