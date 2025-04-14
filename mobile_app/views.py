@@ -7082,15 +7082,12 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                         )) <= %s
                     AND goods_driverstbl.category_id = vehiclestbl.category_id
                     AND goods_driverstbl.category_id = '1' AND  goods_driverstbl.vehicle_id=%s
-                    AND (CASE 
-                            WHEN %s != 'Any' THEN goods_driverstbl.body_type = %s
-                            ELSE TRUE
-                        END)
+                    AND goods_driverstbl.body_type = %s
                     ORDER BY distance;
 
                     """
                     values = [pickup_lat, pickup_lng, pickup_lat,city_id,price_type, pickup_lat, pickup_lng, pickup_lat, radius_km,vehicle_id,
-                              body_type, body_type]
+                              body_type]
 
                     # Execute the query
                     nearby_drivers = select_query(query, values)
