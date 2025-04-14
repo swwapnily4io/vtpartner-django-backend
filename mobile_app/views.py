@@ -141,7 +141,7 @@ def process_booking(booking, booking_id):
             SELECT 
                 customer_id, pickup_address, drop_address, 
                 drop_locations, drop_contacts, goods_vehicle_id,
-                price_type, radius_km
+                vehicle_price_type, vehicle_radius_km
             FROM vtpartner.bookings_tbl
             WHERE booking_id = %s
         """
