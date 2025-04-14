@@ -45,13 +45,20 @@ mapKey = "AIzaSyAAlmEtjJOpSaJ7YVkMKwdSuMTbTx39l_o"
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime, timedelta
+LOCAL_TIMEZONE = pytz.timezone('Asia/Kolkata')  # Indian Standard Time (UTC+5:30)
+SERVER_TIMEZONE = pytz.UTC  # Server runs on UTC
 
 scheduler = BackgroundScheduler()
 scheduler.start()
 
 def process_scheduled_bookings():
     """Check for scheduled bookings that are due and process them"""
-    current_time = datetime.now()
+    # Get current time in LOCAL timezone (where users schedule rides)
+    current_time_utc = datetime.now(pytz.UTC)
+    current_time_local = current_time_utc.astimezone(LOCAL_TIMEZONE)
+    
+    print(f"Current UTC time: {current_time_utc}, Local time: {current_time_local}")
+    
     
     # Get bookings that are scheduled and due (or past due)
     query = """
@@ -65,7 +72,7 @@ def process_scheduled_bookings():
     """
     
     try:
-        scheduled_bookings = select_query(query, [current_time])
+        scheduled_bookings = select_query(query, [current_time_local])
         
         if scheduled_bookings:
             print(f"Processing {len(scheduled_bookings)} scheduled bookings")
@@ -6905,16 +6912,42 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                 {"message": f"Missing required fields: {', '.join(missing_fields)}"},
                 status=400
             )
-        
-        
-
-        
-        
-        
-        
-
+ 
         if pickup_lat is None or pickup_lng is None:
             return JsonResponse({"message": "Latitude and Longitude are required"}, status=400)
+
+         # Process scheduled time with proper timezone awareness
+        if is_scheduled and scheduled_time:
+            try:
+                # Parse time in HH:MM:SS format
+                time_obj = datetime.strptime(scheduled_time, '%H:%M:%S').time()
+                
+                # Get current date in LOCAL timezone (where the booking is being made)
+                local_now = datetime.now(LOCAL_TIMEZONE)
+                current_date = local_now.date()
+                
+                # Create datetime combining date and time
+                scheduled_naive = datetime.combine(current_date, time_obj)
+                
+                # Add timezone information to make it aware
+                scheduled_local = LOCAL_TIMEZONE.localize(scheduled_naive)
+                
+                # Check if the time is in the past for the current day
+                if scheduled_local < local_now:
+                    # If it's in the past, schedule for the next day
+                    next_day = current_date + timedelta(days=1)
+                    scheduled_naive = datetime.combine(next_day, time_obj)
+                    scheduled_local = LOCAL_TIMEZONE.localize(scheduled_naive)
+                    print(f"Scheduled time {time_obj} already passed today, scheduling for tomorrow.")
+                
+                # Store the localized datetime
+                scheduled_time = scheduled_local
+                print(f"Processed scheduled time: {scheduled_time}")
+                
+            except ValueError as e:
+                return JsonResponse({"message": f"Invalid scheduled_time format: {e}"}, status=400)
+            except Exception as e:
+                return JsonResponse({"message": f"Error processing scheduled_time: {e}"}, status=400)
 
         try:
             
@@ -6939,11 +6972,11 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
             """
             
             # Convert scheduled_time to datetime if provided
-            if scheduled_time:
-                scheduled_time = datetime.strptime(scheduled_time, '%H:%M:%S')
-                # Combine with current date
-                current_date = datetime.now().date()
-                scheduled_time = datetime.combine(current_date, scheduled_time.time())
+            # if scheduled_time:
+            #     scheduled_time = datetime.strptime(scheduled_time, '%H:%M:%S')
+            #     # Combine with current date
+            #     current_date = datetime.now().date()
+            #     scheduled_time = datetime.combine(current_date, scheduled_time.time())
             
             # Convert drop locations and contacts to JSON strings
             drop_locations_json = json.dumps(drop_locations)
