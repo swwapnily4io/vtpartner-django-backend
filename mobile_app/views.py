@@ -368,7 +368,7 @@ def get_agent_app_firebase_access_token(request):
         project_id = os.getenv('FIREBASE_PROJECT_ID')
         private_key = os.getenv('FIREBASE_PRIVATE_KEY')
         client_email = os.getenv('FIREBASE_CLIENT_EMAIL')
-        
+        print("Firebase agent private key::", private_key)
         if not all([project_id, private_key, client_email]):
             return JsonResponse({
                 "status": "error",
