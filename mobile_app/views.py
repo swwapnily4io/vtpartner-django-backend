@@ -6649,7 +6649,7 @@ ORDER BY distance;
     
 
 @csrf_exempt
-def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token_old(request):
+def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(request):
     if request.method == "POST":
         data = json.loads(request.body)
         # lat = data.get("lat")
@@ -6861,7 +6861,7 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token_old(
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt
-def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(request):
+def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token_new(request):
     if request.method == "POST":
         data = json.loads(request.body)
         # lat = data.get("lat")
