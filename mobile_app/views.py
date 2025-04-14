@@ -133,7 +133,7 @@ def process_booking(booking, booking_id):
         booking_details_query = """
             SELECT 
                 customer_id, pickup_address, drop_address, 
-                drop_locations, drop_contacts, vehicle_id,
+                drop_locations, drop_contacts, goods_vehicle_id,
                 price_type, radius_km
             FROM vtpartner.bookings_tbl
             WHERE booking_id = %s
@@ -6686,12 +6686,12 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token_old(
                     distance, time, total_price, base_price, booking_timing, booking_date, 
                     otp, gst_amount, igst_amount, 
                     payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
-                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,goods_vehicle_id
                 ) 
                 VALUES (
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
-                    %s, %s,%s, %s,%s, %s,%s, %s,%s,%s,%s,%s
+                    %s, %s,%s, %s,%s, %s,%s, %s,%s,%s,%s,%s,%s
                 ) 
                 RETURNING booking_id;
             """
@@ -6700,7 +6700,7 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token_old(
                 customer_id, '-1', pickup_lat, pickup_lng, destination_lat, destination_lng, 
                 distance, time, total_price, base_price, otp, 
                 gst_amount, igst_amount, payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
-                coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,vehicle_id
             ]
 
             # Assuming insert_query is a function that runs the query
