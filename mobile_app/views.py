@@ -2284,6 +2284,60 @@ def update_firebase_customer_token(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+@csrf_exempt
+def update_goods_driver_body_type(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        goods_driver_id = data.get("goods_driver_id")
+        body_type = data.get("body_type")
+        
+        # List of required fields
+        required_fields = {
+            "goods_driver_id": goods_driver_id,
+            "body_type": body_type,
+        }
+        
+        # Check for missing fields
+        missing_fields = check_missing_fields(required_fields)
+        
+        # If there are missing fields, return an error response
+        if missing_fields:
+            return JsonResponse(
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
+        
+        # Validate body_type value
+        valid_body_types = ["Any", "Open Body", "Close Body"]
+        if body_type not in valid_body_types:
+            return JsonResponse(
+                {"message": f"Invalid body type. Must be one of: {', '.join(valid_body_types)}"},
+                status=400
+            )
+        
+        try:
+            query = """
+                UPDATE vtpartner.goods_driverstbl 
+                SET body_type = %s
+                WHERE goods_driver_id = %s
+                """
+            values = [body_type, goods_driver_id]
+
+            # Execute the query
+            row_count = update_query(query, values)
+            
+            if row_count > 0:
+                return JsonResponse({"message": "Body type updated successfully"}, status=200)
+            else:
+                return JsonResponse({"message": "Driver not found"}, status=404)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": f"An error occurred: {str(err)}"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+
 @csrf_exempt 
 def booking_details_live_track(request):
     if request.method == "POST":
