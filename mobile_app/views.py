@@ -772,31 +772,58 @@ def sendFMCMsg(deviceToken, msg, title, data, serverToken, app_type):
         }
 
         # Prepare notification payload
-        payload = {
+        if app_type == "Agent":
+            payload = {
+                "message": {
+                    "token": deviceToken,
+                    # "notification": {
+                    #     "title": title,
+                    #     "body": msg
+                    # },
+                    "data": data,
+                    # "android": {
+                    #     "priority": "high",
+                    #     "notification": {
+                    #         "sound": "default",
+                    #         "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                    #     }
+                    # },
+                    # "apns": {
+                    #     "payload": {
+                    #         "aps": {
+                    #             "sound": "default",
+                    #             "badge": 1
+                    #         }
+                    #     }
+                    # }
+                }
+            }
+        else:
+            payload = {
             "message": {
                 "token": deviceToken,
-                # "notification": {
-                #     "title": title,
-                #     "body": msg
-                # },
+                "notification": {
+                    "title": title,
+                    "body": msg
+                },
                 "data": data,
-                # "android": {
-                #     "priority": "high",
-                #     "notification": {
-                #         "sound": "default",
-                #         "click_action": "FLUTTER_NOTIFICATION_CLICK"
-                #     }
-                # },
-                # "apns": {
-                #     "payload": {
-                #         "aps": {
-                #             "sound": "default",
-                #             "badge": 1
-                #         }
-                #     }
-                # }
+                "android": {
+                    "priority": "high",
+                    "notification": {
+                        "sound": "default",
+                        "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                    }
+                },
+                "apns": {
+                    "payload": {
+                        "aps": {
+                            "sound": "default",
+                            "badge": 1
+                        }
+                    }
+                }
+                }
             }
-        }
         
         
         print("fcm payload::",payload)
