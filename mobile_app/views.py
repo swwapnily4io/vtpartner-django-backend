@@ -2628,19 +2628,111 @@ def update_goods_driver_body_type(request):
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
 
+# @csrf_exempt 
+# def booking_details_live_track(request):
+#     if request.method == "POST":
+#         data = json.loads(request.body)
+#         booking_id = data.get("booking_id")
+        
+        
+
+#         # List of required fields
+#         required_fields = {
+#             "booking_id": booking_id,
+        
+#         }
+#         # Check for missing fields
+#         missing_fields = check_missing_fields(required_fields)
+        
+#         # If there are missing fields, return an error response
+#         if missing_fields:
+#             return JsonResponse(
+#                 {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+#                 status=400
+#             )
+            
+#         try:
+#             query = """
+#                 select booking_id,bookings_tbl.customer_id,bookings_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,bookings_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,goods_type_id,payment_method,bookings_tbl.city_id,cancelled_reason,cancel_time,order_id,sender_name,sender_number,receiver_name,receiver_number,driver_first_name,goods_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,goods_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,goods_driverstbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount from vtpartner.vehiclestbl,vtpartner.bookings_tbl,vtpartner.goods_driverstbl,vtpartner.customers_tbl where goods_driverstbl.goods_driver_id=bookings_tbl.driver_id and customers_tbl.customer_id=bookings_tbl.customer_id and booking_id=%s and booking_status!='End Trip' and vehiclestbl.vehicle_id=goods_driverstbl.vehicle_id
+#             """
+#             result = select_query(query,[booking_id])  # Assuming select_query is defined elsewhere
+
+#             if result == []:
+#                 return JsonResponse({"message": "No Data Found"}, status=404)
+
+#             # Map each row to a dictionary with appropriate keys
+#             booking_details = [
+#                 {
+#                     "booking_id": row[0],
+#                     "customer_id": row[1],
+#                     "driver_id": row[2],
+#                     "pickup_lat": row[3],
+#                     "pickup_lng": row[4],
+#                     "destination_lat": row[5],
+#                     "destination_lng": row[6],
+#                     "distance": row[7],
+#                     "total_time": row[8],
+#                     "total_price": row[9],
+#                     "base_price": row[10],
+#                     "booking_timing": row[11],
+#                     "booking_date": row[12],
+#                     "booking_status": row[13],
+#                     "driver_arrival_time": row[14],
+#                     "otp": row[15],
+#                     "gst_amount": row[16],
+#                     "igst_amount": row[17],
+#                     "goods_type_id": row[18],
+#                     "payment_method": row[19],
+#                     "city_id": row[20],
+#                     "cancelled_reason": row[21],
+#                     "cancel_time": row[22],
+#                     "order_id": row[23],
+#                     "sender_name": row[24],
+#                     "sender_number": row[25],
+#                     "receiver_name": row[26],
+#                     "receiver_number": row[27],
+#                     "driver_first_name": row[28],
+#                     "goods_driver_auth_token": row[29],
+#                     "customer_name": row[30],
+#                     "customers_auth_token": row[31],
+#                     "pickup_address": row[32],
+#                     "drop_address": row[33],
+#                     "customer_mobile_no": row[34],
+#                     "driver_mobile_no": row[35],
+#                     "vehicle_id": str(row[36]),
+#                     "vehicle_name": str(row[37]),
+#                     "vehicle_image": str(row[38]),
+#                     "vehicle_plate_no": str(row[39]),
+#                     "vehicle_fuel_type": str(row[40]),
+#                     "profile_pic": str(row[41]),
+#                     "coupon_applied":row[42],
+#                     "coupon_id":row[43],
+#                     "coupon_amount":row[44],
+#                     "before_coupon_amount":row[45]
+                    
+#                 }
+#                 for row in result
+#             ]
+
+#             return JsonResponse({"results": booking_details}, status=200)
+
+#         except Exception as err:
+#             print("Error executing query:", err)
+#             return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+#     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 @csrf_exempt 
 def booking_details_live_track(request):
     if request.method == "POST":
         data = json.loads(request.body)
         booking_id = data.get("booking_id")
         
-        
-
         # List of required fields
         required_fields = {
             "booking_id": booking_id,
-        
         }
+        
         # Check for missing fields
         missing_fields = check_missing_fields(required_fields)
         
@@ -2653,16 +2745,40 @@ def booking_details_live_track(request):
             
         try:
             query = """
-                select booking_id,bookings_tbl.customer_id,bookings_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,bookings_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,goods_type_id,payment_method,bookings_tbl.city_id,cancelled_reason,cancel_time,order_id,sender_name,sender_number,receiver_name,receiver_number,driver_first_name,goods_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,goods_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,goods_driverstbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount from vtpartner.vehiclestbl,vtpartner.bookings_tbl,vtpartner.goods_driverstbl,vtpartner.customers_tbl where goods_driverstbl.goods_driver_id=bookings_tbl.driver_id and customers_tbl.customer_id=bookings_tbl.customer_id and booking_id=%s and booking_status!='End Trip' and vehiclestbl.vehicle_id=goods_driverstbl.vehicle_id
+                SELECT b.booking_id, b.customer_id, b.driver_id, b.pickup_lat, b.pickup_lng, 
+                b.destination_lat, b.destination_lng, b.distance, b.time, b.total_price, 
+                b.base_price, b.booking_timing, b.booking_date, b.booking_status, 
+                b.driver_arrival_time, b.otp, b.gst_amount, b.igst_amount, b.goods_type_id, 
+                b.payment_method, b.city_id, b.cancelled_reason, b.cancel_time, b.order_id, 
+                b.sender_name, b.sender_number, b.receiver_name, b.receiver_number, 
+                d.driver_first_name, d.authtoken as goods_driver_auth_token, 
+                c.customer_name, c.authtoken as customers_auth_token, 
+                b.pickup_address, b.drop_address, c.mobile_no as customer_mobile_no, 
+                d.mobile_no as driver_mobile_no, v.vehicle_id, v.vehicle_name, v.image as vehicle_image, 
+                d.vehicle_plate_no, d.vehicle_fuel_type, d.profile_pic, 
+                b.coupon_applied, b.coupon_id, b.coupon_amount, b.before_coupon_amount,
+                b.booking_completed, b.payment_id, b.pickup_time, b.drop_time, 
+                b.is_scheduled, b.scheduled_time, b.drop_locations, b.drop_contacts, 
+                b.multiple_drops, b.body_type, b.retry_count, b.last_retry_time, 
+                b.error_message, b.booking_timezone, b.goods_vehicle_id, 
+                b.vehicle_price_type, b.vehicle_radius_km
+                FROM vtpartner.bookings_tbl b
+                JOIN vtpartner.goods_driverstbl d ON d.goods_driver_id = b.driver_id
+                JOIN vtpartner.customers_tbl c ON c.customer_id = b.customer_id
+                JOIN vtpartner.vehiclestbl v ON v.vehicle_id = d.vehicle_id
+                WHERE b.booking_id = %s AND b.booking_status != 'End Trip'
             """
-            result = select_query(query,[booking_id])  # Assuming select_query is defined elsewhere
+            
+            result = select_query(query, [booking_id])
 
-            if result == []:
+            if not result:
                 return JsonResponse({"message": "No Data Found"}, status=404)
 
             # Map each row to a dictionary with appropriate keys
-            booking_details = [
-                {
+            booking_details = []
+            for row in result:
+                booking_dict = {
+                    
                     "booking_id": row[0],
                     "customer_id": row[1],
                     "driver_id": row[2],
@@ -2705,20 +2821,37 @@ def booking_details_live_track(request):
                     "vehicle_plate_no": str(row[39]),
                     "vehicle_fuel_type": str(row[40]),
                     "profile_pic": str(row[41]),
-                    "coupon_applied":row[42],
-                    "coupon_id":row[43],
-                    "coupon_amount":row[44],
-                    "before_coupon_amount":row[45]
+                    "coupon_applied": row[42],
+                    "coupon_id": row[43],
+                    "coupon_amount": row[44],
+                    "before_coupon_amount": row[45],
                     
+                    # Additional fields from bookings_tbl
+                    "booking_completed": row[46],
+                    "payment_id": row[47],
+                    "pickup_time": row[48],
+                    "drop_time": row[49],
+                    "is_scheduled": row[50],
+                    "scheduled_time": row[51].isoformat() if row[51] else None,
+                    "drop_locations": row[52],
+                    "drop_contacts": row[53],
+                    "multiple_drops": row[54],
+                    "body_type": row[55],
+                    "retry_count": row[56],
+                    "last_retry_time": row[57].isoformat() if row[57] else None,
+                    "error_message": row[58],
+                    "booking_timezone": row[59],
+                    "goods_vehicle_id": row[60],
+                    "vehicle_price_type": row[61],
+                    "vehicle_radius_km": row[62]
                 }
-                for row in result
-            ]
+                booking_details.append(booking_dict)
 
             return JsonResponse({"results": booking_details}, status=200)
 
         except Exception as err:
             print("Error executing query:", err)
-            return JsonResponse({"message": "Internal Server Error"}, status=500)
+            return JsonResponse({"message": f"Internal Server Error: {str(err)}"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
@@ -7736,6 +7869,115 @@ def goods_driver_booking_accepted(request):
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
 
+# @csrf_exempt 
+# def update_booking_status_driver(request):
+#     if request.method == "POST":
+#         data = json.loads(request.body)
+#         booking_id = data.get("booking_id")
+#         booking_status = data.get("booking_status")
+#         server_token = data.get("server_token")
+#         customer_id = data.get("customer_id")
+#         total_payment = data.get("total_payment")
+
+#         # List of required fields
+#         required_fields = {
+#             "booking_id": booking_id,
+#             "booking_status": booking_status,
+#         }
+#         # Check for missing fields
+#         missing_fields = check_missing_fields(required_fields)
+        
+#         # If there are missing fields, return an error response
+#         if missing_fields:
+#             return JsonResponse(
+#                 {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+#                 status=400
+#             )
+            
+#         try:
+
+#             query = """
+#                 update vtpartner.bookings_tbl set booking_status=%s where booking_id=%s
+#                 """
+#             values = [
+#                     booking_status,
+#                     booking_id
+#                 ]
+
+#             # Execute the query
+#             row_count = update_query(query, values)
+
+#             # Updating Booking History Table
+#             try:
+
+#                 query = """
+#                     insert into vtpartner.bookings_history_tbl(booking_id,status,time) values (%s,%s,EXTRACT(EPOCH FROM CURRENT_TIMESTAMP))
+#                     """
+#                 values = [
+#                         booking_id,
+#                         booking_status
+#                     ]
+
+#                 # Execute the query
+#                 row_count = insert_query(query, values)
+
+#                 # Send success response
+#                 auth_token = get_customer_auth_token(customer_id)
+#                 body = title = ""
+#                 data_map = {
+#                     'intent':'goods_booking_live_track',
+#                     'booking_id':str(booking_id)
+#                 }
+#                 if booking_status == "Driver Arrived":
+#                     body = "Our agent has arrived at your pickup location"
+#                     title = "Agent Arrived"
+#                 elif booking_status == "OTP Verified":
+#                     body = "You're OTP is Verified Successfully!"
+#                     title = "OTP Verification"
+#                 elif booking_status == "Start Trip":
+#                     body = "Trip has been started from your pickup location"
+#                     title = "Trip Started"
+#                     # Update Pickup epoch here
+#                     update_pickup_epoch_query = """
+#                     UPDATE vtpartner.bookings_tbl SET pickup_time=EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) where booking_id=%s
+#                     """
+#                     values = [
+#                             booking_id
+#                         ]
+
+#                     # Execute the query
+#                     row_count = update_query(update_pickup_epoch_query, values)
+#                 elif booking_status == "Make Payment":
+#                    body = f"Please do the payment against Booking ID {booking_id}. Total Amount=Rs.{total_payment}/-"
+#                    title = "Make Payment"
+#                 elif booking_status == "End Trip":
+#                     body = "Your package has been delivered successfully"
+#                     title = "Package Deliveried"
+#                     # Update Drop epoch here
+#                     update_drop_epoch_query = """
+#                     UPDATE vtpartner.bookings_tbl SET drop_time=EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) where booking_id=%s
+#                     """
+#                     values = [
+#                             booking_id
+#                         ]
+
+#                     # Execute the query
+#                     row_count = update_query(update_drop_epoch_query, values)
+#                 sendFMCMsg(auth_token,body,title,data_map,server_token,"Customer")
+#                 return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
+
+#             except Exception as err:
+#                 print("Error executing query:", err)
+#                 return JsonResponse({"message": "An error occurred"}, status=500)
+#             #return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
+
+#         except Exception as err:
+#             print("Error executing query:", err)
+#             return JsonResponse({"message": "An error occurred"}, status=500)
+        
+
+#     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 @csrf_exempt 
 def update_booking_status_driver(request):
     if request.method == "POST":
@@ -7745,6 +7987,7 @@ def update_booking_status_driver(request):
         server_token = data.get("server_token")
         customer_id = data.get("customer_id")
         total_payment = data.get("total_payment")
+        current_drop_index = data.get("current_drop_index", 0)  # Added for multiple drops
 
         # List of required fields
         required_fields = {
@@ -7762,87 +8005,155 @@ def update_booking_status_driver(request):
             )
             
         try:
-
-            query = """
-                update vtpartner.bookings_tbl set booking_status=%s where booking_id=%s
-                """
-            values = [
-                    booking_status,
-                    booking_id
-                ]
+            # First, check if this is a multiple-drop booking
+            booking_query = """
+                SELECT multiple_drops, drop_locations, drop_contacts 
+                FROM vtpartner.bookings_tbl 
+                WHERE booking_id = %s
+            """
+            
+            booking_info = select_query(booking_query, [booking_id])
+            
+            if not booking_info:
+                return JsonResponse({"message": "Booking not found"}, status=404)
+                
+            multiple_drops = booking_info[0][0]
+            drop_locations = booking_info[0][1]
+            drop_contacts = booking_info[0][2]
+            
+            # Update booking status
+            update_query_str = """
+                UPDATE vtpartner.bookings_tbl SET booking_status = %s WHERE booking_id = %s
+            """
+            values = [booking_status, booking_id]
 
             # Execute the query
-            row_count = update_query(query, values)
+            row_count = update_query(update_query_str, values)
 
             # Updating Booking History Table
             try:
-
-                query = """
-                    insert into vtpartner.bookings_history_tbl(booking_id,status,time) values (%s,%s,EXTRACT(EPOCH FROM CURRENT_TIMESTAMP))
-                    """
-                values = [
-                        booking_id,
-                        booking_status
-                    ]
+                history_query = """
+                    INSERT INTO vtpartner.bookings_history_tbl(booking_id, status, time) 
+                    VALUES (%s, %s, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP))
+                """
+                history_values = [booking_id, booking_status]
 
                 # Execute the query
-                row_count = insert_query(query, values)
+                history_row_count = insert_query(history_query, history_values)
 
-                # Send success response
+                # Get customer auth token for notification
                 auth_token = get_customer_auth_token(customer_id)
                 body = title = ""
                 data_map = {
-                    'intent':'goods_booking_live_track',
-                    'booking_id':str(booking_id)
+                    'intent': 'goods_booking_live_track',
+                    'booking_id': str(booking_id)
                 }
-                if booking_status == "Driver Arrived":
-                    body = "Our agent has arrived at your pickup location"
-                    title = "Agent Arrived"
-                elif booking_status == "OTP Verified":
-                    body = "You're OTP is Verified Successfully!"
-                    title = "OTP Verification"
-                elif booking_status == "Start Trip":
-                    body = "Trip has been started from your pickup location"
-                    title = "Trip Started"
-                    # Update Pickup epoch here
-                    update_pickup_epoch_query = """
-                    UPDATE vtpartner.bookings_tbl SET pickup_time=EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) where booking_id=%s
-                    """
-                    values = [
-                            booking_id
-                        ]
-
-                    # Execute the query
-                    row_count = update_query(update_pickup_epoch_query, values)
-                elif booking_status == "Make Payment":
-                   body = f"Please do the payment against Booking ID {booking_id}. Total Amount=Rs.{total_payment}/-"
-                   title = "Make Payment"
-                elif booking_status == "End Trip":
-                    body = "Your package has been delivered successfully"
-                    title = "Package Deliveried"
-                    # Update Drop epoch here
-                    update_drop_epoch_query = """
-                    UPDATE vtpartner.bookings_tbl SET drop_time=EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) where booking_id=%s
-                    """
-                    values = [
-                            booking_id
-                        ]
-
-                    # Execute the query
-                    row_count = update_query(update_drop_epoch_query, values)
-                sendFMCMsg(auth_token,body,title,data_map,server_token,"Customer")
-                return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
+                
+                # Handle multiple drops if applicable
+                if multiple_drops > 0 and booking_status == "End Trip":
+                    # If this is not the last drop, we need to update status differently
+                    try:
+                        drop_locations_array = json.loads(drop_locations)
+                        
+                        # Check if we have more drops to go
+                        if current_drop_index < len(drop_locations_array) - 1:
+                            next_drop_index = current_drop_index + 1
+                            
+                            # Get the next drop location and receiver details
+                            next_drop = drop_locations_array[next_drop_index]
+                            
+                            # Get contacts if available
+                            next_contact = None
+                            if drop_contacts:
+                                drop_contacts_array = json.loads(drop_contacts)
+                                if len(drop_contacts_array) > next_drop_index:
+                                    next_contact = drop_contacts_array[next_drop_index]
+                            
+                            # Set status back to "Start Trip" for the next drop
+                            update_to_next_drop_query = """
+                                UPDATE vtpartner.bookings_tbl 
+                                SET booking_status = 'In Progress To Next Drop' 
+                                WHERE booking_id = %s
+                            """
+                            update_query(update_to_next_drop_query, [booking_id])
+                            
+                            # Notify customer about progress to next drop
+                            title = "Heading to Next Drop"
+                            body = f"Your package has been delivered at drop {current_drop_index + 1}. Now heading to drop {next_drop_index + 1}."
+                            
+                            # Add data about current drop status
+                            data_map['current_drop_index'] = str(next_drop_index)
+                            data_map['total_drops'] = str(len(drop_locations_array))
+                            
+                            # Record this special status in history
+                            insert_query(history_query, [booking_id, "In Progress To Next Drop"])
+                        else:
+                            # This was the last drop, proceed with normal End Trip
+                            title = "Package Delivered"
+                            body = "All your packages have been delivered successfully"
+                            
+                            # Update Drop epoch here
+                            update_drop_epoch_query = """
+                                UPDATE vtpartner.bookings_tbl 
+                                SET drop_time = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) 
+                                WHERE booking_id = %s
+                            """
+                            update_query(update_drop_epoch_query, [booking_id])
+                    except (json.JSONDecodeError, IndexError) as e:
+                        print(f"Error processing multiple drops: {e}")
+                        # Fall back to standard behavior if there's an error
+                        title = "Package Delivered"
+                        body = "Your package has been delivered successfully"
+                else:
+                    # Standard status handling for single-drop bookings
+                    if booking_status == "Driver Arrived":
+                        body = "Our agent has arrived at your pickup location"
+                        title = "Agent Arrived"
+                    elif booking_status == "OTP Verified":
+                        body = "Your OTP is Verified Successfully!"
+                        title = "OTP Verification"
+                    elif booking_status == "Start Trip":
+                        body = "Trip has been started from your pickup location"
+                        title = "Trip Started"
+                        # Update Pickup epoch here
+                        update_pickup_epoch_query = """
+                            UPDATE vtpartner.bookings_tbl 
+                            SET pickup_time = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) 
+                            WHERE booking_id = %s
+                        """
+                        update_query(update_pickup_epoch_query, [booking_id])
+                    elif booking_status == "Make Payment":
+                        body = f"Please do the payment against Booking ID {booking_id}. Total Amount=Rs.{total_payment}/-"
+                        title = "Make Payment"
+                    elif booking_status == "End Trip":
+                        body = "Your package has been delivered successfully"
+                        title = "Package Delivered"
+                        # Update Drop epoch here
+                        update_drop_epoch_query = """
+                            UPDATE vtpartner.bookings_tbl 
+                            SET drop_time = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) 
+                            WHERE booking_id = %s
+                        """
+                        update_query(update_drop_epoch_query, [booking_id])
+                
+                # Send the notification
+                sendFMCMsg(auth_token, body, title, data_map, server_token, "Customer")
+                
+                return JsonResponse({
+                    "message": f"Status updated to {booking_status}",
+                    "multiple_drops": multiple_drops > 0,
+                    "current_drop_index": current_drop_index,
+                    "total_drops": len(json.loads(drop_locations)) if drop_locations else 1
+                }, status=200)
 
             except Exception as err:
                 print("Error executing query:", err)
-                return JsonResponse({"message": "An error occurred"}, status=500)
-            #return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
+                return JsonResponse({"message": f"An error occurred: {str(err)}"}, status=500)
 
         except Exception as err:
             print("Error executing query:", err)
-            return JsonResponse({"message": "An error occurred"}, status=500)
+            return JsonResponse({"message": f"An error occurred: {str(err)}"}, status=500)
         
-
     return JsonResponse({"message": "Method not allowed"}, status=405)
     
 @csrf_exempt 
