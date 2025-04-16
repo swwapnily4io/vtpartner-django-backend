@@ -8305,7 +8305,20 @@ def generate_order_id_for_booking_id_goods_driver(request):
                         coupon_applied,
                         coupon_id,
                         coupon_amount,
-                        before_coupon_amount
+                        before_coupon_amount,
+                        is_scheduled,
+                        scheduled_time,
+                        drop_locations,
+                        drop_contacts,
+                        multiple_drops,
+                        body_type,
+                        retry_count,
+                        last_retry_time,
+                        error_message,
+                        booking_timezone,
+                        goods_vehicle_id,
+                        vehicle_price_type,
+                        vehicle_radius_km
                     )
                     SELECT 
                         customer_id, 
@@ -8340,7 +8353,20 @@ def generate_order_id_for_booking_id_goods_driver(request):
                         coupon_applied,
                         coupon_id,
                         coupon_amount,
-                        before_coupon_amount
+                        before_coupon_amount,
+                        is_scheduled,
+                        scheduled_time,
+                        drop_locations,
+                        drop_contacts,
+                        multiple_drops,
+                        body_type,
+                        retry_count,
+                        last_retry_time,
+                        error_message,
+                        booking_timezone,
+                        goods_vehicle_id,
+                        vehicle_price_type,
+                        vehicle_radius_km
                     FROM vtpartner.bookings_tbl
                     WHERE booking_id = %s
                     RETURNING order_id;
