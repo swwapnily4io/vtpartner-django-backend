@@ -8133,7 +8133,7 @@ def update_booking_status_driver(request):
                     if booking_status == "Driver Arrived":
                         body = "Our agent has arrived at your pickup location"
                         title = "Agent Arrived"
-                    elif booking_status == "OTP Verified":
+                    elif booking_status == "Otp Verified":
                         body = "Your OTP is Verified Successfully!"
                         title = "OTP Verification"
                     elif booking_status == "Start Trip":
