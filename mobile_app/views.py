@@ -13956,35 +13956,7 @@ def get_nearby_other_drivers(request):
 
         try:
             # Haversine formula to calculate the distance in kilometers
-            #SELECT main.active_id, main.other_driver_id, main.current_lat, main.current_lng, 
-#        main.entry_time, main.current_status, other_driverstbl.driver_first_name,
-#        other_driverstbl.profile_pic, vehiclestbl.image AS vehicle_image, 
-#        vehiclestbl.vehicle_name,weight,
-#        (6371 * acos(
-#            cos(radians(%s)) * cos(radians(main.current_lat)) *
-#            cos(radians(main.current_lng) - radians(%s)) +
-#            sin(radians(%s)) * sin(radians(main.current_lat))
-#        )) AS distance
-# FROM vtpartner.active_other_drivertbl AS main
-# INNER JOIN (
-#     SELECT other_driver_id, MAX(entry_time) AS max_entry_time
-#     FROM vtpartner.active_other_drivertbl
-#     GROUP BY other_driver_id
-# ) AS latest ON main.other_driver_id = latest.other_driver_id
-#               AND main.entry_time = latest.max_entry_time
-# JOIN vtpartner.other_driverstbl ON main.other_driver_id = other_driverstbl.other_driver_id
-# JOIN vtpartner.vehiclestbl ON other_driverstbl.vehicle_id = vehiclestbl.vehicle_id
-# WHERE main.current_status = 1
-#   AND (6371 * acos(
-#          cos(radians(%s)) * cos(radians(main.current_lat)) *
-#          cos(radians(main.current_lng) - radians(%s)) +
-#          sin(radians(%s)) * sin(radians(main.current_lat))
-#      )) <= %s
-#   AND other_driverstbl.category_id = vehiclestbl.category_id
-#   AND other_driverstbl.category_id = '1'
-# ORDER BY distance;
-#             """
-#             values = [lat, lng, lat, lat, lng, lat, radius_km]
+           
 
             query = """
             SELECT 
@@ -14026,7 +13998,7 @@ WHERE main.current_status = 1
         sin(radians(%s)) * sin(radians(main.current_lat))
       )) <= %s
   AND other_driverstbl.category_id = vehiclestbl.category_id
-  AND other_driverstbl.category_id = '1'
+  AND other_driverstbl.category_id = '4'
 ORDER BY distance;
 
             """

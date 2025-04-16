@@ -70,6 +70,7 @@ urlpatterns = [
     path('customers_all_jcb_crane_bookings',views.customers_all_jcb_crane_bookings,name='customers_all_jcb_crane_bookings'),
     #Customers All Handymans Bookings
     path('customers_all_handyman_bookings',views.customers_all_handyman_bookings,name='customers_all_handyman_bookings'),
+    #Cab Driver Current Booking Details
     path('get_cab_driver_current_booking_detail',views.get_cab_driver_current_booking_detail,name='get_cab_driver_current_booking_detail'),
     #Customers All Orders
     path('customers_all_orders',views.customers_all_orders,name='customers_all_orders'),
