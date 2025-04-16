@@ -8126,6 +8126,8 @@ def update_booking_status_driver(request):
                             
                             # Record this special status in history
                             insert_query(history_query, [booking_id, "In Progress To Next Drop"])
+                            # Send the notification
+                            sendFMCMsg(auth_token, body, title, data_map, server_token, "Customer")
                         else:
                             # This was the last drop, proceed with normal End Trip
                             title = "Package Delivered"
