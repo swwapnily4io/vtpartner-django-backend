@@ -7205,6 +7205,21 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                     'intent':'driver',
                     'booking_id':str(booking_id)
                 }
+                
+                #To save scheduled Bookings
+                if is_scheduled and scheduled_time:
+                    scheduled_query_insert = """
+                        INSERT INTO vtpartner.scheduled_bookings_tbl (
+                             booking_id, scheduled_time,category_id, scheduled_date
+                        ) 
+                        VALUES (
+                            %s,EXTRACT(EPOCH FROM CURRENT_TIMESTAMP),'1',CURRENT_DATE
+                        ) 
+                        
+                    """
+                    scheduled_insert_values =[booking_id]
+                    insert_query(scheduled_query_insert, scheduled_insert_values)
+                    
                 # Only send notifications if not a scheduled booking
                 if not is_scheduled:
                     query = """
