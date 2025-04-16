@@ -8138,11 +8138,15 @@ def update_booking_status_driver(request):
                                 WHERE booking_id = %s
                             """
                             update_query(update_drop_epoch_query, [booking_id])
+                            # Send the notification
+                            sendFMCMsg(auth_token, body, title, data_map, server_token, "Customer")
                     except (json.JSONDecodeError, IndexError) as e:
                         print(f"Error processing multiple drops: {e}")
                         # Fall back to standard behavior if there's an error
                         title = "Package Delivered"
                         body = "Your package has been delivered successfully"
+                        # Send the notification
+                        sendFMCMsg(auth_token, body, title, data_map, server_token, "Customer")
                 else:
                     # Standard status handling for single-drop bookings
                     if booking_status == "Driver Arrived":
