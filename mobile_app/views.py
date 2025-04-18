@@ -245,7 +245,7 @@ def process_booking(booking, booking_id):
         
         # Update booking status
         update_query(
-            "UPDATE vtpartner.bookings_tbl SET booking_status = 'Processing' WHERE booking_id = %s",
+            "UPDATE vtpartner.bookings_tbl SET booking_status = 'Pending',retry_count = COALESCE(retry_count, 0) + 1 WHERE booking_id = %s",
             [booking_id]
         )
         
@@ -296,7 +296,7 @@ def process_booking(booking, booking_id):
         # Update booking status to indicate error
         try:
             update_query(
-                "UPDATE vtpartner.bookings_tbl SET booking_status = 'Error', error_message = %s WHERE booking_id = %s",
+                "UPDATE vtpartner.bookings_tbl SET booking_status = 'Pending', error_message = %s WHERE booking_id = %s",
                 [str(err)[:255], booking_id]
             )
         except Exception as update_err:
