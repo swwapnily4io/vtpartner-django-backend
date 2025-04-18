@@ -124,8 +124,6 @@ def process_scheduled_bookings():
     except Exception as err:
         print(f"Error in scheduled booking processing: {err}")
 
-# Run the scheduler every minute
-scheduler.add_job(process_scheduled_bookings, 'interval', minutes=1)
 
 def process_booking(booking, booking_id):
     """Process a single scheduled booking"""
@@ -301,6 +299,10 @@ def process_booking(booking, booking_id):
             )
         except Exception as update_err:
             print(f"Error updating booking status: {update_err}")
+
+# Run the scheduler every minute
+scheduler.add_job(process_scheduled_bookings, 'interval', minutes=1)
+
             
 def validate_drop_locations(drop_locations, drop_contacts):
     """Validate drop locations and contacts data"""
