@@ -72,6 +72,12 @@ urlpatterns = [
     path('customers_all_handyman_bookings',views.customers_all_handyman_bookings,name='customers_all_handyman_bookings'),
     #Cab Driver Current Booking Details
     path('get_cab_driver_current_booking_detail',views.get_cab_driver_current_booking_detail,name='get_cab_driver_current_booking_detail'),
+    # Other Driver Current Booking Details
+    path('get_other_driver_current_booking_detail',views.get_other_driver_current_booking_detail,name='get_other_driver_current_booking_detail'),
+    # Jcb Crane Driver Current Booking Details
+    path('get_jcb_crane_driver_current_booking_detail',views.get_jcb_crane_driver_current_booking_detail,name='get_jcb_crane_driver_current_booking_detail'),
+    # HAndyman Agent Current Booking Details
+    path('get_handyman_current_booking_detail',views.get_handyman_current_booking_detail,name='get_handyman_current_booking_detail'),
     #Customers All Orders
     path('customers_all_orders',views.customers_all_orders,name='customers_all_orders'),
     #Customers All Cab Orders

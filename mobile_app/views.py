@@ -2954,6 +2954,117 @@ def get_cab_driver_current_booking_detail(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+@csrf_exempt
+def get_other_driver_current_booking_detail(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        other_driver_id = data.get("other_driver_id")
+
+        # List of required fields
+        required_fields = {"other_driver_id": other_driver_id}
+
+        # Check for missing fields
+        missing_fields = check_missing_fields(required_fields)
+        if missing_fields:
+            return JsonResponse(
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
+
+        try:
+            query = """
+                SELECT current_booking_id FROM vtpartner.active_other_drivertbl WHERE other_driver_id = %s
+            """
+            result = select_query(query, [other_driver_id])  # Assuming select_query is defined elsewhere
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            # Return only the first value directly
+            current_booking_id = result[0][0]  # Extract first index value
+
+            return JsonResponse({"current_booking_id": current_booking_id}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+def get_jcb_crane_driver_current_booking_detail(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        jcb_crane_driver_id = data.get("jcb_crane_driver_id")
+
+        # List of required fields
+        required_fields = {"jcb_crane_driver_id": jcb_crane_driver_id}
+
+        # Check for missing fields
+        missing_fields = check_missing_fields(required_fields)
+        if missing_fields:
+            return JsonResponse(
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
+
+        try:
+            query = """
+                SELECT current_booking_id FROM vtpartner.active_jcb_crane_drivertbl WHERE jcb_crane_driver_id = %s
+            """
+            result = select_query(query, [jcb_crane_driver_id])  # Assuming select_query is defined elsewhere
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            # Return only the first value directly
+            current_booking_id = result[0][0]  # Extract first index value
+
+            return JsonResponse({"current_booking_id": current_booking_id}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_handyman_current_booking_detail(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        handyman_id = data.get("handyman_id")
+
+        # List of required fields
+        required_fields = {"handyman_id": handyman_id}
+
+        # Check for missing fields
+        missing_fields = check_missing_fields(required_fields)
+        if missing_fields:
+            return JsonResponse(
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
+
+        try:
+            query = """
+                SELECT current_booking_id FROM vtpartner.active_handyman_tbl WHERE handyman_id = %s
+            """
+            result = select_query(query, [handyman_id])  # Assuming select_query is defined elsewhere
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            # Return only the first value directly
+            current_booking_id = result[0][0]  # Extract first index value
+
+            return JsonResponse({"current_booking_id": current_booking_id}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt 
 def goods_order_details(request):
