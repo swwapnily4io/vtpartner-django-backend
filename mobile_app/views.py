@@ -14517,9 +14517,10 @@ def other_driver_booking_accepted(request):
                         try:
 
                             query = """
-                               update vtpartner.active_other_drivertbl set current_status='2' where other_driver_id=%s
+                               update vtpartner.active_other_drivertbl set current_status='2',current_booking_id=%s where other_driver_id=%s
                                 """
                             values = [
+                                    booking_id,
                                     driver_id
                                 ]
 
@@ -14791,7 +14792,9 @@ def generate_order_id_for_booking_id_other_driver(request):
                         pickup_time,
                         drop_time,
                         service_id,
-                        sub_cat_id
+                        sub_cat_id,
+                        is_scheduled,
+                        scheduled_time
                         
                     )
                     SELECT 
@@ -14820,7 +14823,9 @@ def generate_order_id_for_booking_id_other_driver(request):
                         pickup_time,
                         drop_time,
                         service_id,
-                        sub_cat_id
+                        sub_cat_id,
+                        is_scheduled,
+                        scheduled_time
                         
                     FROM vtpartner.other_driver_bookings_tbl
                     WHERE booking_id = %s
@@ -14836,7 +14841,7 @@ def generate_order_id_for_booking_id_other_driver(request):
                         order_id = ret_result[0][0]
                         try:
                             query2 = """
-                            update vtpartner.active_other_drivertbl set current_status='1' where other_driver_id=%s
+                            update vtpartner.active_other_drivertbl set current_status='1',current_booking_id='-1' where other_driver_id=%s
                             """
                             values2 = [
                                     driver_id
@@ -17137,9 +17142,10 @@ def jcb_crane_driver_booking_accepted(request):
                         try:
 
                             query = """
-                               update vtpartner.active_jcb_crane_drivertbl set current_status='2' where jcb_crane_driver_id=%s
+                               update vtpartner.active_jcb_crane_drivertbl set current_status='2',current_booking_id=%s where jcb_crane_driver_id=%s
                                 """
                             values = [
+                                booking_id,
                                     driver_id
                                 ]
 
@@ -17407,7 +17413,9 @@ def generate_order_id_for_booking_id_jcb_crane_driver(request):
                         drop_time,
                         sub_cat_id,
                         service_id,
-                        time
+                        time,
+                        is_scheduled,
+                        scheduled_time
                     )
                     SELECT 
                         customer_id, 
@@ -17431,7 +17439,9 @@ def generate_order_id_for_booking_id_jcb_crane_driver(request):
                         drop_time,
                         sub_cat_id,
                         service_id,
-                        time
+                        time,
+                        is_scheduled,
+                        scheduled_time
                     FROM vtpartner.jcb_crane_bookings_tbl
                     WHERE booking_id = %s
                     RETURNING order_id;
@@ -17446,7 +17456,7 @@ def generate_order_id_for_booking_id_jcb_crane_driver(request):
                         order_id = ret_result[0][0]
                         try:
                             query2 = """
-                            update vtpartner.active_jcb_crane_drivertbl set current_status='1' where jcb_crane_driver_id=%s
+                            update vtpartner.active_jcb_crane_drivertbl set current_status='1',current_booking_id='-1' where jcb_crane_driver_id=%s
                             """
                             values2 = [
                                     driver_id
@@ -19356,9 +19366,10 @@ def handyman_booking_accepted(request):
                         try:
 
                             query = """
-                               update vtpartner.active_handyman_tbl set current_status='2' where handyman_id=%s
+                               update vtpartner.active_handyman_tbl set current_status='2',current_booking_id=%s where handyman_id=%s
                                 """
                             values = [
+                                booking_id,
                                     driver_id
                                 ]
 
@@ -19628,7 +19639,9 @@ def generate_order_id_for_booking_id_handyman(request):
                         pickup_time,
                         drop_time,
                         sub_cat_id,
-                        service_id
+                        service_id,
+                        is_scheduled,
+                        scheduled_time
                     )
                     SELECT 
                         customer_id, 
@@ -19652,7 +19665,9 @@ def generate_order_id_for_booking_id_handyman(request):
                         pickup_time,
                         drop_time,
                         sub_cat_id,
-                        service_id
+                        service_id,
+                        is_scheduled,
+                        scheduled_time
                     FROM vtpartner.handyman_bookings_tbl
                     WHERE booking_id = %s
                     RETURNING order_id;
@@ -19667,7 +19682,7 @@ def generate_order_id_for_booking_id_handyman(request):
                         order_id = ret_result[0][0]
                         try:
                             query2 = """
-                            update vtpartner.active_handyman_tbl set current_status='1' where handyman_id=%s
+                            update vtpartner.active_handyman_tbl set current_status='1',current_booking_id='-1' where handyman_id=%s
                             """
                             values2 = [
                                     driver_id
