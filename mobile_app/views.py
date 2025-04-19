@@ -14506,7 +14506,7 @@ def other_driver_booking_accepted(request):
                     try:
 
                         query = """
-                           insert into vtpartner.other_driver_bookings_history_tbl (status,booking_id,time) values ('Driver Accepted',%s,,EXTRACT(EPOCH FROM CURRENT_TIMESTAMP))
+                           insert into vtpartner.other_driver_bookings_history_tbl (status,booking_id,time) values ('Driver Accepted',%s,EXTRACT(EPOCH FROM CURRENT_TIMESTAMP))
                             """
                         values = [
                                 booking_id
