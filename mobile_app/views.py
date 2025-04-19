@@ -20264,7 +20264,7 @@ def handyman_whole_year_earnings(request):
             ) AS months
             LEFT JOIN vtpartner.handyman_earningstbl e
                 ON EXTRACT(MONTH FROM e.earning_date) = months.month_index
-                AND e.driver_id = %s
+                AND e.handy_man_id = %s
             GROUP BY months.month_index
             ORDER BY months.month_index;
 
