@@ -9578,7 +9578,7 @@ def jcb_crane_driver_new_recharge_plan(request):
             try:
                 cursor = connection.cursor()
                 cursor.execute(history_query, history_values)
-                recharge_history_id = cursor.fetchone()[0]
+                recharge_history_id = cursor.fetchone()
                 connection.commit()
             except Exception as err:
                 connection.rollback()
