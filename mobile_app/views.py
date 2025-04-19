@@ -770,6 +770,11 @@ def sendFMCMsg(deviceToken, msg, title, data, serverToken, app_type):
             'Authorization': f'Bearer {serverToken}',
         }
 
+        # Update the data dictionary with title and body
+        data.update({
+            "title": title,
+            "body": msg            
+        })
         # Prepare notification payload
         if app_type == "Agent":
             payload = {
