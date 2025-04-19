@@ -10371,7 +10371,7 @@ def jcb_crane_current_new_recharge_details(request):
                 JOIN vtpartner.goods_driver_recharge_plans_tbl p 
                     ON jc.recharge_plan_id = p.recharge_plan_id 
                 WHERE jc.driver_id = %s 
-                    AND p.category_id = '4'
+                    AND p.category_id = '3'
             """
             result = select_query(query, [driver_id])  
 
