@@ -9544,6 +9544,7 @@ def jcb_crane_driver_new_recharge_plan(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
+            print('json body::',data)
             driver_id = data.get("driver_id")
             plan_id = data.get("plan_id")
             razorpay_payment_id = data.get("razorpay_payment_id")
