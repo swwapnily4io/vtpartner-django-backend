@@ -8083,7 +8083,7 @@ def goods_driver_booking_accepted(request):
 #                 if booking_status == "Driver Arrived":
 #                     body = "Our agent has arrived at your pickup location"
 #                     title = "Agent Arrived"
-#                 elif booking_status == "OTP Verified":
+#                 elif booking_status == "Otp Verified":
 #                     body = "You're OTP is Verified Successfully!"
 #                     title = "OTP Verification"
 #                 elif booking_status == "Start Trip":
@@ -8499,7 +8499,7 @@ def generate_order_id_for_booking_id_goods_driver(request):
                         if booking_status == "Driver Arrived":
                             body = "Our agent has arrived at your pickup location"
                             title = "Agent Arrived"
-                        elif booking_status == "OTP verified":
+                        elif booking_status == "Otp Verified":
                             body = "Your trip otp is verified"
                             title = "Trip OTP Verified"
                         elif booking_status == "Start Trip":
@@ -11958,7 +11958,7 @@ def update_booking_status_cab_driver(request):
                 if booking_status == "Driver Arrived":
                     body = "Our cab agent has arrived at your pickup location"
                     title = "Cab Agent Arrived"
-                elif booking_status == "OTP Verified":
+                elif booking_status == "Otp Verified":
                     body = "You're OTP is Verified Successfully!"
                     title = "Cab OTP Verification"
                 elif booking_status == "Start Trip":
@@ -12233,7 +12233,7 @@ def generate_order_id_for_booking_id_cab_driver(request):
                                         if booking_status == "Driver Arrived":
                                             body = "Our cab agent has arrived at your pickup location"
                                             title = "Cab Agent Arrived"
-                                        elif booking_status == "OTP verified":
+                                        elif booking_status == "Otp Verified":
                                             body = "Your trip otp is verified for cab ride"
                                             title = "Cab Trip OTP Verified"
                                         elif booking_status == "Start Trip":
@@ -14629,7 +14629,7 @@ def update_booking_status_other_driver(request):
                 if booking_status == "Driver Arrived":
                     body = "Our agent has arrived at your pickup location"
                     title = "Driver Arrived"
-                elif booking_status == "OTP Verified":
+                elif booking_status == "Otp Verified":
                     body = "You're OTP is Verified Successfully!"
                     title = "OTP Verification"
                 elif booking_status == "Start Trip":
@@ -14748,7 +14748,7 @@ def generate_order_id_for_booking_id_other_driver(request):
                 if booking_status == "Driver Arrived":
                     body = "Our agent has arrived at your pickup location"
                     title = "Agent Arrived"
-                elif booking_status == "OTP verified":
+                elif booking_status == "Otp Verified":
                     body = "Your trip otp is verified"
                     title = "Trip OTP Verified"
                 elif booking_status == "Start Trip":
@@ -17254,7 +17254,7 @@ def update_booking_status_jcb_crane_driver(request):
                 if booking_status == "Driver Arrived":
                     body = "Our agent has arrived at your work location"
                     title = "Agent Arrived"
-                elif booking_status == "OTP Verified":
+                elif booking_status == "Otp Verified":
                     body = "You're OTP is Verified Successfully!"
                     title = "OTP Verification"
                 elif booking_status == "Start Service":
@@ -17373,7 +17373,7 @@ def generate_order_id_for_booking_id_jcb_crane_driver(request):
                 if booking_status == "Driver Arrived":
                     body = "Our agent has arrived at your pickup location"
                     title = "Agent Arrived"
-                elif booking_status == "OTP verified":
+                elif booking_status == "Otp Verified":
                     body = "Your trip otp is verified"
                     title = "Trip OTP Verified"
                 elif booking_status == "Start Service":
@@ -19478,7 +19478,7 @@ def update_booking_status_handyman(request):
                 if booking_status == "Agent Arrived":
                     body = "Our agent has arrived at your work location"
                     title = "Agent Arrived"
-                elif booking_status == "OTP Verified":
+                elif booking_status == "Otp Verified":
                     body = "You're OTP is Verified Successfully!"
                     title = "OTP Verification"
                 elif booking_status == "Start Service":
@@ -19599,7 +19599,7 @@ def generate_order_id_for_booking_id_handyman(request):
                 if booking_status == "Agent Arrived":
                     body = "Our agent has arrived at your specified location and is ready to assist you."
                     title = "HandyMan Agent Arrived"
-                elif booking_status == "OTP verified":
+                elif booking_status == "Otp Verified":
                     body = "The OTP for your service has been successfully verified."
                     title = "Trip OTP Verified"
                 elif booking_status == "Start Service":
