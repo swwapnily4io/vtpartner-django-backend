@@ -9457,20 +9457,25 @@ def new_cab_driver_new_recharge_plan(request):
                 RETURNING recharge_history_id;
             """
             history_values = [plan_id, driver_id, expiry_time,razorpay_payment_id]
-            
-            # Execute history insert and get the recharge_history_id
             recharge_history_id = None
-            try:
-                cursor = connection.cursor()
-                cursor.execute(history_query, history_values)
-                recharge_history_id = cursor.fetchone()[0]
-                connection.commit()
-            except Exception as err:
-                connection.rollback()
-                print("Error inserting recharge history:", err)
-                return JsonResponse({"message": "Error recording recharge history"}, status=500)
-            finally:
-                cursor.close()
+            new_result = insert_query(history_query, history_values)
+            print("new_result::",new_result)
+            if new_result:
+                print("new_result[0][0]::",new_result[0][0])
+                recharge_history_id = new_result[0][0]
+            # Execute history insert and get the recharge_history_id
+            # recharge_history_id = None
+            # try:
+            #     cursor = connection.cursor()
+            #     cursor.execute(history_query, history_values)
+            #     recharge_history_id = cursor.fetchone()[0]
+            #     connection.commit()
+            # except Exception as err:
+            #     connection.rollback()
+            #     print("Error inserting recharge history:", err)
+            #     return JsonResponse({"message": "Error recording recharge history"}, status=500)
+            # finally:
+            #     cursor.close()
 
             # Step 2: Check if current plan exists for the driver
             check_current_plan_query = """
@@ -9573,19 +9578,24 @@ def jcb_crane_driver_new_recharge_plan(request):
                 RETURNING recharge_history_id;
             """
             history_values = [plan_id, driver_id, expiry_time, razorpay_payment_id]
-            
             recharge_history_id = None
-            try:
-                cursor = connection.cursor()
-                cursor.execute(history_query, history_values)
-                recharge_history_id = cursor.fetchone()[0]
-                connection.commit()
-            except Exception as err:
-                connection.rollback()
-                print("Error inserting recharge history:", err)
-                return JsonResponse({"message": "Error recording recharge history"}, status=500)
-            finally:
-                cursor.close()
+            new_result = insert_query(history_query, history_values)
+            print("new_result::",new_result)
+            if new_result:
+                print("new_result[0][0]::",new_result[0][0])
+                recharge_history_id = new_result[0][0]
+            # recharge_history_id = None
+            # try:
+            #     cursor = connection.cursor()
+            #     cursor.execute(history_query, history_values)
+            #     recharge_history_id = cursor.fetchone()[0]
+            #     connection.commit()
+            # except Exception as err:
+            #     connection.rollback()
+            #     print("Error inserting recharge history:", err)
+            #     return JsonResponse({"message": "Error recording recharge history"}, status=500)
+            # finally:
+            #     cursor.close()
 
             # Step 2: Check if current plan exists
             check_current_plan_query = """
@@ -9685,19 +9695,24 @@ def other_driver_new_recharge_plan(request):
                 RETURNING recharge_history_id;
             """
             history_values = [plan_id, driver_id, expiry_time, razorpay_payment_id]
-            
             recharge_history_id = None
-            try:
-                cursor = connection.cursor()
-                cursor.execute(history_query, history_values)
-                recharge_history_id = cursor.fetchone()[0]
-                connection.commit()
-            except Exception as err:
-                connection.rollback()
-                print("Error inserting recharge history:", err)
-                return JsonResponse({"message": "Error recording recharge history"}, status=500)
-            finally:
-                cursor.close()
+            new_result = insert_query(history_query, history_values)
+            print("new_result::",new_result)
+            if new_result:
+                print("new_result[0][0]::",new_result[0][0])
+                recharge_history_id = new_result[0][0]
+            # recharge_history_id = None
+            # try:
+            #     cursor = connection.cursor()
+            #     cursor.execute(history_query, history_values)
+            #     recharge_history_id = cursor.fetchone()[0]
+            #     connection.commit()
+            # except Exception as err:
+            #     connection.rollback()
+            #     print("Error inserting recharge history:", err)
+            #     return JsonResponse({"message": "Error recording recharge history"}, status=500)
+            # finally:
+            #     cursor.close()
 
             # Step 2: Check if current plan exists
             check_current_plan_query = """
@@ -9797,19 +9812,24 @@ def handyman_new_recharge_plan(request):
                 RETURNING recharge_history_id;
             """
             history_values = [plan_id, driver_id, expiry_time, razorpay_payment_id]
-            
             recharge_history_id = None
-            try:
-                cursor = connection.cursor()
-                cursor.execute(history_query, history_values)
-                recharge_history_id = cursor.fetchone()[0]
-                connection.commit()
-            except Exception as err:
-                connection.rollback()
-                print("Error inserting recharge history:", err)
-                return JsonResponse({"message": "Error recording recharge history"}, status=500)
-            finally:
-                cursor.close()
+            new_result = insert_query(history_query, history_values)
+            print("new_result::",new_result)
+            if new_result:
+                print("new_result[0][0]::",new_result[0][0])
+                recharge_history_id = new_result[0][0]
+            
+            # try:
+            #     cursor = connection.cursor()
+            #     cursor.execute(history_query, history_values)
+            #     recharge_history_id = cursor.fetchone()[0]
+            #     connection.commit()
+            # except Exception as err:
+            #     connection.rollback()
+            #     print("Error inserting recharge history:", err)
+            #     return JsonResponse({"message": "Error recording recharge history"}, status=500)
+            # finally:
+            #     cursor.close()
 
             # Step 2: Check if current plan exists
             check_current_plan_query = """
