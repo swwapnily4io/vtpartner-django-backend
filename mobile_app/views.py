@@ -19139,8 +19139,8 @@ def get_nearby_handymans(request):
         try:
             # Haversine formula to calculate the distance in kilometers
             #SELECT main.active_id, main.handyman_id, main.current_lat, main.current_lng, 
-#        main.entry_time, main.current_status, handymanstbl.driver_first_name,
-#        handymanstbl.profile_pic, vehiclestbl.image AS vehicle_image, 
+#        main.entry_time, main.current_status, handymans_tbl.driver_first_name,
+#        handymans_tbl.profile_pic, vehiclestbl.image AS vehicle_image, 
 #        vehiclestbl.vehicle_name,weight,
 #        (6371 * acos(
 #            cos(radians(%s)) * cos(radians(main.current_lat)) *
@@ -19154,16 +19154,16 @@ def get_nearby_handymans(request):
 #     GROUP BY handyman_id
 # ) AS latest ON main.handyman_id = latest.handyman_id
 #               AND main.entry_time = latest.max_entry_time
-# JOIN vtpartner.handymans_tbl ON main.handyman_id = handymanstbl.handyman_id
-# JOIN vtpartner.vehiclestbl ON handymanstbl.vehicle_id = vehiclestbl.vehicle_id
+# JOIN vtpartner.handymans_tbl ON main.handyman_id = handymans_tbl.handyman_id
+# JOIN vtpartner.vehiclestbl ON handymans_tbl.vehicle_id = vehiclestbl.vehicle_id
 # WHERE main.current_status = 1
 #   AND (6371 * acos(
 #          cos(radians(%s)) * cos(radians(main.current_lat)) *
 #          cos(radians(main.current_lng) - radians(%s)) +
 #          sin(radians(%s)) * sin(radians(main.current_lat))
 #      )) <= %s
-#   AND handymanstbl.category_id = vehiclestbl.category_id
-#   AND handymanstbl.category_id = '1'
+#   AND handymans_tbl.category_id = vehiclestbl.category_id
+#   AND handymans_tbl.category_id = '1'
 # ORDER BY distance;
 #             """
 #             values = [lat, lng, lat, lat, lng, lat, radius_km]
@@ -19176,8 +19176,8 @@ def get_nearby_handymans(request):
     main.current_lng, 
     main.entry_time, 
     main.current_status, 
-    handymanstbl.driver_first_name,
-    handymanstbl.profile_pic, 
+    handymans_tbl.name,
+    handymans_tbl.profile_pic, 
     vehiclestbl.image AS vehicle_image, 
     vehiclestbl.vehicle_name,
     vehiclestbl.weight,
@@ -19197,8 +19197,8 @@ INNER JOIN (
     GROUP BY handyman_id
 ) AS latest ON main.handyman_id = latest.handyman_id
              AND main.entry_time = latest.max_entry_time
-JOIN vtpartner.handymans_tbl ON main.handyman_id = handymanstbl.handyman_id
-JOIN vtpartner.vehiclestbl ON handymanstbl.vehicle_id = vehiclestbl.vehicle_id
+JOIN vtpartner.handymans_tbl ON main.handyman_id = handymans_tbl.handyman_id
+JOIN vtpartner.vehiclestbl ON handymans_tbl.vehicle_id = vehiclestbl.vehicle_id
 JOIN vtpartner.vehicle_city_wise_price_tbl ON vehiclestbl.vehicle_id = vehicle_city_wise_price_tbl.vehicle_id
 AND vehicle_city_wise_price_tbl.city_id = %s  AND vehicle_city_wise_price_tbl.price_type_id=%s
 WHERE main.current_status = 1
@@ -19207,8 +19207,8 @@ WHERE main.current_status = 1
         cos(radians(main.current_lng) - radians(%s)) +
         sin(radians(%s)) * sin(radians(main.current_lat))
       )) <= %s
-  AND handymanstbl.category_id = vehiclestbl.category_id
-  AND handymanstbl.category_id = '1'
+  AND handymans_tbl.category_id = vehiclestbl.category_id
+  AND handymans_tbl.category_id = '1'
 ORDER BY distance;
 
             """
@@ -20116,7 +20116,7 @@ def handyman_all_orders(request):
             
         try:
             query = """
-                select booking_id,orders_tbl.customer_id,orders_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,orders_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,goods_type_id,payment_method,orders_tbl.city_id,order_id,sender_name,sender_number,receiver_name,receiver_number,name,handymanstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,handymanstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,orders_tbl.ratings,orders_tbl.rating_description from vtpartner.vehiclestbl,vtpartner.orders_tbl,vtpartner.handymans_tbl,vtpartner.customers_tbl where handymanstbl.handyman_id=orders_tbl.driver_id and customers_tbl.customer_id=orders_tbl.customer_id and orders_tbl.driver_id=%s and  vehiclestbl.vehicle_id=handymanstbl.vehicle_id order by order_id desc
+                select booking_id,orders_tbl.customer_id,orders_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,orders_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,goods_type_id,payment_method,orders_tbl.city_id,order_id,sender_name,sender_number,receiver_name,receiver_number,name,handymans_tbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,handymans_tbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,orders_tbl.ratings,orders_tbl.rating_description from vtpartner.vehiclestbl,vtpartner.orders_tbl,vtpartner.handymans_tbl,vtpartner.customers_tbl where handymans_tbl.handyman_id=orders_tbl.driver_id and customers_tbl.customer_id=orders_tbl.customer_id and orders_tbl.driver_id=%s and  vehiclestbl.vehicle_id=handymans_tbl.vehicle_id order by order_id desc
             """
             result = select_query(query,[driver_id])  # Assuming select_query is defined elsewhere
 
