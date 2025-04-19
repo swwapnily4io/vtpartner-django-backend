@@ -20136,7 +20136,7 @@ def handyman_all_orders(request):
                     payment_method,
                     handyman_orders_tbl.city_id,
                     order_id,
-                    driver_name,
+                    name,
                     handymans_tbl.authtoken AS driver_authtoken,
                     customer_name,
                     customers_tbl.authtoken AS customer_authtoken,
