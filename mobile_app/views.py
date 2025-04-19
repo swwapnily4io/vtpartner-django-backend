@@ -11845,7 +11845,7 @@ def cab_driver_booking_accepted(request):
                                update vtpartner.active_cab_drivertbl set current_status='2',current_booking_id=%s where cab_driver_id=%s
                                 """
                             values = [
-                                    driver_id,booking_id
+                                    booking_id,driver_id
                                 ]
 
                             # Execute the query
