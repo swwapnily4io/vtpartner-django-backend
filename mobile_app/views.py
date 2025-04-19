@@ -10423,7 +10423,7 @@ def other_driver_current_new_recharge_details(request):
         try:
             # Query to get today's earnings and rides count
             query = """
-                 select current_plan_id,cab_driver_current_recharge_plan_tbl.recharge_plan_id,expiry_time,last_recharge_history_id,plan_title,plan_description,plan_days,plan_price from vtpartner.cab_driver_current_recharge_plan_tbl,vtpartner.goods_driver_recharge_plans_tbl where cab_driver_current_recharge_plan_tbl.driver_id=%s and cab_driver_current_recharge_plan_tbl.recharge_plan_id=goods_driver_recharge_plans_tbl.recharge_plan_id and category_id='4'
+                 select current_plan_id,other_driver_current_recharge_plan_tbl.recharge_plan_id,expiry_time,last_recharge_history_id,plan_title,plan_description,plan_days,plan_price from vtpartner.other_driver_current_recharge_plan_tbl,vtpartner.goods_driver_recharge_plans_tbl where other_driver_current_recharge_plan_tbl.driver_id=%s and other_driver_current_recharge_plan_tbl.recharge_plan_id=goods_driver_recharge_plans_tbl.recharge_plan_id and category_id='4'
             """
             result = select_query(query, [driver_id])  
 
