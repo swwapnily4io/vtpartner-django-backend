@@ -3971,7 +3971,7 @@ def cancel_other_driver_booking(request):
             
             #send notification to cab driver for booking cancelled
             fcm_data = {
-                'intent':'cab_driver_home',
+                'intent':'other_driver_home',
                 'booking_id':str(booking_id)
             }
             sendFMCMsg(
