@@ -15914,6 +15914,7 @@ def generate_new_other_driver_booking_id_get_nearby_agents_with_fcm_token(reques
         if pickup_lat is None or pickup_lng is None:
             return JsonResponse({"message": "Latitude and Longitude are required"}, status=400)
 
+
         # Process scheduled time with proper timezone awareness
         if is_scheduled and scheduled_time:
             try:
