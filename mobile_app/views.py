@@ -12110,7 +12110,9 @@ def generate_order_id_for_booking_id_cab_driver(request):
                         coupon_applied,
                         coupon_id,
                         coupon_amount,
-                        before_coupon_amount
+                        before_coupon_amount,
+                        is_scheduled,
+                        scheduled_time
                     )
                     SELECT 
                         customer_id, 
@@ -12140,7 +12142,9 @@ def generate_order_id_for_booking_id_cab_driver(request):
                         coupon_applied,
                         coupon_id,
                         coupon_amount,
-                        before_coupon_amount
+                        before_coupon_amount,
+                        is_scheduled,
+                        scheduled_time
                     FROM vtpartner.cab_bookings_tbl
                     WHERE booking_id = %s
                     RETURNING order_id;
@@ -14682,7 +14686,10 @@ def update_booking_status_other_driver(request):
                 # Send success response
                 auth_token = get_customer_auth_token(customer_id)
                 body = title = ""
-                data_map = {}
+                data_map = {
+                    'intent':'driver_live_tracking',
+                    'booking_id':str(booking_id)
+                }
                 if booking_status == "Driver Arrived":
                     body = "Our agent has arrived at your pickup location"
                     title = "Driver Arrived"
@@ -14798,26 +14805,7 @@ def generate_order_id_for_booking_id_other_driver(request):
                 # Execute the query
                 row_count = insert_query(query, values)
 
-                # Send success response
-                auth_token = get_customer_auth_token(customer_id)
-                body = title = ""
-                data_map = {}
-                if booking_status == "Driver Arrived":
-                    body = "Our agent has arrived at your pickup location"
-                    title = "Agent Arrived"
-                elif booking_status == "Otp Verified":
-                    body = "Your trip otp is verified"
-                    title = "Trip OTP Verified"
-                elif booking_status == "Start Trip":
-                    body = "Trip has been started from your work location"
-                    title = "Trip Started"
-                elif booking_status == "Ongoing":
-                    body = "Trip has been started from your work location"
-                    title = "Ongoing"
-                elif booking_status == "End Trip":
-                    body = "Your has been successfully done."
-                    title = "Service Successful"
-                sendFMCMsg(auth_token,body,title,data_map,server_token,"Customer")
+                
                 #return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
                 
                 #Generating Order ID
@@ -14974,6 +14962,30 @@ def generate_order_id_for_booking_id_other_driver(request):
 
                                         # Execute the query
                                         row_count = insert_query(query5, values5)
+                                        # Send success response
+                                        auth_token = get_customer_auth_token(customer_id)
+                                        body = title = ""
+                                        data_map = {}
+                                        if booking_status == "Driver Arrived":
+                                            body = "Our agent has arrived at your pickup location"
+                                            title = "Agent Arrived"
+                                        elif booking_status == "Otp Verified":
+                                            body = "Your trip otp is verified"
+                                            title = "Trip OTP Verified"
+                                        elif booking_status == "Start Trip":
+                                            body = "Trip has been started from your work location"
+                                            title = "Trip Started"
+                                        elif booking_status == "Ongoing":
+                                            body = "Trip has been started from your work location"
+                                            title = "Ongoing"
+                                        elif booking_status == "End Trip":
+                                            body = "Your has been successfully done."
+                                            title = "Service Successful"
+                                            data_map = {
+                                                'intent':'end_driver_live_tracking',
+                                                'order_id':str(order_id)
+                                            }
+                                        sendFMCMsg(auth_token,body,title,data_map,server_token,"Customer")
                                         #success
                                         return JsonResponse({"message": f"{ret_result} row(s) updated","order_id":order_id}, status=200)
                                     except Exception as err:
@@ -17318,7 +17330,11 @@ def update_booking_status_jcb_crane_driver(request):
                 # Send success response
                 auth_token = get_customer_auth_token(customer_id)
                 body = title = ""
-                data_map = {}
+                #To refresh the screen automatically
+                data_map = {
+                    'intent':'jcb_crane_live_tracking',
+                    'booking_id':str(booking_id)
+                }
                 if booking_status == "Driver Arrived":
                     body = "Our agent has arrived at your work location"
                     title = "Agent Arrived"
@@ -17434,26 +17450,7 @@ def generate_order_id_for_booking_id_jcb_crane_driver(request):
                 # Execute the query
                 row_count = insert_query(query, values)
 
-                # Send success response
-                auth_token = get_customer_auth_token(customer_id)
-                body = title = ""
-                data_map = {}
-                if booking_status == "Driver Arrived":
-                    body = "Our agent has arrived at your pickup location"
-                    title = "Agent Arrived"
-                elif booking_status == "Otp Verified":
-                    body = "Your trip otp is verified"
-                    title = "Trip OTP Verified"
-                elif booking_status == "Start Service":
-                    body = "Service has been started on your work location"
-                    title = "Service Started"
-                elif booking_status == "Ongoing":
-                    body = "Trip has been started from your work location"
-                    title = "Ongoing"
-                elif booking_status == "End Service":
-                    body = "Your JCB / Crane Service Finished Successfully"
-                    title = "Service Done Successfully"
-                sendFMCMsg(auth_token,body,title,data_map,server_token,"Customer")
+                
                 #return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
                 
                 #Generating Order ID
@@ -17600,6 +17597,30 @@ def generate_order_id_for_booking_id_jcb_crane_driver(request):
 
                                         # Execute the query
                                         row_count = insert_query(query5, values5)
+                                        # Send success response
+                                        auth_token = get_customer_auth_token(customer_id)
+                                        body = title = ""
+                                        data_map = {}
+                                        if booking_status == "Driver Arrived":
+                                            body = "Our agent has arrived at your pickup location"
+                                            title = "Agent Arrived"
+                                        elif booking_status == "Otp Verified":
+                                            body = "Your trip otp is verified"
+                                            title = "Trip OTP Verified"
+                                        elif booking_status == "Start Service":
+                                            body = "Service has been started on your work location"
+                                            title = "Service Started"
+                                        elif booking_status == "Ongoing":
+                                            body = "Trip has been started from your work location"
+                                            title = "Ongoing"
+                                        elif booking_status == "End Service":
+                                            body = "Your JCB / Crane Service Finished Successfully"
+                                            title = "Service Done Successfully"
+                                            data_map = {
+                                                                        'intent':'end_jcb_crane_driver_live_tracking',
+                                                                        'order_id':str(order_id)
+                                                                    }
+                                        sendFMCMsg(auth_token,body,title,data_map,server_token,"Customer")
                                         #success
                                         return JsonResponse({"message": f"{ret_result} row(s) updated","order_id":order_id}, status=200)
                                     except Exception as err:
@@ -19554,7 +19575,11 @@ def update_booking_status_handyman(request):
                 # Send success response
                 auth_token = get_customer_auth_token(customer_id)
                 body = title = ""
-                data_map = {}
+                #To refresh the screen
+                data_map = {
+                    'intent':'handyman_live_tracking',
+                    'booking_id':str(booking_id)
+                }
                 if booking_status == "Agent Arrived":
                     body = "Our agent has arrived at your work location"
                     title = "Agent Arrived"
@@ -19672,26 +19697,7 @@ def generate_order_id_for_booking_id_handyman(request):
                 # Execute the query
                 row_count = insert_query(query, values)
 
-                # Send success response
-                auth_token = get_customer_auth_token(customer_id)
-                body = title = ""
-                data_map = {}
-                if booking_status == "Agent Arrived":
-                    body = "Our agent has arrived at your specified location and is ready to assist you."
-                    title = "HandyMan Agent Arrived"
-                elif booking_status == "Otp Verified":
-                    body = "The OTP for your service has been successfully verified."
-                    title = "Trip OTP Verified"
-                elif booking_status == "Start Service":
-                    body = "The service has commenced at your designated location. Thank you for choosing us."
-                    title = "Service Started"
-                elif booking_status == "Ongoing":
-                    body = "Trip has been started from your work location"
-                    title = "Ongoing"
-                elif booking_status == "End Service":
-                    body = f"Thank you for choosing our services. Your Handy Man Service for '{service_name}' has been successfully completed."
-                    title = "Handy Man Service Successfully Completed!"
-                sendFMCMsg(auth_token,body,title,data_map,server_token,"Customer")
+                
                 #return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
                 
                 #Generating Order ID
@@ -19838,6 +19844,30 @@ def generate_order_id_for_booking_id_handyman(request):
 
                                         # Execute the query
                                         row_count = insert_query(query5, values5)
+                                        # Send success response
+                                        auth_token = get_customer_auth_token(customer_id)
+                                        body = title = ""
+                                        data_map = {}
+                                        if booking_status == "Agent Arrived":
+                                            body = "Our agent has arrived at your specified location and is ready to assist you."
+                                            title = "HandyMan Agent Arrived"
+                                        elif booking_status == "Otp Verified":
+                                            body = "The OTP for your service has been successfully verified."
+                                            title = "Trip OTP Verified"
+                                        elif booking_status == "Start Service":
+                                            body = "The service has commenced at your designated location. Thank you for choosing us."
+                                            title = "Service Started"
+                                        elif booking_status == "Ongoing":
+                                            body = "Trip has been started from your work location"
+                                            title = "Ongoing"
+                                        elif booking_status == "End Service":
+                                            body = f"Thank you for choosing our services. Your Handy Man Service for '{service_name}' has been successfully completed."
+                                            title = "Handy Man Service Successfully Completed!"
+                                            data_map = {
+                                                    'intent':'end_handyman_live_tracking',
+                                                    'order_id':str(order_id)
+                                            }
+                                        sendFMCMsg(auth_token,body,title,data_map,server_token,"Customer")
                                         #success
                                         return JsonResponse({"message": f"{ret_result} row(s) updated","order_id":order_id}, status=200)
                                     except Exception as err:
