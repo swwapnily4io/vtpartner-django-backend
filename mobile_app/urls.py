@@ -423,4 +423,19 @@ urlpatterns = [
     path('handyman_agent_booking_details_live_track',views.handyman_agent_booking_details_live_track,name='handyman_agent_booking_details_live_track'),
     #Generating Booking ID and searching nearby handyman agents
     path('generate_new_handyman_booking_id_get_nearby_agents_with_fcm_token',views.generate_new_handyman_booking_id_get_nearby_agents_with_fcm_token,name='generate_new_handyman_booking_id_get_nearby_agents_with_fcm_token'),
+    
+    
+    #Profile Details and edit paths
+    #My All Rides
+    path('get_other_driver_details',views.get_other_driver_details,name='get_other_driver_details'),
+    #My All Rides
+    path('update_other_driver_details',views.update_other_driver_details,name='update_other_driver_details'),
+    #My All Rides
+    path('get_jcb_crane_driver_details',views.get_jcb_crane_driver_details,name='get_jcb_crane_driver_details'),
+    #My All Rides
+    path('update_jcb_crane_driver_details',views.update_jcb_crane_driver_details,name='update_jcb_crane_driver_details'),
+    #My All Rides
+    path('get_handyman_details',views.get_handyman_details,name='get_handyman_details'),
+    #My All Rides
+    path('update_handyman_details',views.update_handyman_details,name='update_handyman_details'),
 ]

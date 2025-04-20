@@ -20573,3 +20573,398 @@ def generate_new_handyman_booking_id_get_nearby_agents_with_fcm_token(request):
             return JsonResponse({"message": "An error occurred"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_other_driver_details(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            driver_id = data.get('driver_id')
+
+            if not driver_id:
+                return JsonResponse({"message": "Driver ID is required"}, status=400)
+
+            query = """
+                SELECT od.other_driver_id, od.driver_first_name, od.driver_last_name,
+                       od.profile_pic, od.is_online, od.ratings, od.mobile_no, 
+                       od.registration_date, od.time, od.r_lat, od.r_lng, 
+                       od.current_lat, od.current_lng, od.status, od.recent_online_pic, 
+                       od.is_verified, od.category_id, od.sub_cat_id, od.service_id, 
+                       od.city_id, od.house_no, od.city_name, od.full_address,
+                       od.aadhar_no, od.pan_card_no, od.gender, od.aadhar_card_front,
+                       od.aadhar_card_back, od.pan_card_front, od.pan_card_back,
+                       od.driving_license_no, od.license_front, od.license_back,
+                       od.authtoken, od.otp_no, od.reason, od.bank_name,
+                       od.ifsc_code, od.account_number, od.account_name,
+                       os.service_name, sc.sub_cat_name
+                FROM vtpartner.other_driverstbl od
+                LEFT JOIN vtpartner.other_servicestbl os 
+                    ON od.service_id = os.service_id
+                LEFT JOIN vtpartner.sub_categorytbl sc 
+                    ON od.sub_cat_id = sc.sub_cat_id
+                WHERE od.other_driver_id = %s
+            """
+            
+            result = select_query(query, [driver_id])
+
+            if not result:
+                return JsonResponse({"message": "Driver not found"}, status=404)
+
+            # Extracting the result
+            driver = {
+                "driver_id": str(result[0][0]),
+                "first_name": result[0][1] or 'NA',
+                "last_name": result[0][2] or 'NA',
+                "profile_pic": result[0][3] or 'NA',
+                "is_online": result[0][4],
+                "ratings": result[0][5] or '0',
+                "mobile_no": result[0][6] or 'NA',
+                "registration_date": result[0][7].strftime('%Y-%m-%d') if result[0][7] else 'NA',
+                "time": result[0][8] or 0,
+                "r_lat": result[0][9] or 0,
+                "r_lng": result[0][10] or 0,
+                "current_lat": result[0][11] or 0,
+                "current_lng": result[0][12] or 0,
+                "status": result[0][13],
+                "recent_online_pic": result[0][14] or 'NA',
+                "is_verified": result[0][15],
+                "category_id": result[0][16],
+                "sub_cat_id": result[0][17],
+                "service_id": result[0][18],
+                "city_id": result[0][19],
+                "house_no": result[0][20] or 'NA',
+                "city_name": result[0][21] or 'NA',
+                "full_address": result[0][22] or 'NA',
+                "aadhar_no": result[0][23] or 'NA',
+                "pan_no": result[0][24] or 'NA',
+                "gender": result[0][25] or 'NA',
+                "aadhar_card_front": result[0][26] or 'NA',
+                "aadhar_card_back": result[0][27] or 'NA',
+                "pan_card_front": result[0][28] or 'NA',
+                "pan_card_back": result[0][29] or 'NA',
+                "license_no": result[0][30] or 'NA',
+                "license_front": result[0][31] or 'NA',
+                "license_back": result[0][32] or 'NA',
+                "authtoken": result[0][33] or 'NA',
+                "otp_no": result[0][34] or '0',
+                "reason": result[0][35] or 'NA',
+                "bank_name": result[0][36] or 'NA',
+                "ifsc_code": result[0][37] or 'NA',
+                "account_number": result[0][38] or 'NA',
+                "account_name": result[0][39] or 'NA',
+                "service_name": result[0][40] or 'NA',
+                "sub_cat_name": result[0][41] or 'NA'
+            }
+
+            return JsonResponse({"driver": driver}, status=200)
+
+        except Exception as err:
+            print("Error fetching driver details:", err)
+            return JsonResponse({"message": str(err)}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def update_other_driver_details(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            driver_id = data.get('driver_id')
+            
+            if not driver_id:
+                return JsonResponse({"message": "Driver ID is required"}, status=400)
+
+            update_fields = {
+                'driver_first_name': data.get('first_name'),
+                'driver_last_name': data.get('last_name'),
+                'bank_name': data.get('bank_name'),
+                'ifsc_code': data.get('ifsc_code'),
+                'account_number': data.get('account_number'),
+                'account_name': data.get('account_name')
+            }
+
+            # Remove None values
+            update_fields = {k: v for k, v in update_fields.items() if v is not None}
+
+            if not update_fields:
+                return JsonResponse({"message": "No fields to update"}, status=400)
+
+            query = """
+                UPDATE vtpartner.other_driverstbl 
+                SET {} 
+                WHERE other_driver_id = %s
+            """.format(
+                ", ".join(f"{key} = %s" for key in update_fields.keys())
+            )
+
+            values = (*update_fields.values(), driver_id)
+            update_query(query, values)
+
+            return JsonResponse({"message": "Driver details updated successfully"}, status=200)
+
+        except Exception as err:
+            print("Error updating driver details:", err)
+            return JsonResponse({"message": str(err)}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_jcb_crane_driver_details(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            driver_id = data.get('driver_id')
+
+            if not driver_id:
+                return JsonResponse({"message": "Driver ID is required"}, status=400)
+
+            query = """
+                SELECT jcd.jcb_crane_driver_id, jcd.driver_name, jcd.profile_pic,
+                       jcd.is_online, jcd.ratings, jcd.mobile_no, jcd.registration_date,
+                       jcd.time, jcd.r_lat, jcd.r_lng, jcd.current_lat, jcd.current_lng,
+                       jcd.status, jcd.recent_online_pic, jcd.is_verified,
+                       jcd.category_id, jcd.sub_cat_id, jcd.service_id, jcd.city_id, 
+                       jcd.pan_card_no, jcd.aadhar_no, jcd.house_no,
+                       jcd.city_name, jcd.full_address, jcd.gender,
+                       jcd.aadhar_card_front, jcd.aadhar_card_back,
+                       jcd.pan_card_front, jcd.pan_card_back, jcd.license_front,
+                       jcd.license_back, jcd.authtoken, jcd.otp_no, jcd.reason, 
+                       jcd.bank_name, jcd.ifsc_code, jcd.account_number, jcd.account_name,
+                       os.service_name, sc.sub_cat_name
+                FROM vtpartner.jcb_crane_driverstbl jcd
+                LEFT JOIN vtpartner.other_servicestbl os 
+                    ON jcd.service_id = os.service_id
+                LEFT JOIN vtpartner.sub_categorytbl sc 
+                    ON jcd.sub_cat_id = sc.sub_cat_id
+                WHERE jcd.jcb_crane_driver_id = %s
+            """
+            
+            result = select_query(query, [driver_id])
+
+            if not result:
+                return JsonResponse({"message": "Driver not found"}, status=404)
+
+            # Extracting the result
+            driver = {
+                "driver_id": str(result[0][0]),
+                "driver_name": result[0][1] or 'NA',
+                "profile_pic": result[0][2] or 'NA',
+                "is_online": result[0][3],
+                "ratings": result[0][4] or '0',
+                "mobile_no": result[0][5] or 'NA',
+                "registration_date": result[0][6].strftime('%Y-%m-%d') if result[0][6] else 'NA',
+                "time": result[0][7] or 0,
+                "r_lat": result[0][8] or 0,
+                "r_lng": result[0][9] or 0,
+                "current_lat": result[0][10] or 0,
+                "current_lng": result[0][11] or 0,
+                "status": result[0][12],
+                "recent_online_pic": result[0][13] or 'NA',
+                "is_verified": result[0][14],
+                "category_id": result[0][15],
+                "sub_cat_id": result[0][16],
+                "service_id": result[0][17],
+                "city_id": result[0][18],
+                "pan_no": result[0][19] or 'NA',
+                "aadhar_no": result[0][20] or 'NA',
+                "house_no": result[0][21] or 'NA',
+                "city_name": result[0][22] or 'NA',
+                "full_address": result[0][23] or 'NA',
+                "gender": result[0][24] or 'NA',
+                "aadhar_card_front": result[0][25] or 'NA',
+                "aadhar_card_back": result[0][26] or 'NA',
+                "pan_card_front": result[0][27] or 'NA',
+                "pan_card_back": result[0][28] or 'NA',
+                "license_front": result[0][29] or 'NA',
+                "license_back": result[0][30] or 'NA',
+                "authtoken": result[0][31] or 'NA',
+                "otp_no": result[0][32] or '0',
+                "reason": result[0][33] or 'NA',
+                "bank_name": result[0][34] or 'NA',
+                "ifsc_code": result[0][35] or 'NA',
+                "account_number": result[0][36] or 'NA',
+                "account_name": result[0][37] or 'NA',
+                "service_name": result[0][38] or 'NA',
+                "sub_cat_name": result[0][39] or 'NA'
+            }
+
+            return JsonResponse({"driver": driver}, status=200)
+
+        except Exception as err:
+            print("Error fetching driver details:", err)
+            return JsonResponse({"message": str(err)}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def update_jcb_crane_driver_details(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            driver_id = data.get('driver_id')
+            
+            if not driver_id:
+                return JsonResponse({"message": "Driver ID is required"}, status=400)
+
+            update_fields = {
+                'driver_name': data.get('driver_name'),
+                'bank_name': data.get('bank_name'),
+                'ifsc_code': data.get('ifsc_code'),
+                'account_number': data.get('account_number'),
+                'account_name': data.get('account_name')
+            }
+
+            # Remove None values
+            update_fields = {k: v for k, v in update_fields.items() if v is not None}
+
+            if not update_fields:
+                return JsonResponse({"message": "No fields to update"}, status=400)
+
+            query = """
+                UPDATE vtpartner.jcb_crane_driverstbl 
+                SET {} 
+                WHERE jcb_crane_driver_id = %s
+            """.format(
+                ", ".join(f"{key} = %s" for key in update_fields.keys())
+            )
+
+            values = (*update_fields.values(), driver_id)
+            update_query(query, values)
+
+            return JsonResponse({"message": "Driver details updated successfully"}, status=200)
+
+        except Exception as err:
+            print("Error updating driver details:", err)
+            return JsonResponse({"message": str(err)}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_handyman_details(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            handyman_id = data.get('handyman_id')
+
+            if not handyman_id:
+                return JsonResponse({"message": "Handyman ID is required"}, status=400)
+
+            query = """
+                SELECT h.handyman_id, h.name, h.profile_pic, h.is_online,
+                       h.ratings, h.mobile_no, h.registration_date, h.time,
+                       h.r_lat, h.r_lng, h.current_lat, h.current_lng,
+                       h.status, h.recent_online_pic, h.is_verified,
+                       h.category_id, h.sub_cat_id, h.service_id, h.city_id,
+                       h.house_no, h.city_name, h.full_address, h.aadhar_no,
+                       h.pan_card_no, h.gender, h.aadhar_card_front,
+                       h.aadhar_card_back, h.pan_card_front, h.pan_card_back,
+                       h.authtoken, h.otp_no, h.license_front, h.license_back,
+                       h.reason, h.bank_name, h.ifsc_code, h.account_number,
+                       h.account_name, os.service_name, sc.sub_cat_name
+                FROM vtpartner.handymans_tbl h
+                LEFT JOIN vtpartner.other_servicestbl os 
+                    ON h.service_id = os.service_id
+                LEFT JOIN vtpartner.sub_categorytbl sc 
+                    ON h.sub_cat_id = sc.sub_cat_id
+                WHERE h.handyman_id = %s
+            """
+            
+            result = select_query(query, [handyman_id])
+
+            if not result:
+                return JsonResponse({"message": "Handyman not found"}, status=404)
+
+            # Extracting the result
+            handyman = {
+                "handyman_id": str(result[0][0]),
+                "name": result[0][1] or 'NA',
+                "profile_pic": result[0][2] or 'NA',
+                "is_online": result[0][3],
+                "ratings": result[0][4] or '0',
+                "mobile_no": result[0][5] or 'NA',
+                "registration_date": result[0][6].strftime('%Y-%m-%d') if result[0][6] else 'NA',
+                "time": result[0][7] or 0,
+                "r_lat": result[0][8] or 0,
+                "r_lng": result[0][9] or 0,
+                "current_lat": result[0][10] or 0,
+                "current_lng": result[0][11] or 0,
+                "status": result[0][12],
+                "recent_online_pic": result[0][13] or 'NA',
+                "is_verified": result[0][14],
+                "category_id": result[0][15],
+                "sub_cat_id": result[0][16],
+                "service_id": result[0][17],
+                "city_id": result[0][18],
+                "house_no": result[0][19] or 'NA',
+                "city_name": result[0][20] or 'NA',
+                "full_address": result[0][21] or 'NA',
+                "aadhar_no": result[0][22] or 'NA',
+                "pan_no": result[0][23] or 'NA',
+                "gender": result[0][24] or 'NA',
+                "aadhar_card_front": result[0][25] or 'NA',
+                "aadhar_card_back": result[0][26] or 'NA',
+                "pan_card_front": result[0][27] or 'NA',
+                "pan_card_back": result[0][28] or 'NA',
+                "authtoken": result[0][29] or 'NA',
+                "otp_no": result[0][30] or '0',
+                "license_front": result[0][31] or 'NA',
+                "license_back": result[0][32] or 'NA',
+                "reason": result[0][33] or 'NA',
+                "bank_name": result[0][34] or 'NA',
+                "ifsc_code": result[0][35] or 'NA',
+                "account_number": result[0][36] or 'NA',
+                "account_name": result[0][37] or 'NA',
+                "service_name": result[0][38] or 'NA',
+                "sub_cat_name": result[0][39] or 'NA'
+            }
+
+            return JsonResponse({"handyman": handyman}, status=200)
+
+        except Exception as err:
+            print("Error fetching handyman details:", err)
+            return JsonResponse({"message": str(err)}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def update_handyman_details(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            handyman_id = data.get('handyman_id')
+            
+            if not handyman_id:
+                return JsonResponse({"message": "Handyman ID is required"}, status=400)
+
+            update_fields = {
+                'name': data.get('name'),
+                'bank_name': data.get('bank_name'),
+                'ifsc_code': data.get('ifsc_code'),
+                'account_number': data.get('account_number'),
+                'account_name': data.get('account_name')
+            }
+
+            # Remove None values
+            update_fields = {k: v for k, v in update_fields.items() if v is not None}
+
+            if not update_fields:
+                return JsonResponse({"message": "No fields to update"}, status=400)
+
+            query = """
+                UPDATE vtpartner.handymans_tbl 
+                SET {} 
+                WHERE handyman_id = %s
+            """.format(
+                ", ".join(f"{key} = %s" for key in update_fields.keys())
+            )
+
+            values = (*update_fields.values(), handyman_id)
+            update_query(query, values)
+
+            return JsonResponse({"message": "Handyman details updated successfully"}, status=200)
+
+        except Exception as err:
+            print("Error updating handyman details:", err)
+            return JsonResponse({"message": str(err)}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
