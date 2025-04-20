@@ -12838,6 +12838,8 @@ def generate_new_cab_drivers_booking_id_get_nearby_drivers_with_fcm_token(reques
         coupon_id = data.get("coupon_id")
         coupon_amount = data.get("coupon_amount")
         before_coupon_amount = data.get("before_coupon_amount")
+        is_scheduled = data.get("is_scheduled", False)
+        scheduled_time = data.get("scheduled_time")
         # List of required fields
         required_fields = {
             "city_id":city_id,
@@ -12882,6 +12884,39 @@ def generate_new_cab_drivers_booking_id_get_nearby_drivers_with_fcm_token(reques
 
         if pickup_lat is None or pickup_lng is None:
             return JsonResponse({"message": "Latitude and Longitude are required"}, status=400)
+        
+        # Process scheduled time with proper timezone awareness
+        if is_scheduled and scheduled_time:
+            try:
+                # Parse time in HH:MM:SS format
+                time_obj = datetime.strptime(scheduled_time, '%H:%M:%S').time()
+                
+                # Get current date in LOCAL timezone (where the booking is being made)
+                local_now = datetime.now(LOCAL_TIMEZONE)
+                current_date = local_now.date()
+                
+                # Create datetime combining date and time
+                scheduled_naive = datetime.combine(current_date, time_obj)
+                
+                # Add timezone information to make it aware
+                scheduled_local = LOCAL_TIMEZONE.localize(scheduled_naive)
+                
+                # Check if the time is in the past for the current day
+                if scheduled_local < local_now:
+                    # If it's in the past, schedule for the next day
+                    next_day = current_date + timedelta(days=1)
+                    scheduled_naive = datetime.combine(next_day, time_obj)
+                    scheduled_local = LOCAL_TIMEZONE.localize(scheduled_naive)
+                    print(f"Scheduled time {time_obj} already passed today, scheduling for tomorrow.")
+                
+                # Store the localized datetime
+                scheduled_time = scheduled_local
+                print(f"Processed scheduled time: {scheduled_time}")
+                
+            except ValueError as e:
+                return JsonResponse({"message": f"Invalid scheduled_time format: {e}"}, status=400)
+            except Exception as e:
+                return JsonResponse({"message": f"Error processing scheduled_time: {e}"}, status=400)
 
         try:
             
@@ -12892,12 +12927,12 @@ def generate_new_cab_drivers_booking_id_get_nearby_drivers_with_fcm_token(reques
                     distance, time, total_price, base_price, booking_timing, booking_date, 
                     otp, gst_amount, igst_amount, 
                     payment_method, city_id,pickup_address,drop_address,
-                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time
                 ) 
                 VALUES (
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
-                    %s, %s,%s, %s,%s, %s,%s, %s
+                    %s, %s,%s, %s,%s, %s,%s, %s,%s,%s
                 ) 
                 RETURNING booking_id;
             """
@@ -12906,7 +12941,7 @@ def generate_new_cab_drivers_booking_id_get_nearby_drivers_with_fcm_token(reques
                 customer_id, '-1', pickup_lat, pickup_lng, destination_lat, destination_lng, 
                 distance, time, total_price, base_price, otp, 
                 gst_amount, igst_amount, payment_method, city_id,pickup_address,drop_address,
-                coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time
             ]
 
             # Assuming insert_query is a function that runs the query
@@ -12921,111 +12956,127 @@ def generate_new_cab_drivers_booking_id_get_nearby_drivers_with_fcm_token(reques
                     'intent':'cab_driver',
                     'booking_id':str(booking_id)
                 }
-                query = """
-                    SELECT 
-                    main.active_id, 
-                    main.cab_driver_id, 
-                    main.current_lat, 
-                    main.current_lng, 
-                    main.entry_time, 
-                    main.current_status, 
-                    cab_driverstbl.driver_first_name,
-                    cab_driverstbl.profile_pic, 
-                    vehiclestbl.image AS vehicle_image, 
-                    vehiclestbl.vehicle_name,
-                    vehiclestbl.weight,
-                    vehicle_city_wise_price_tbl.starting_price_per_km,
-                    vehicle_city_wise_price_tbl.base_fare,
-                    vehiclestbl.vehicle_id,
-                    vehiclestbl.size_image,
-                    cab_driverstbl.authtoken,
-                    (6371 * acos(
-                        cos(radians(%s)) * cos(radians(main.current_lat)) *
-                        cos(radians(main.current_lng) - radians(%s)) +
-                        sin(radians(%s)) * sin(radians(main.current_lat))
-                    )) AS distance
-                FROM vtpartner.active_cab_drivertbl AS main
-                INNER JOIN (
-                    SELECT cab_driver_id, MAX(entry_time) AS max_entry_time
-                    FROM vtpartner.active_cab_drivertbl
-                    GROUP BY cab_driver_id
-                ) AS latest ON main.cab_driver_id = latest.cab_driver_id
-                            AND main.entry_time = latest.max_entry_time
-                JOIN vtpartner.cab_driverstbl ON main.cab_driver_id = cab_driverstbl.cab_driver_id
-                JOIN vtpartner.vehiclestbl ON cab_driverstbl.vehicle_id = vehiclestbl.vehicle_id
-                JOIN vtpartner.vehicle_city_wise_price_tbl ON vehiclestbl.vehicle_id = vehicle_city_wise_price_tbl.vehicle_id
-                AND vehicle_city_wise_price_tbl.city_id = %s  AND vehicle_city_wise_price_tbl.price_type_id=%s
-                WHERE main.current_status = 1
-                AND (6371 * acos(
-                        cos(radians(%s)) * cos(radians(main.current_lat)) *
-                        cos(radians(main.current_lng) - radians(%s)) +
-                        sin(radians(%s)) * sin(radians(main.current_lat))
-                    )) <= %s
-                AND cab_driverstbl.category_id = vehiclestbl.category_id
-                AND cab_driverstbl.category_id = '2' AND  cab_driverstbl.vehicle_id=%s
-                ORDER BY distance ASC;
-
-                """
-                values = [pickup_lat, pickup_lng, pickup_lat,city_id,price_type, pickup_lat, pickup_lng, pickup_lat, radius_km,vehicle_id]
-
-                # Execute the query
-                nearby_drivers = select_query(query, values)
-                
-
-                # Format response
-                # drivers_list = [
-                #     {
-                #         "active_id": driver[0],
-                #         "goods_driver_id": driver[1],
-                #         "latitude": driver[2],
-                #         "longitude": driver[3],
-                #         "entry_time": driver[4],
-                #         "current_status": driver[5],
-                #         "driver_name": driver[6],
-                #         "driver_profile_pic": driver[7],
-                #         "vehicle_image": driver[8],
-                #         "vehicle_name": driver[9],
-                #         "weight": driver[10],
-                #         "starting_price_per_km": driver[11],
-                #         "base_fare": driver[12],
-                #         "vehicle_id": driver[13],
-                #         "size_image": driver[14],
-                #         "auth_token": driver[15],
-                #         "distance": driver[16]
-                #     }
-                #     for driver in nearby_drivers
-                # ]
-
-                # Send notifications to all the online drivers
-                # for driver in nearby_drivers:
-                #     driver_auth_token = get_goods_driver_auth_token(driver[1])
-                #     sendFMCMsg(
-                #         driver_auth_token,
-                #         f'You have a new Ride Request for \nPickup Location: {pickup_address}. \nDrop Location: {drop_address}',
-                #         'New Goods Ride Request',
-                #         fcm_data,
-                #         server_access_token
-                #     )
-                for driver in nearby_drivers:
-                    try:
+                #To save scheduled Bookings
+                if is_scheduled and scheduled_time:
+                    scheduled_query_insert = """
+                        INSERT INTO vtpartner.scheduled_bookings_tbl (
+                             booking_id, scheduled_time,category_id, scheduled_date
+                        ) 
+                        VALUES (
+                            %s,EXTRACT(EPOCH FROM CURRENT_TIMESTAMP),'2',CURRENT_DATE
+                        ) 
                         
-                        driver_auth_token = get_cab_driver_auth_token2(driver[1])  # driver[1] assumed to be goods_driver_id
-                        print(f"driver_auth_token ->{driver[1]} {driver_auth_token}")
-                        
-                        if driver_auth_token:
-                            sendFMCMsg(
-                                driver_auth_token,
-                                f"You have a new Ride Request for \nPickup Location: {pickup_address}. \nDrop Location: {drop_address}",
-                                "New Cab Ride Request",
-                                fcm_data,
-                                server_access_token,
-                                "Agent"
-                            )
-                            print(f"Notification sent to cab driver ID {driver[1]}")
-                        else:
-                            print(f"Skipped notification for cab driver ID {driver[1]} due to missing auth token")
-                    except Exception as err:
-                        print(f"Error sending notification to cab driver ID {driver[1]}: {err}")
+                    """
+                    scheduled_insert_values =[booking_id]
+                    insert_query(scheduled_query_insert, scheduled_insert_values)
+                    
+                # Only send notifications if not a scheduled booking
+                if not is_scheduled:
+                    query = """
+                        SELECT 
+                        main.active_id, 
+                        main.cab_driver_id, 
+                        main.current_lat, 
+                        main.current_lng, 
+                        main.entry_time, 
+                        main.current_status, 
+                        cab_driverstbl.driver_first_name,
+                        cab_driverstbl.profile_pic, 
+                        vehiclestbl.image AS vehicle_image, 
+                        vehiclestbl.vehicle_name,
+                        vehiclestbl.weight,
+                        vehicle_city_wise_price_tbl.starting_price_per_km,
+                        vehicle_city_wise_price_tbl.base_fare,
+                        vehiclestbl.vehicle_id,
+                        vehiclestbl.size_image,
+                        cab_driverstbl.authtoken,
+                        (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) AS distance
+                    FROM vtpartner.active_cab_drivertbl AS main
+                    INNER JOIN (
+                        SELECT cab_driver_id, MAX(entry_time) AS max_entry_time
+                        FROM vtpartner.active_cab_drivertbl
+                        GROUP BY cab_driver_id
+                    ) AS latest ON main.cab_driver_id = latest.cab_driver_id
+                                AND main.entry_time = latest.max_entry_time
+                    JOIN vtpartner.cab_driverstbl ON main.cab_driver_id = cab_driverstbl.cab_driver_id
+                    JOIN vtpartner.vehiclestbl ON cab_driverstbl.vehicle_id = vehiclestbl.vehicle_id
+                    JOIN vtpartner.vehicle_city_wise_price_tbl ON vehiclestbl.vehicle_id = vehicle_city_wise_price_tbl.vehicle_id
+                    AND vehicle_city_wise_price_tbl.city_id = %s  AND vehicle_city_wise_price_tbl.price_type_id=%s
+                    WHERE main.current_status = 1
+                    AND (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) <= %s
+                    AND cab_driverstbl.category_id = vehiclestbl.category_id
+                    AND cab_driverstbl.category_id = '2' AND  cab_driverstbl.vehicle_id=%s
+                    ORDER BY distance ASC;
+
+                    """
+                    values = [pickup_lat, pickup_lng, pickup_lat,city_id,price_type, pickup_lat, pickup_lng, pickup_lat, radius_km,vehicle_id]
+
+                    # Execute the query
+                    nearby_drivers = select_query(query, values)
+                    
+
+                    # Format response
+                    # drivers_list = [
+                    #     {
+                    #         "active_id": driver[0],
+                    #         "goods_driver_id": driver[1],
+                    #         "latitude": driver[2],
+                    #         "longitude": driver[3],
+                    #         "entry_time": driver[4],
+                    #         "current_status": driver[5],
+                    #         "driver_name": driver[6],
+                    #         "driver_profile_pic": driver[7],
+                    #         "vehicle_image": driver[8],
+                    #         "vehicle_name": driver[9],
+                    #         "weight": driver[10],
+                    #         "starting_price_per_km": driver[11],
+                    #         "base_fare": driver[12],
+                    #         "vehicle_id": driver[13],
+                    #         "size_image": driver[14],
+                    #         "auth_token": driver[15],
+                    #         "distance": driver[16]
+                    #     }
+                    #     for driver in nearby_drivers
+                    # ]
+
+                    # Send notifications to all the online drivers
+                    # for driver in nearby_drivers:
+                    #     driver_auth_token = get_goods_driver_auth_token(driver[1])
+                    #     sendFMCMsg(
+                    #         driver_auth_token,
+                    #         f'You have a new Ride Request for \nPickup Location: {pickup_address}. \nDrop Location: {drop_address}',
+                    #         'New Goods Ride Request',
+                    #         fcm_data,
+                    #         server_access_token
+                    #     )
+                    for driver in nearby_drivers:
+                        try:
+                            
+                            driver_auth_token = get_cab_driver_auth_token2(driver[1])  # driver[1] assumed to be goods_driver_id
+                            print(f"driver_auth_token ->{driver[1]} {driver_auth_token}")
+                            
+                            if driver_auth_token:
+                                sendFMCMsg(
+                                    driver_auth_token,
+                                    f"You have a new Ride Request for \nPickup Location: {pickup_address}. \nDrop Location: {drop_address}",
+                                    "New Cab Ride Request",
+                                    fcm_data,
+                                    server_access_token,
+                                    "Agent"
+                                )
+                                print(f"Notification sent to cab driver ID {driver[1]}")
+                            else:
+                                print(f"Skipped notification for cab driver ID {driver[1]} due to missing auth token")
+                        except Exception as err:
+                            print(f"Error sending notification to cab driver ID {driver[1]}: {err}")
 
 
                 return JsonResponse({"result": response_value}, status=200)
@@ -15823,6 +15874,8 @@ def generate_new_other_driver_booking_id_get_nearby_agents_with_fcm_token(reques
         coupon_id = data.get("coupon_id")
         coupon_amount = data.get("coupon_amount")
         before_coupon_amount = data.get("before_coupon_amount")
+        is_scheduled = data.get("is_scheduled", False)
+        scheduled_time = data.get("scheduled_time")
 
         # List of required fields
         required_fields = {       
@@ -15861,6 +15914,39 @@ def generate_new_other_driver_booking_id_get_nearby_agents_with_fcm_token(reques
         if pickup_lat is None or pickup_lng is None:
             return JsonResponse({"message": "Latitude and Longitude are required"}, status=400)
 
+        # Process scheduled time with proper timezone awareness
+        if is_scheduled and scheduled_time:
+            try:
+                # Parse time in HH:MM:SS format
+                time_obj = datetime.strptime(scheduled_time, '%H:%M:%S').time()
+                
+                # Get current date in LOCAL timezone (where the booking is being made)
+                local_now = datetime.now(LOCAL_TIMEZONE)
+                current_date = local_now.date()
+                
+                # Create datetime combining date and time
+                scheduled_naive = datetime.combine(current_date, time_obj)
+                
+                # Add timezone information to make it aware
+                scheduled_local = LOCAL_TIMEZONE.localize(scheduled_naive)
+                
+                # Check if the time is in the past for the current day
+                if scheduled_local < local_now:
+                    # If it's in the past, schedule for the next day
+                    next_day = current_date + timedelta(days=1)
+                    scheduled_naive = datetime.combine(next_day, time_obj)
+                    scheduled_local = LOCAL_TIMEZONE.localize(scheduled_naive)
+                    print(f"Scheduled time {time_obj} already passed today, scheduling for tomorrow.")
+                
+                # Store the localized datetime
+                scheduled_time = scheduled_local
+                print(f"Processed scheduled time: {scheduled_time}")
+                
+            except ValueError as e:
+                return JsonResponse({"message": f"Invalid scheduled_time format: {e}"}, status=400)
+            except Exception as e:
+                return JsonResponse({"message": f"Error processing scheduled_time: {e}"}, status=400)
+            
         try:
             
             # Insert record in the booking table
@@ -15870,12 +15956,12 @@ def generate_new_other_driver_booking_id_get_nearby_agents_with_fcm_token(reques
                     distance, time, total_price, base_price, booking_timing, booking_date, 
                     otp, gst_amount, igst_amount, 
                     payment_method, city_id,pickup_address,drop_address,sub_cat_id,service_id,
-                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time
                 ) 
                 VALUES (
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
-                    %s, %s,%s, %s,%s,%s,%s,%s,%s,%s
+                    %s, %s,%s, %s,%s,%s,%s,%s,%s,%s,%s,%s
                 ) 
                 RETURNING booking_id;
             """
@@ -15884,7 +15970,7 @@ def generate_new_other_driver_booking_id_get_nearby_agents_with_fcm_token(reques
                 customer_id, '-1', pickup_lat, pickup_lng, destination_lat, destination_lng, 
                 distance, time, total_price, base_price, otp, 
                 gst_amount, igst_amount, payment_method, city_id,pickup_address,drop_address,sub_cat_id,service_id,
-                coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time
             ]
 
             # Assuming insert_query is a function that runs the query
@@ -15899,115 +15985,90 @@ def generate_new_other_driver_booking_id_get_nearby_agents_with_fcm_token(reques
                     'intent':'driver_agent',
                     'booking_id':str(booking_id)
                 }
-# SELECT 
-#     main.active_id,
-#     main.other_driver_id,
-#     main.current_lat,
-#     main.current_lng,
-#     main.entry_time,
-#     main.current_status,
-#     other.driver_first_name,
-#     other.driver_last_name,
-#     other.profile_pic,
-#     sub_categorytbl.sub_cat_name,
-#     sub_categorytbl.price_per_hour,
-#     other_servicestbl.service_name,
-#     other_servicestbl.price_per_hour AS service_price_per_hour,
-#     (6371 * acos(
-#         cos(radians(15.901976560038078)) * cos(radians(main.current_lat)) *
-#         cos(radians(main.current_lng) - radians(74.51701417565346)) +
-#         sin(radians(15.901976560038078)) * sin(radians(main.current_lat))
-#     )) AS distance
-# FROM vtpartner.active_other_drivertbl AS main
-# INNER JOIN (
-#     SELECT other_driver_id, MAX(entry_time) AS max_entry_time
-#     FROM vtpartner.active_other_drivertbl
-#     GROUP BY other_driver_id
-# ) AS latest ON main.other_driver_id = latest.other_driver_id
-#              AND main.entry_time = latest.max_entry_time
-# JOIN vtpartner.other_driverstbl AS other ON main.other_driver_id = other.other_driver_id
-# LEFT JOIN vtpartner.sub_categorytbl ON other.sub_cat_id = sub_categorytbl.sub_cat_id
-# LEFT JOIN vtpartner.other_servicestbl ON other.service_id = other_servicestbl.service_id
-# WHERE main.current_status = 1
-#   AND (6371 * acos(
-#         cos(radians(15.901976560038078)) * cos(radians(main.current_lat)) *
-#         cos(radians(main.current_lng) - radians(74.51701417565346)) +
-#         sin(radians(15.901976560038078)) * sin(radians(main.current_lat))
-#       )) <= 5
-#   AND other.category_id = sub_categorytbl.cat_id
-#   AND other.sub_cat_id = 3 
-#   AND (other.service_id = -1 OR other.service_id = 21) 
-# ORDER BY distance
-                
-                
-                query = """
-                    SELECT 
-                    main.active_id,
-                    main.other_driver_id,
-                    main.current_lat,
-                    main.current_lng,
-                    main.entry_time,
-                    main.current_status,
-                    other.driver_first_name,
-                    other.driver_last_name,
-                    other.profile_pic,
-                    sub_categorytbl.sub_cat_name,
-                    sub_categorytbl.price_per_hour,
-                    other_servicestbl.service_name,
-                    other_servicestbl.price_per_hour AS service_price_per_hour,
-                    (6371 * acos(
-                        cos(radians(%s)) * cos(radians(main.current_lat)) *
-                        cos(radians(main.current_lng) - radians(%s)) +
-                        sin(radians(%s)) * sin(radians(main.current_lat))
-                    )) AS distance
-                FROM vtpartner.active_other_drivertbl AS main
-                INNER JOIN (
-                    SELECT other_driver_id, MAX(entry_time) AS max_entry_time
-                    FROM vtpartner.active_other_drivertbl
-                    GROUP BY other_driver_id
-                ) AS latest ON main.other_driver_id = latest.other_driver_id
-                            AND main.entry_time = latest.max_entry_time
-                JOIN vtpartner.other_driverstbl AS other ON main.other_driver_id = other.other_driver_id
-                LEFT JOIN vtpartner.sub_categorytbl ON other.sub_cat_id = sub_categorytbl.sub_cat_id
-                LEFT JOIN vtpartner.other_servicestbl ON other.service_id = other_servicestbl.service_id
-                WHERE main.current_status = 1
-                AND (6371 * acos(
-                        cos(radians(%s)) * cos(radians(main.current_lat)) *
-                        cos(radians(main.current_lng) - radians(%s)) +
-                        sin(radians(%s)) * sin(radians(main.current_lat))
-                    )) <= 5
-                AND other.category_id = sub_categorytbl.cat_id
-                AND other.sub_cat_id = %s 
-                AND (other.service_id = -1 OR other.service_id = %s) 
-                ORDER BY distance;
-
-                """
-                values = [pickup_lat, pickup_lng, pickup_lat, pickup_lat, pickup_lng, pickup_lat, sub_cat_id,service_id]
-
-                # Execute the query
-                nearby_drivers = select_query(query, values)
-                
-
-                for driver in nearby_drivers:
-                    try:
+                #To save scheduled Bookings
+                if is_scheduled and scheduled_time:
+                    scheduled_query_insert = """
+                        INSERT INTO vtpartner.scheduled_bookings_tbl (
+                             booking_id, scheduled_time,category_id, scheduled_date
+                        ) 
+                        VALUES (
+                            %s,EXTRACT(EPOCH FROM CURRENT_TIMESTAMP),'4',CURRENT_DATE
+                        ) 
                         
-                        driver_auth_token = get_other_driver_auth_token2(driver[1])  # driver[1] assumed to be goods_driver_id
-                        print(f"driver_auth_token ->{driver[1]} {driver_auth_token}")
-                        
-                        if driver_auth_token:
-                            sendFMCMsg(
-                                driver_auth_token,
-                                f"You have a new Ride Request for \nPickup Location: {pickup_address}. \nDrop Location: {drop_address}",
-                                "New Driver Ride Request",
-                                fcm_data,
-                                server_access_token,
-                                "Agent"
-                            )
-                            print(f"Notification sent to other driver ID {driver[1]}")
-                        else:
-                            print(f"Skipped notification for other driver ID {driver[1]} due to missing auth token")
-                    except Exception as err:
-                        print(f"Error sending notification to other driver ID {driver[1]}: {err}")
+                    """
+                    scheduled_insert_values =[booking_id]
+                    insert_query(scheduled_query_insert, scheduled_insert_values)
+                    
+                # Only send notifications if not a scheduled booking
+                if not is_scheduled:
+                    query = """
+                        SELECT 
+                        main.active_id,
+                        main.other_driver_id,
+                        main.current_lat,
+                        main.current_lng,
+                        main.entry_time,
+                        main.current_status,
+                        other.driver_first_name,
+                        other.driver_last_name,
+                        other.profile_pic,
+                        sub_categorytbl.sub_cat_name,
+                        sub_categorytbl.price_per_hour,
+                        other_servicestbl.service_name,
+                        other_servicestbl.price_per_hour AS service_price_per_hour,
+                        (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) AS distance
+                    FROM vtpartner.active_other_drivertbl AS main
+                    INNER JOIN (
+                        SELECT other_driver_id, MAX(entry_time) AS max_entry_time
+                        FROM vtpartner.active_other_drivertbl
+                        GROUP BY other_driver_id
+                    ) AS latest ON main.other_driver_id = latest.other_driver_id
+                                AND main.entry_time = latest.max_entry_time
+                    JOIN vtpartner.other_driverstbl AS other ON main.other_driver_id = other.other_driver_id
+                    LEFT JOIN vtpartner.sub_categorytbl ON other.sub_cat_id = sub_categorytbl.sub_cat_id
+                    LEFT JOIN vtpartner.other_servicestbl ON other.service_id = other_servicestbl.service_id
+                    WHERE main.current_status = 1
+                    AND (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) <= 5
+                    AND other.category_id = sub_categorytbl.cat_id
+                    AND other.sub_cat_id = %s 
+                    AND (other.service_id = -1 OR other.service_id = %s) 
+                    ORDER BY distance;
+
+                    """
+                    values = [pickup_lat, pickup_lng, pickup_lat, pickup_lat, pickup_lng, pickup_lat, sub_cat_id,service_id]
+
+                    # Execute the query
+                    nearby_drivers = select_query(query, values)
+                    
+
+                    for driver in nearby_drivers:
+                        try:
+                            
+                            driver_auth_token = get_other_driver_auth_token2(driver[1])  # driver[1] assumed to be goods_driver_id
+                            print(f"driver_auth_token ->{driver[1]} {driver_auth_token}")
+                            
+                            if driver_auth_token:
+                                sendFMCMsg(
+                                    driver_auth_token,
+                                    f"You have a new Ride Request for \nPickup Location: {pickup_address}. \nDrop Location: {drop_address}",
+                                    "New Driver Ride Request",
+                                    fcm_data,
+                                    server_access_token,
+                                    "Agent"
+                                )
+                                print(f"Notification sent to other driver ID {driver[1]}")
+                            else:
+                                print(f"Skipped notification for other driver ID {driver[1]} due to missing auth token")
+                        except Exception as err:
+                            print(f"Error sending notification to other driver ID {driver[1]}: {err}")
 
 
                 return JsonResponse({"result": response_value}, status=200)
@@ -18214,6 +18275,8 @@ def generate_new_jcb_crane_booking_id_get_nearby_agents_with_fcm_token(request):
         coupon_id = data.get("coupon_id")
         coupon_amount = data.get("coupon_amount")
         before_coupon_amount = data.get("before_coupon_amount")
+        is_scheduled = data.get("is_scheduled", False)
+        scheduled_time = data.get("scheduled_time")
 
         # List of required fields
         required_fields = {
@@ -18248,6 +18311,40 @@ def generate_new_jcb_crane_booking_id_get_nearby_agents_with_fcm_token(request):
 
         if pickup_lat is None or pickup_lng is None:
             return JsonResponse({"message": "Latitude and Longitude are required"}, status=400)
+        
+        # Process scheduled time with proper timezone awareness
+        if is_scheduled and scheduled_time:
+            try:
+                # Parse time in HH:MM:SS format
+                time_obj = datetime.strptime(scheduled_time, '%H:%M:%S').time()
+                
+                # Get current date in LOCAL timezone (where the booking is being made)
+                local_now = datetime.now(LOCAL_TIMEZONE)
+                current_date = local_now.date()
+                
+                # Create datetime combining date and time
+                scheduled_naive = datetime.combine(current_date, time_obj)
+                
+                # Add timezone information to make it aware
+                scheduled_local = LOCAL_TIMEZONE.localize(scheduled_naive)
+                
+                # Check if the time is in the past for the current day
+                if scheduled_local < local_now:
+                    # If it's in the past, schedule for the next day
+                    next_day = current_date + timedelta(days=1)
+                    scheduled_naive = datetime.combine(next_day, time_obj)
+                    scheduled_local = LOCAL_TIMEZONE.localize(scheduled_naive)
+                    print(f"Scheduled time {time_obj} already passed today, scheduling for tomorrow.")
+                
+                # Store the localized datetime
+                scheduled_time = scheduled_local
+                print(f"Processed scheduled time: {scheduled_time}")
+                
+            except ValueError as e:
+                return JsonResponse({"message": f"Invalid scheduled_time format: {e}"}, status=400)
+            except Exception as e:
+                return JsonResponse({"message": f"Error processing scheduled_time: {e}"}, status=400)
+        
 
         try:
             
@@ -18257,11 +18354,12 @@ def generate_new_jcb_crane_booking_id_get_nearby_agents_with_fcm_token(request):
                     customer_id, driver_id, pickup_lat, pickup_lng, total_price, base_price, booking_timing, booking_date, 
                     otp, gst_amount, igst_amount, 
                     payment_method, city_id,pickup_address,sub_cat_id,service_id,time,coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+                    ,is_scheduled, scheduled_time
                 ) 
                 VALUES (
                     %s, %s, %s, %s, %s, %s, 
                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
-                    %s, %s,%s,%s,%s,%s,%s,%s,%s,%s
+                    %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
                 ) 
                 RETURNING booking_id;
             """
@@ -18269,6 +18367,7 @@ def generate_new_jcb_crane_booking_id_get_nearby_agents_with_fcm_token(request):
             insert_values = [
                 customer_id, '-1', pickup_lat, pickup_lng, total_price, base_price, otp, 
                 gst_amount, igst_amount, payment_method, city_id,pickup_address,sub_cat_id,service_id,service_hour,coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+                ,is_scheduled, scheduled_time
             ]
 
             # Assuming insert_query is a function that runs the query
@@ -18283,117 +18382,91 @@ def generate_new_jcb_crane_booking_id_get_nearby_agents_with_fcm_token(request):
                     'intent':'jcb_crane_driver',
                     'booking_id':str(booking_id)
                 }
-#              SELECT                                       
-#     main.active_id,
-#     main.jcb_crane_driver_id,
-#     main.current_lat,
-#     main.current_lng,
-#     main.entry_time,
-#     main.current_status,
-#     driver.driver_name AS jcb_crane_driver_name,
-#     driver.profile_pic,
-#     driver.vehicle_plate_no,
-#     driver.vehicle_fuel_type,
-#     sub_categorytbl.sub_cat_name,
-#     sub_categorytbl.price_per_hour,
-#     other_servicestbl.service_name,
-#     other_servicestbl.price_per_hour AS service_price_per_hour,
-#     (6371 * acos(
-#         cos(radians(15.901976560038078)) * cos(radians(main.current_lat)) *
-#         cos(radians(main.current_lng) - radians(74.51701417565346)) +
-#         sin(radians(15.901976560038078)) * sin(radians(main.current_lat))
-#     )) AS distance
-# FROM vtpartner.active_jcb_crane_drivertbl AS main
-# INNER JOIN (
-#     SELECT jcb_crane_driver_id, MAX(entry_time) AS max_entry_time
-#     FROM vtpartner.active_jcb_crane_drivertbl
-#     GROUP BY jcb_crane_driver_id
-# ) AS latest ON main.jcb_crane_driver_id = latest.jcb_crane_driver_id
-#              AND main.entry_time = latest.max_entry_time
-# JOIN vtpartner.jcb_crane_driverstbl AS driver ON main.jcb_crane_driver_id = driver.jcb_crane_driver_id
-# LEFT JOIN vtpartner.sub_categorytbl ON driver.sub_cat_id = sub_categorytbl.sub_cat_id
-# LEFT JOIN vtpartner.other_servicestbl ON driver.service_id = other_servicestbl.service_id
-# WHERE main.current_status = 1
-#   AND (6371 * acos(
-#         cos(radians(15.901976560038078)) * cos(radians(main.current_lat)) *
-#         cos(radians(main.current_lng) - radians(74.51701417565346)) +
-#         sin(radians(15.901976560038078)) * sin(radians(main.current_lat))
-#       )) <= 5
-#   AND driver.category_id = sub_categorytbl.cat_id
-#   AND driver.sub_cat_id = 15 
-#   AND (driver.service_id = -1 OR driver.service_id = 15) 
-# ORDER BY distance
-                
-                
-                query = """
-                    SELECT                                       
-                    main.active_id,
-                    main.jcb_crane_driver_id,
-                    main.current_lat,
-                    main.current_lng,
-                    main.entry_time,
-                    main.current_status,
-                    driver.driver_name AS jcb_crane_driver_name,
-                    driver.profile_pic,
-                    driver.vehicle_plate_no,
-                    driver.vehicle_fuel_type,
-                    sub_categorytbl.sub_cat_name,
-                    sub_categorytbl.price_per_hour,
-                    other_servicestbl.service_name,
-                    other_servicestbl.price_per_hour AS service_price_per_hour,
-                    (6371 * acos(
-                        cos(radians(%s)) * cos(radians(main.current_lat)) *
-                        cos(radians(main.current_lng) - radians(%s)) +
-                        sin(radians(%s)) * sin(radians(main.current_lat))
-                    )) AS distance
-                FROM vtpartner.active_jcb_crane_drivertbl AS main
-                INNER JOIN (
-                    SELECT jcb_crane_driver_id, MAX(entry_time) AS max_entry_time
-                    FROM vtpartner.active_jcb_crane_drivertbl
-                    GROUP BY jcb_crane_driver_id
-                ) AS latest ON main.jcb_crane_driver_id = latest.jcb_crane_driver_id
-                            AND main.entry_time = latest.max_entry_time
-                JOIN vtpartner.jcb_crane_driverstbl AS driver ON main.jcb_crane_driver_id = driver.jcb_crane_driver_id
-                LEFT JOIN vtpartner.sub_categorytbl ON driver.sub_cat_id = sub_categorytbl.sub_cat_id
-                LEFT JOIN vtpartner.other_servicestbl ON driver.service_id = other_servicestbl.service_id
-                WHERE main.current_status = 1
-                AND (6371 * acos(
-                        cos(radians(%s)) * cos(radians(main.current_lat)) *
-                        cos(radians(main.current_lng) - radians(%s)) +
-                        sin(radians(%s)) * sin(radians(main.current_lat))
-                    )) <= 5
-                AND driver.category_id = sub_categorytbl.cat_id
-                AND driver.sub_cat_id = %s
-                AND (driver.service_id = -1 OR driver.service_id = %s) 
-                ORDER BY distance;
-
-                """
-                values = [pickup_lat, pickup_lng, pickup_lat, pickup_lat, pickup_lng, pickup_lat, sub_cat_id,service_id]
-
-                # Execute the query
-                nearby_drivers = select_query(query, values)
-                
-
-                for driver in nearby_drivers:
-                    try:
+                #To save scheduled Bookings
+                if is_scheduled and scheduled_time:
+                    scheduled_query_insert = """
+                        INSERT INTO vtpartner.scheduled_bookings_tbl (
+                             booking_id, scheduled_time,category_id, scheduled_date
+                        ) 
+                        VALUES (
+                            %s,EXTRACT(EPOCH FROM CURRENT_TIMESTAMP),'3',CURRENT_DATE
+                        ) 
                         
-                        driver_auth_token = get_jcb_crane_driver_auth_token2(driver[1])  # driver[1] assumed to be goods_driver_id
-                        print(f"driver_auth_token ->{driver[1]} {driver_auth_token}")
-                        
-                        if driver_auth_token:
-                            sendFMCMsg(
-                                driver_auth_token,
-                                f"You have a new Work Request for \nWork Location: {pickup_address}.",
-                                "New JCB/Crane Ride Request",
-                                fcm_data,
-                                server_access_token,
-                                "Agent"
-                            )
-                            print(f"Notification sent to jcb driver ID {driver[1]}")
-                        else:
-                            print(f"Skipped notification for jcb driver ID {driver[1]} due to missing auth token")
-                    except Exception as err:
-                        print(f"Error sending notification to jcb driver ID {driver[1]}: {err}")
+                    """
+                    scheduled_insert_values =[booking_id]
+                    insert_query(scheduled_query_insert, scheduled_insert_values)
+                    
+                # Only send notifications if not a scheduled booking
+                if not is_scheduled:
+                    query = """
+                        SELECT                                       
+                        main.active_id,
+                        main.jcb_crane_driver_id,
+                        main.current_lat,
+                        main.current_lng,
+                        main.entry_time,
+                        main.current_status,
+                        driver.driver_name AS jcb_crane_driver_name,
+                        driver.profile_pic,
+                        driver.vehicle_plate_no,
+                        driver.vehicle_fuel_type,
+                        sub_categorytbl.sub_cat_name,
+                        sub_categorytbl.price_per_hour,
+                        other_servicestbl.service_name,
+                        other_servicestbl.price_per_hour AS service_price_per_hour,
+                        (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) AS distance
+                    FROM vtpartner.active_jcb_crane_drivertbl AS main
+                    INNER JOIN (
+                        SELECT jcb_crane_driver_id, MAX(entry_time) AS max_entry_time
+                        FROM vtpartner.active_jcb_crane_drivertbl
+                        GROUP BY jcb_crane_driver_id
+                    ) AS latest ON main.jcb_crane_driver_id = latest.jcb_crane_driver_id
+                                AND main.entry_time = latest.max_entry_time
+                    JOIN vtpartner.jcb_crane_driverstbl AS driver ON main.jcb_crane_driver_id = driver.jcb_crane_driver_id
+                    LEFT JOIN vtpartner.sub_categorytbl ON driver.sub_cat_id = sub_categorytbl.sub_cat_id
+                    LEFT JOIN vtpartner.other_servicestbl ON driver.service_id = other_servicestbl.service_id
+                    WHERE main.current_status = 1
+                    AND (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) <= 5
+                    AND driver.category_id = sub_categorytbl.cat_id
+                    AND driver.sub_cat_id = %s
+                    AND (driver.service_id = -1 OR driver.service_id = %s) 
+                    ORDER BY distance;
+
+                    """
+                    values = [pickup_lat, pickup_lng, pickup_lat, pickup_lat, pickup_lng, pickup_lat, sub_cat_id,service_id]
+
+                    # Execute the query
+                    nearby_drivers = select_query(query, values)
+                    
+
+                    for driver in nearby_drivers:
+                        try:
+                            
+                            driver_auth_token = get_jcb_crane_driver_auth_token2(driver[1])  # driver[1] assumed to be goods_driver_id
+                            print(f"driver_auth_token ->{driver[1]} {driver_auth_token}")
+                            
+                            if driver_auth_token:
+                                sendFMCMsg(
+                                    driver_auth_token,
+                                    f"You have a new Work Request for \nWork Location: {pickup_address}.",
+                                    "New JCB/Crane Ride Request",
+                                    fcm_data,
+                                    server_access_token,
+                                    "Agent"
+                                )
+                                print(f"Notification sent to jcb driver ID {driver[1]}")
+                            else:
+                                print(f"Skipped notification for jcb driver ID {driver[1]} due to missing auth token")
+                        except Exception as err:
+                            print(f"Error sending notification to jcb driver ID {driver[1]}: {err}")
 
 
                 return JsonResponse({"result": response_value}, status=200)
@@ -20384,6 +20457,8 @@ def generate_new_handyman_booking_id_get_nearby_agents_with_fcm_token(request):
         coupon_id = data.get("coupon_id")
         coupon_amount = data.get("coupon_amount")
         before_coupon_amount = data.get("before_coupon_amount")
+        is_scheduled = data.get("is_scheduled", False)
+        scheduled_time = data.get("scheduled_time")
 
         # List of required fields
         required_fields = {
@@ -20418,6 +20493,39 @@ def generate_new_handyman_booking_id_get_nearby_agents_with_fcm_token(request):
 
         if pickup_lat is None or pickup_lng is None:
             return JsonResponse({"message": "Latitude and Longitude are required"}, status=400)
+        
+        # Process scheduled time with proper timezone awareness
+        if is_scheduled and scheduled_time:
+            try:
+                # Parse time in HH:MM:SS format
+                time_obj = datetime.strptime(scheduled_time, '%H:%M:%S').time()
+                
+                # Get current date in LOCAL timezone (where the booking is being made)
+                local_now = datetime.now(LOCAL_TIMEZONE)
+                current_date = local_now.date()
+                
+                # Create datetime combining date and time
+                scheduled_naive = datetime.combine(current_date, time_obj)
+                
+                # Add timezone information to make it aware
+                scheduled_local = LOCAL_TIMEZONE.localize(scheduled_naive)
+                
+                # Check if the time is in the past for the current day
+                if scheduled_local < local_now:
+                    # If it's in the past, schedule for the next day
+                    next_day = current_date + timedelta(days=1)
+                    scheduled_naive = datetime.combine(next_day, time_obj)
+                    scheduled_local = LOCAL_TIMEZONE.localize(scheduled_naive)
+                    print(f"Scheduled time {time_obj} already passed today, scheduling for tomorrow.")
+                
+                # Store the localized datetime
+                scheduled_time = scheduled_local
+                print(f"Processed scheduled time: {scheduled_time}")
+                
+            except ValueError as e:
+                return JsonResponse({"message": f"Invalid scheduled_time format: {e}"}, status=400)
+            except Exception as e:
+                return JsonResponse({"message": f"Error processing scheduled_time: {e}"}, status=400)
 
         try:
             
@@ -20427,12 +20535,12 @@ def generate_new_handyman_booking_id_get_nearby_agents_with_fcm_token(request):
                     customer_id, driver_id, pickup_lat, pickup_lng, total_price, base_price, booking_timing, booking_date, 
                     otp, gst_amount, igst_amount, 
                     payment_method, city_id,pickup_address,sub_cat_id,service_id,time,
-                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time
                 ) 
                 VALUES (
                     %s, %s, %s, %s, %s, %s, 
                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
-                    %s, %s,%s,%s,%s,%s,%s,%s,%s,%s
+                    %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
                 ) 
                 RETURNING booking_id;
             """
@@ -20440,7 +20548,7 @@ def generate_new_handyman_booking_id_get_nearby_agents_with_fcm_token(request):
             insert_values = [
                 customer_id, '-1', pickup_lat, pickup_lng,  total_price, base_price, otp, 
                 gst_amount, igst_amount, payment_method, city_id,pickup_address,sub_cat_id,service_id,service_hour,
-                coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time
             ]
 
             # Assuming insert_query is a function that runs the query
@@ -20457,113 +20565,89 @@ def generate_new_handyman_booking_id_get_nearby_agents_with_fcm_token(request):
                 }
                 
                 
-#                 SELECT                            
-#     main.active_id,
-#     main.handyman_id,
-#     main.current_lat,
-#     main.current_lng,
-#     main.entry_time,
-#     main.current_status,
-#     handyman.name AS handyman_name,
-#     handyman.profile_pic,
-#     sub_categorytbl.sub_cat_name,
-#     sub_categorytbl.price_per_hour,
-#     other_servicestbl.service_name,
-#     other_servicestbl.price_per_hour AS service_price_per_hour,
-#     (6371 * acos(
-#         cos(radians(15.901976560038078)) * cos(radians(main.current_lat)) *
-#         cos(radians(main.current_lng) - radians(74.51701417565346)) +
-#         sin(radians(15.901976560038078)) * sin(radians(main.current_lat))
-#     )) AS distance
-# FROM vtpartner.active_handyman_tbl AS main
-# INNER JOIN (
-#     SELECT handyman_id, MAX(entry_time) AS max_entry_time
-#     FROM vtpartner.active_handyman_tbl
-#     GROUP BY handyman_id
-# ) AS latest ON main.handyman_id = latest.handyman_id
-#              AND main.entry_time = latest.max_entry_time
-# JOIN vtpartner.handymans_tbl AS handyman ON main.handyman_id = handyman.handyman_id
-# LEFT JOIN vtpartner.sub_categorytbl ON handyman.sub_cat_id = sub_categorytbl.sub_cat_id
-# LEFT JOIN vtpartner.other_servicestbl ON handyman.service_id = other_servicestbl.service_id
-# WHERE main.current_status = 1
-#   AND (6371 * acos(
-#         cos(radians(15.901976560038078)) * cos(radians(main.current_lat)) *
-#         cos(radians(main.current_lng) - radians(74.51701417565346)) +
-#         sin(radians(15.901976560038078)) * sin(radians(main.current_lat))
-#       )) <= 5
-#   AND handyman.category_id = sub_categorytbl.cat_id
-#   AND handyman.sub_cat_id = 19 
-#   AND (handyman.service_id = -1 OR handyman.service_id = 27) 
-# ORDER BY distance
-                
-                
-                query = """
-                    SELECT                            
-                    main.active_id,
-                    main.handyman_id,
-                    main.current_lat,
-                    main.current_lng,
-                    main.entry_time,
-                    main.current_status,
-                    handyman.name AS handyman_name,
-                    handyman.profile_pic,
-                    sub_categorytbl.sub_cat_name,
-                    sub_categorytbl.price_per_hour,
-                    other_servicestbl.service_name,
-                    other_servicestbl.price_per_hour AS service_price_per_hour,
-                    (6371 * acos(
-                        cos(radians(%s)) * cos(radians(main.current_lat)) *
-                        cos(radians(main.current_lng) - radians(%s)) +
-                        sin(radians(%s)) * sin(radians(main.current_lat))
-                    )) AS distance
-                FROM vtpartner.active_handyman_tbl AS main
-                INNER JOIN (
-                    SELECT handyman_id, MAX(entry_time) AS max_entry_time
-                    FROM vtpartner.active_handyman_tbl
-                    GROUP BY handyman_id
-                ) AS latest ON main.handyman_id = latest.handyman_id
-                            AND main.entry_time = latest.max_entry_time
-                JOIN vtpartner.handymans_tbl AS handyman ON main.handyman_id = handyman.handyman_id
-                LEFT JOIN vtpartner.sub_categorytbl ON handyman.sub_cat_id = sub_categorytbl.sub_cat_id
-                LEFT JOIN vtpartner.other_servicestbl ON handyman.service_id = other_servicestbl.service_id
-                WHERE main.current_status = 1
-                AND (6371 * acos(
-                        cos(radians(%s)) * cos(radians(main.current_lat)) *
-                        cos(radians(main.current_lng) - radians(%s)) +
-                        sin(radians(%s)) * sin(radians(main.current_lat))
-                    )) <= 5
-                AND handyman.category_id = sub_categorytbl.cat_id
-                AND handyman.sub_cat_id = %s 
-                AND (handyman.service_id = -1 OR handyman.service_id = %s) 
-                ORDER BY distance;
-
-                """
-                values = [pickup_lat, pickup_lng, pickup_lat, pickup_lat, pickup_lng, pickup_lat, sub_cat_id,service_id]
-
-                # Execute the query
-                nearby_drivers = select_query(query, values)
-                
-
-                for driver in nearby_drivers:
-                    try:
+                #To save scheduled Bookings
+                if is_scheduled and scheduled_time:
+                    scheduled_query_insert = """
+                        INSERT INTO vtpartner.scheduled_bookings_tbl (
+                             booking_id, scheduled_time,category_id, scheduled_date
+                        ) 
+                        VALUES (
+                            %s,EXTRACT(EPOCH FROM CURRENT_TIMESTAMP),'5',CURRENT_DATE
+                        ) 
                         
-                        driver_auth_token = get_handyman_agent_auth_token2(driver[1])  # driver[1] assumed to be goods_driver_id
-                        print(f"driver_auth_token ->{driver[1]} {driver_auth_token}")
-                        
-                        if driver_auth_token:
-                            sendFMCMsg(
-                                driver_auth_token,
-                                f"You have a new Work Request for \nWork Location: {pickup_address}.",
-                                "New HandyMan Ride Request",
-                                fcm_data,
-                                server_access_token,
-                                "Agent"
-                            )
-                            print(f"Notification sent to handyman agent ID {driver[1]}")
-                        else:
-                            print(f"Skipped notification for handyman agent ID {driver[1]} due to missing auth token")
-                    except Exception as err:
-                        print(f"Error sending notification to handyman agent ID {driver[1]}: {err}")
+                    """
+                    scheduled_insert_values =[booking_id]
+                    insert_query(scheduled_query_insert, scheduled_insert_values)
+                    
+                # Only send notifications if not a scheduled booking
+                if not is_scheduled:
+                    query = """
+                        SELECT                            
+                        main.active_id,
+                        main.handyman_id,
+                        main.current_lat,
+                        main.current_lng,
+                        main.entry_time,
+                        main.current_status,
+                        handyman.name AS handyman_name,
+                        handyman.profile_pic,
+                        sub_categorytbl.sub_cat_name,
+                        sub_categorytbl.price_per_hour,
+                        other_servicestbl.service_name,
+                        other_servicestbl.price_per_hour AS service_price_per_hour,
+                        (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) AS distance
+                    FROM vtpartner.active_handyman_tbl AS main
+                    INNER JOIN (
+                        SELECT handyman_id, MAX(entry_time) AS max_entry_time
+                        FROM vtpartner.active_handyman_tbl
+                        GROUP BY handyman_id
+                    ) AS latest ON main.handyman_id = latest.handyman_id
+                                AND main.entry_time = latest.max_entry_time
+                    JOIN vtpartner.handymans_tbl AS handyman ON main.handyman_id = handyman.handyman_id
+                    LEFT JOIN vtpartner.sub_categorytbl ON handyman.sub_cat_id = sub_categorytbl.sub_cat_id
+                    LEFT JOIN vtpartner.other_servicestbl ON handyman.service_id = other_servicestbl.service_id
+                    WHERE main.current_status = 1
+                    AND (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) <= 5
+                    AND handyman.category_id = sub_categorytbl.cat_id
+                    AND handyman.sub_cat_id = %s 
+                    AND (handyman.service_id = -1 OR handyman.service_id = %s) 
+                    ORDER BY distance;
+
+                    """
+                    values = [pickup_lat, pickup_lng, pickup_lat, pickup_lat, pickup_lng, pickup_lat, sub_cat_id,service_id]
+
+                    # Execute the query
+                    nearby_drivers = select_query(query, values)
+                    
+
+                    for driver in nearby_drivers:
+                        try:
+                            
+                            driver_auth_token = get_handyman_agent_auth_token2(driver[1])  # driver[1] assumed to be goods_driver_id
+                            print(f"driver_auth_token ->{driver[1]} {driver_auth_token}")
+                            
+                            if driver_auth_token:
+                                sendFMCMsg(
+                                    driver_auth_token,
+                                    f"You have a new Work Request for \nWork Location: {pickup_address}.",
+                                    "New HandyMan Ride Request",
+                                    fcm_data,
+                                    server_access_token,
+                                    "Agent"
+                                )
+                                print(f"Notification sent to handyman agent ID {driver[1]}")
+                            else:
+                                print(f"Skipped notification for handyman agent ID {driver[1]} due to missing auth token")
+                        except Exception as err:
+                            print(f"Error sending notification to handyman agent ID {driver[1]}: {err}")
 
 
                 return JsonResponse({"result": response_value}, status=200)
