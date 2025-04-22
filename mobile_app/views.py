@@ -3156,8 +3156,47 @@ def goods_order_details(request):
             )
             
         try:
+            # query = """
+            #     select booking_id,orders_tbl.customer_id,orders_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,orders_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,goods_type_id,payment_method,orders_tbl.city_id,order_id,sender_name,sender_number,receiver_name,receiver_number,driver_first_name,goods_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,goods_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,goods_driverstbl.profile_pic,orders_tbl.ratings,pickup_time,drop_time,coupon_applied,coupon_id,coupon_amount,before_coupon_amount from vtpartner.vehiclestbl,vtpartner.orders_tbl,vtpartner.goods_driverstbl,vtpartner.customers_tbl where goods_driverstbl.goods_driver_id=orders_tbl.driver_id and customers_tbl.customer_id=orders_tbl.customer_id and order_id=%s and vehiclestbl.vehicle_id=goods_driverstbl.vehicle_id
+            # """
             query = """
-                select booking_id,orders_tbl.customer_id,orders_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,orders_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,goods_type_id,payment_method,orders_tbl.city_id,order_id,sender_name,sender_number,receiver_name,receiver_number,driver_first_name,goods_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,goods_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,goods_driverstbl.profile_pic,orders_tbl.ratings,pickup_time,drop_time,coupon_applied,coupon_id,coupon_amount,before_coupon_amount from vtpartner.vehiclestbl,vtpartner.orders_tbl,vtpartner.goods_driverstbl,vtpartner.customers_tbl where goods_driverstbl.goods_driver_id=orders_tbl.driver_id and customers_tbl.customer_id=orders_tbl.customer_id and order_id=%s and vehiclestbl.vehicle_id=goods_driverstbl.vehicle_id
+                SELECT 
+                    booking_id, orders_tbl.customer_id, orders_tbl.driver_id, 
+                    pickup_lat, pickup_lng, destination_lat, destination_lng,
+                    distance, orders_tbl.time, total_price, base_price,
+                    booking_timing, booking_date, booking_status,
+                    driver_arrival_time, otp, gst_amount, igst_amount,
+                    goods_type_id, payment_method, orders_tbl.city_id,
+                    order_id, sender_name, sender_number, receiver_name,
+                    receiver_number, driver_first_name, goods_driverstbl.authtoken,
+                    customer_name, customers_tbl.authtoken, pickup_address,
+                    drop_address, customers_tbl.mobile_no, goods_driverstbl.mobile_no,
+                    vehiclestbl.vehicle_id, vehiclestbl.vehicle_name, vehiclestbl.image,
+                    vehicle_plate_no, vehicle_fuel_type, goods_driverstbl.profile_pic,
+                    orders_tbl.ratings, pickup_time, drop_time,
+                    coupon_applied, coupon_id, coupon_amount, before_coupon_amount,
+                    -- Adding missing columns
+                    order_completed_time,
+                    order_completed,
+                    rating_description,
+                    is_scheduled,
+                    scheduled_time,
+                    drop_locations,
+                    drop_contacts,
+                    multiple_drops,
+                    body_type,
+                    retry_count,
+                    last_retry_time,
+                    error_message,
+                    booking_timezone,
+                    goods_vehicle_id,
+                    vehicle_price_type,
+                    vehicle_radius_km
+                FROM vtpartner.vehiclestbl, vtpartner.orders_tbl, vtpartner.goods_driverstbl, vtpartner.customers_tbl 
+                WHERE goods_driverstbl.goods_driver_id = orders_tbl.driver_id 
+                AND customers_tbl.customer_id = orders_tbl.customer_id 
+                AND order_id = %s 
+                AND vehiclestbl.vehicle_id = goods_driverstbl.vehicle_id
             """
             result = select_query(query,[order_id])  # Assuming select_query is defined elsewhere
 
@@ -3213,7 +3252,24 @@ def goods_order_details(request):
                     "coupon_applied":str(row[43]),
                     "coupon_id":str(row[44]),
                     "coupon_amount":str(row[45]),
-                    "before_coupon_amount":str(row[46])
+                    "before_coupon_amount":str(row[46]),
+                    # Add the missing fields
+                    "order_completed_time": float(row[47]),
+                    "order_completed": int(row[48]),
+                    "rating_description": str(row[49]),
+                    "is_scheduled": bool(row[50]),
+                    "scheduled_time": row[51].isoformat() if row[51] else None,
+                    "drop_locations": row[52] if row[52] else [],  # JSONB field
+                    "drop_contacts": row[53] if row[53] else [],   # JSONB field
+                    "multiple_drops": int(row[54]),
+                    "body_type": str(row[55]),
+                    "retry_count": int(row[56]),
+                    "last_retry_time": row[57].isoformat() if row[57] else None,
+                    "error_message": str(row[58]),
+                    "booking_timezone": str(row[59]),
+                    "goods_vehicle_id": int(row[60]),
+                    "vehicle_price_type": int(row[61]),
+                    "vehicle_radius_km": int(row[62])
                     
                 }
                 for row in result
