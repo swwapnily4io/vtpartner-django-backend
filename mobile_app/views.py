@@ -5314,6 +5314,16 @@ def get_scheduled_bookings(request):
                 all_bookings.append(process_booking(row, "driver"))
             for row in handyman_results:
                 all_bookings.append(process_booking(row, "handyman"))
+                
+            # Convert string to datetime for proper sorting
+            def get_datetime(booking):
+                try:
+                    return datetime.strptime(booking["scheduled_time"], "%Y-%m-%d %H:%M:%S")
+                except (ValueError, TypeError):
+                    # Return a minimum datetime if parsing fails
+                    return datetime.min
+                
+            all_bookings.sort(key=get_datetime, reverse=True)
 
             # Sort all bookings by scheduled_time in descending order
             all_bookings.sort(key=lambda x: float(x["scheduled_time"]), reverse=True)
