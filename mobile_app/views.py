@@ -5303,7 +5303,7 @@ def get_scheduled_bookings(request):
                     "scheduled_date": str(row[14])
                 }
 
-            # Process results from each service type
+             # Process results from each service type
             for row in goods_results:
                 all_bookings.append(process_booking(row, "goods"))
             for row in cab_results:
@@ -5323,10 +5323,8 @@ def get_scheduled_bookings(request):
                     # Return a minimum datetime if parsing fails
                     return datetime.min
                 
+            # Sort all bookings by scheduled_time in descending order using datetime
             all_bookings.sort(key=get_datetime, reverse=True)
-
-            # Sort all bookings by scheduled_time in descending order
-            all_bookings.sort(key=lambda x: float(x["scheduled_time"]), reverse=True)
 
             if not all_bookings:
                 return JsonResponse({
