@@ -5302,7 +5302,7 @@ def get_scheduled_bookings(request):
                     "sub_cat_name": str(row[7]),
                     "service_name": str(row[8]),
                     "category_image": str(row[9]),
-                    "category_type": str(row[10]),
+                    "category_name": str(row[10]),
                     "category_id": str(row[11]),
                     "schedule_id": str(row[12]),
                     "scheduled_time": str(row[13]),
