@@ -5324,7 +5324,7 @@ def get_scheduled_bookings(request):
                     return datetime.min
                 
             # Sort all bookings by scheduled_time in descending order using datetime
-            all_bookings.sort(key=get_datetime, reverse=True)
+            # all_bookings.sort(key=get_datetime, reverse=True)
 
             if not all_bookings:
                 return JsonResponse({
