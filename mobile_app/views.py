@@ -3184,7 +3184,7 @@ def goods_order_details(request):
                     drop_locations,
                     drop_contacts,
                     multiple_drops,
-                    body_type,
+                    goods_driverstbl.body_type,
                     retry_count,
                     last_retry_time,
                     error_message,
