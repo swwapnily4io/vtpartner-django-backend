@@ -5136,17 +5136,17 @@ def get_scheduled_bookings(request):
                     '' as service_name,
                     vehiclestbl.image as category_image,
                     'goods' as category_type,
-                    vehiclestbl.category_id,
+                    '1' as category_id,
                     scheduled_bookings_tbl.schedule_id, 
                     scheduled_bookings_tbl.scheduled_time, 
                     scheduled_bookings_tbl.scheduled_date
                 FROM vtpartner.bookings_tbl
+                JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = bookings_tbl.booking_id
                 JOIN vtpartner.goods_driverstbl ON goods_driverstbl.goods_driver_id = bookings_tbl.driver_id
                 JOIN vtpartner.vehiclestbl ON vehiclestbl.vehicle_id = goods_driverstbl.vehicle_id
-                JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = bookings_tbl.booking_id
                 WHERE bookings_tbl.customer_id = %s 
                 AND bookings_tbl.booking_completed = '-1' 
-                AND bookings_tbl.is_scheduled = true
+                AND scheduled_bookings_tbl.category_id = 1
                 ORDER BY scheduled_bookings_tbl.scheduled_time DESC
             """
 
@@ -5164,17 +5164,17 @@ def get_scheduled_bookings(request):
                     '' as service_name,
                     vehiclestbl.image as category_image,
                     'cab' as category_type,
-                    vehiclestbl.category_id,
+                    '2' as category_id,
                     scheduled_bookings_tbl.schedule_id, 
                     scheduled_bookings_tbl.scheduled_time, 
                     scheduled_bookings_tbl.scheduled_date
                 FROM vtpartner.cab_bookings_tbl
+                JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = cab_bookings_tbl.booking_id
                 JOIN vtpartner.cab_driverstbl ON cab_driverstbl.cab_driver_id = cab_bookings_tbl.driver_id
                 JOIN vtpartner.vehiclestbl ON vehiclestbl.vehicle_id = cab_driverstbl.vehicle_id
-                JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = cab_bookings_tbl.booking_id
                 WHERE cab_bookings_tbl.customer_id = %s 
                 AND cab_bookings_tbl.booking_completed = '-1' 
-                AND cab_bookings_tbl.is_scheduled = true
+                AND scheduled_bookings_tbl.category_id = 2
                 ORDER BY scheduled_bookings_tbl.scheduled_time DESC
             """
 
@@ -5197,12 +5197,12 @@ def get_scheduled_bookings(request):
                     scheduled_bookings_tbl.scheduled_time, 
                     scheduled_bookings_tbl.scheduled_date
                 FROM vtpartner.jcb_crane_bookings_tbl
+                JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = jcb_crane_bookings_tbl.booking_id
                 LEFT JOIN vtpartner.sub_categorytbl ON sub_categorytbl.sub_cat_id = jcb_crane_bookings_tbl.sub_cat_id
                 LEFT JOIN vtpartner.other_servicestbl ON jcb_crane_bookings_tbl.service_id = other_servicestbl.service_id
-                JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = jcb_crane_bookings_tbl.booking_id
                 WHERE jcb_crane_bookings_tbl.customer_id = %s 
                 AND jcb_crane_bookings_tbl.booking_completed = '-1' 
-                AND jcb_crane_bookings_tbl.is_scheduled = true
+                AND scheduled_bookings_tbl.category_id = 3
                 ORDER BY scheduled_bookings_tbl.scheduled_time DESC
             """
 
@@ -5225,12 +5225,12 @@ def get_scheduled_bookings(request):
                     scheduled_bookings_tbl.scheduled_time, 
                     scheduled_bookings_tbl.scheduled_date
                 FROM vtpartner.other_driver_bookings_tbl
+                JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = other_driver_bookings_tbl.booking_id
                 LEFT JOIN vtpartner.sub_categorytbl ON sub_categorytbl.sub_cat_id = other_driver_bookings_tbl.sub_cat_id
                 LEFT JOIN vtpartner.other_servicestbl ON other_driver_bookings_tbl.service_id = other_servicestbl.service_id
-                JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = other_driver_bookings_tbl.booking_id
                 WHERE other_driver_bookings_tbl.customer_id = %s 
                 AND other_driver_bookings_tbl.booking_completed = '-1' 
-                AND other_driver_bookings_tbl.is_scheduled = true
+                AND scheduled_bookings_tbl.category_id = 4
                 ORDER BY scheduled_bookings_tbl.scheduled_time DESC
             """
 
@@ -5253,12 +5253,12 @@ def get_scheduled_bookings(request):
                     scheduled_bookings_tbl.scheduled_time, 
                     scheduled_bookings_tbl.scheduled_date
                 FROM vtpartner.handyman_bookings_tbl
+                JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = handyman_bookings_tbl.booking_id
                 LEFT JOIN vtpartner.sub_categorytbl ON sub_categorytbl.sub_cat_id = handyman_bookings_tbl.sub_cat_id
                 LEFT JOIN vtpartner.other_servicestbl ON handyman_bookings_tbl.service_id = other_servicestbl.service_id
-                JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = handyman_bookings_tbl.booking_id
                 WHERE handyman_bookings_tbl.customer_id = %s 
                 AND handyman_bookings_tbl.booking_completed = '-1' 
-                AND handyman_bookings_tbl.is_scheduled = true
+                AND scheduled_bookings_tbl.category_id = 5
                 ORDER BY scheduled_bookings_tbl.scheduled_time DESC
             """
 
