@@ -5145,11 +5145,10 @@ def get_scheduled_bookings(request):
                 JOIN vtpartner.goods_driverstbl ON goods_driverstbl.goods_driver_id = bookings_tbl.driver_id
                 JOIN vtpartner.vehiclestbl ON vehiclestbl.vehicle_id = goods_driverstbl.vehicle_id
                 WHERE bookings_tbl.customer_id = %s 
-                
+                AND bookings_tbl.booking_completed = '-1' 
                 AND scheduled_bookings_tbl.category_id = 1
                 ORDER BY scheduled_bookings_tbl.scheduled_time DESC
             """
-            #AND bookings_tbl.booking_completed = '-1' 
 
             # Query for cab service scheduled bookings
             cab_query = """
@@ -5174,11 +5173,10 @@ def get_scheduled_bookings(request):
                 JOIN vtpartner.cab_driverstbl ON cab_driverstbl.cab_driver_id = cab_bookings_tbl.driver_id
                 JOIN vtpartner.vehiclestbl ON vehiclestbl.vehicle_id = cab_driverstbl.vehicle_id
                 WHERE cab_bookings_tbl.customer_id = %s 
-                
+                AND cab_bookings_tbl.booking_completed = '-1' 
                 AND scheduled_bookings_tbl.category_id = 2
                 ORDER BY scheduled_bookings_tbl.scheduled_time DESC
             """
-            #AND cab_bookings_tbl.booking_completed = '-1' 
 
             # Query for JCB/Crane service scheduled bookings
             jcb_crane_query = """
@@ -5203,11 +5201,10 @@ def get_scheduled_bookings(request):
                 LEFT JOIN vtpartner.sub_categorytbl ON sub_categorytbl.sub_cat_id = jcb_crane_bookings_tbl.sub_cat_id
                 LEFT JOIN vtpartner.other_servicestbl ON jcb_crane_bookings_tbl.service_id = other_servicestbl.service_id
                 WHERE jcb_crane_bookings_tbl.customer_id = %s 
-                
+                AND jcb_crane_bookings_tbl.booking_completed = '-1' 
                 AND scheduled_bookings_tbl.category_id = 3
                 ORDER BY scheduled_bookings_tbl.scheduled_time DESC
             """
-            #AND jcb_crane_bookings_tbl.booking_completed = '-1' 
 
             # Query for other driver service scheduled bookings
             driver_query = """
@@ -5232,11 +5229,10 @@ def get_scheduled_bookings(request):
                 LEFT JOIN vtpartner.sub_categorytbl ON sub_categorytbl.sub_cat_id = other_driver_bookings_tbl.sub_cat_id
                 LEFT JOIN vtpartner.other_servicestbl ON other_driver_bookings_tbl.service_id = other_servicestbl.service_id
                 WHERE other_driver_bookings_tbl.customer_id = %s 
-                
+                AND other_driver_bookings_tbl.booking_completed = '-1' 
                 AND scheduled_bookings_tbl.category_id = 4
                 ORDER BY scheduled_bookings_tbl.scheduled_time DESC
             """
-            #AND other_driver_bookings_tbl.booking_completed = '-1' 
 
             # Query for handyman service scheduled bookings
             handyman_query = """
@@ -5261,11 +5257,10 @@ def get_scheduled_bookings(request):
                 LEFT JOIN vtpartner.sub_categorytbl ON sub_categorytbl.sub_cat_id = handyman_bookings_tbl.sub_cat_id
                 LEFT JOIN vtpartner.other_servicestbl ON handyman_bookings_tbl.service_id = other_servicestbl.service_id
                 WHERE handyman_bookings_tbl.customer_id = %s 
-                
+                AND handyman_bookings_tbl.booking_completed = '-1' 
                 AND scheduled_bookings_tbl.category_id = 5
                 ORDER BY scheduled_bookings_tbl.scheduled_time DESC
             """
-            #AND handyman_bookings_tbl.booking_completed = '-1' 
 
             print("Executing goods query with params:", [customer_id])
             goods_results = select_query(goods_query, [customer_id])
