@@ -5142,7 +5142,6 @@ def get_scheduled_bookings(request):
                     scheduled_bookings_tbl.scheduled_date
                 FROM vtpartner.bookings_tbl
                 JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = bookings_tbl.booking_id
-               
                 JOIN vtpartner.vehiclestbl ON vehiclestbl.vehicle_id = bookings_tbl.goods_vehicle_id
                 WHERE bookings_tbl.customer_id = %s 
                 AND bookings_tbl.booking_completed = '-1' 
@@ -5170,8 +5169,8 @@ def get_scheduled_bookings(request):
                     scheduled_bookings_tbl.scheduled_date
                 FROM vtpartner.cab_bookings_tbl
                 JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = cab_bookings_tbl.booking_id
-                JOIN vtpartner.cab_driverstbl ON cab_driverstbl.cab_driver_id = cab_bookings_tbl.driver_id
-                JOIN vtpartner.vehiclestbl ON vehiclestbl.vehicle_id = cab_driverstbl.vehicle_id
+              
+                JOIN vtpartner.vehiclestbl ON vehiclestbl.vehicle_id = cab_driverstbl.cab_vehicle_id
                 WHERE cab_bookings_tbl.customer_id = %s 
                 AND cab_bookings_tbl.booking_completed = '-1' 
                 AND scheduled_bookings_tbl.category_id = 2
