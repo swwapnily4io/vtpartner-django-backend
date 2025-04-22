@@ -56,6 +56,8 @@ urlpatterns = [
     path('update_firebase_customer_token',views.update_firebase_customer_token,name='update_firebase_customer_token'),
     #Update Goods Driver Body Type
     path('update_goods_driver_body_type',views.update_goods_driver_body_type,name='update_goods_driver_body_type'),
+    #Update Goods Driver Location Preference Type
+    path('update_goods_driver_location_preference',views.update_goods_driver_location_preference,name='update_goods_driver_location_preference'),
     #Tracking the Booking
     path('booking_details_live_track',views.booking_details_live_track,name='booking_details_live_track'),
     #Tracking the Booking

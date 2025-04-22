@@ -2001,7 +2001,8 @@ def all_vehicles_with_price_details(request):
                 v.size_image,
                 vcwp.starting_price_per_km,
                 vcwp.base_fare,
-                vcwp.minimum_time
+                vcwp.minimum_time,
+                vcmp.outstation_distance
                 FROM
                 vtpartner.vehiclestbl v
                 JOIN
@@ -2036,6 +2037,7 @@ def all_vehicles_with_price_details(request):
                     "starting_price_per_km": row[8],
                     "base_fare": row[9],
                     "minimum_time": row[10],
+                    "outstation_distance": row[11],
                     
                 }
                 for row in result
@@ -2658,6 +2660,65 @@ def update_goods_driver_body_type(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+
+@csrf_exempt
+def update_goods_driver_location_preference(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        goods_driver_id = data.get("goods_driver_id")
+        location_preference = data.get("location_preference")
+        
+        # List of required fields
+        required_fields = {
+            "goods_driver_id": goods_driver_id,
+            "location_preference": location_preference,
+        }
+        
+        # Check for missing fields
+        missing_fields = check_missing_fields(required_fields)
+        
+        if missing_fields:
+            return JsonResponse(
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
+        
+        # Validate location_preference value (0: Both, 1: Local, 2: Outstation)
+        valid_preferences = [0, 1, 2]
+        try:
+            location_preference = int(location_preference)
+            if location_preference not in valid_preferences:
+                return JsonResponse(
+                    {"message": "Invalid location preference. Must be 0 (Both), 1 (Local), or 2 (Outstation)"},
+                    status=400
+                )
+        except ValueError:
+            return JsonResponse(
+                {"message": "Location preference must be a number"},
+                status=400
+            )
+        
+        try:
+            query = """
+                UPDATE vtpartner.goods_driverstbl 
+                SET location_preference = %s
+                WHERE goods_driver_id = %s
+                """
+            values = [location_preference, goods_driver_id]
+
+            # Execute the query
+            row_count = update_query(query, values)
+            
+            if row_count > 0:
+                return JsonResponse({"message": "Location preference updated successfully"}, status=200)
+            else:
+                return JsonResponse({"message": "Driver not found"}, status=404)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": f"An error occurred: {str(err)}"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 # @csrf_exempt 
 # def booking_details_live_track(request):
@@ -19866,7 +19927,7 @@ def generate_order_id_for_booking_id_handyman(request):
                                             data_map = {
                                                     'intent':'end_handyman_live_tracking',
                                                     'order_id':str(order_id)
-                                            }
+                                                    }
                                         sendFMCMsg(auth_token,body,title,data_map,server_token,"Customer")
                                         #success
                                         return JsonResponse({"message": f"{ret_result} row(s) updated","order_id":order_id}, status=200)
