@@ -5299,7 +5299,7 @@ def get_scheduled_bookings(request):
                     "category_name": str(row[10]),
                     "category_id": str(row[11]),
                     "schedule_id": str(row[12]),
-                    "scheduled_time": str(row[13]),
+                    "scheduled_time": row[13],
                     "scheduled_date": str(row[14])
                 }
 
