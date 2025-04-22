@@ -5109,12 +5109,10 @@ def get_scheduled_bookings(request):
         data = json.loads(request.body)
         customer_id = data.get("customer_id")
 
-        # List of required fields
         required_fields = {
             "customer_id": customer_id,
         }
         
-        # Check for missing fields
         missing_fields = check_missing_fields(required_fields)
         
         if missing_fields:
@@ -5127,97 +5125,157 @@ def get_scheduled_bookings(request):
             # Query for goods service scheduled bookings
             goods_query = """
                 SELECT 
-                    booking_id, booking_timing, booking_date, total_price, 
-                    pickup_address, drop_address, booking_status,
+                    bookings_tbl.booking_id, 
+                    booking_timing, 
+                    booking_date, 
+                    total_price, 
+                    pickup_address, 
+                    drop_address, 
+                    booking_status,
                     vehiclestbl.vehicle_name as sub_cat_name, 
                     '' as service_name,
                     vehiclestbl.image as category_image,
                     'goods' as category_type,
-                    '1' as category_id,
-                    schedule_id, scheduled_time, scheduled_date
+                    vehiclestbl.category_id,
+                    schedule_id, 
+                    scheduled_time, 
+                    scheduled_date
                 FROM vtpartner.bookings_tbl
-                JOIN vtpartner.vehiclestbl ON vehiclestbl.vehicle_id = bookings_tbl.vehicle_id
+                JOIN vtpartner.goods_driverstbl ON goods_driverstbl.goods_driver_id = bookings_tbl.driver_id
+                JOIN vtpartner.vehiclestbl ON vehiclestbl.vehicle_id = goods_driverstbl.vehicle_id
                 JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = bookings_tbl.booking_id
-                WHERE bookings_tbl.customer_id = %s AND booking_completed = '-1' AND scheduled_bookings_tbl.category_id = 1
+                WHERE bookings_tbl.customer_id = %s 
+                AND booking_completed = '-1' 
+                AND vehiclestbl.category_id = 1
             """
 
             # Query for cab service scheduled bookings
             cab_query = """
                 SELECT 
-                    booking_id, booking_timing, booking_date, total_price, 
-                    pickup_address, drop_address, booking_status,
+                    cab_bookings_tbl.booking_id, 
+                    booking_timing, 
+                    booking_date, 
+                    total_price, 
+                    pickup_address, 
+                    drop_address, 
+                    booking_status,
                     vehiclestbl.vehicle_name as sub_cat_name,
                     '' as service_name,
                     vehiclestbl.image as category_image,
                     'cab' as category_type,
-                    '2' as category_id,
-                    schedule_id, scheduled_time, scheduled_date
+                    vehiclestbl.category_id,
+                    schedule_id, 
+                    scheduled_time, 
+                    scheduled_date
                 FROM vtpartner.cab_bookings_tbl
-                JOIN vtpartner.vehiclestbl ON vehiclestbl.vehicle_id = cab_bookings_tbl.vehicle_id
+                JOIN vtpartner.cab_driverstbl ON cab_driverstbl.cab_driver_id = cab_bookings_tbl.driver_id
+                JOIN vtpartner.vehiclestbl ON vehiclestbl.vehicle_id = cab_driverstbl.vehicle_id
                 JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = cab_bookings_tbl.booking_id
-                WHERE cab_bookings_tbl.customer_id = %s AND booking_completed = '-1' AND scheduled_bookings_tbl.category_id = 2
+                WHERE cab_bookings_tbl.customer_id = %s 
+                AND booking_completed = '-1' 
+                AND vehiclestbl.category_id = 2
             """
 
             # Query for JCB/Crane service scheduled bookings
             jcb_crane_query = """
                 SELECT 
-                    booking_id, booking_timing, booking_date, total_price, 
-                    pickup_address, drop_address, booking_status,
+                    jcb_crane_bookings_tbl.booking_id, 
+                    booking_timing, 
+                    booking_date, 
+                    total_price, 
+                    pickup_address, 
+                    COALESCE(drop_address, '') as drop_address, 
+                    booking_status,
                     sub_categorytbl.sub_cat_name,
-                    other_servicestbl.service_name,
+                    COALESCE(other_servicestbl.service_name, '') as service_name,
                     sub_categorytbl.category_image,
                     'jcb_crane' as category_type,
                     '3' as category_id,
-                    schedule_id, scheduled_time, scheduled_date
+                    schedule_id, 
+                    scheduled_time, 
+                    scheduled_date
                 FROM vtpartner.jcb_crane_bookings_tbl
                 LEFT JOIN vtpartner.sub_categorytbl ON sub_categorytbl.sub_cat_id = jcb_crane_bookings_tbl.sub_cat_id
                 LEFT JOIN vtpartner.other_servicestbl ON jcb_crane_bookings_tbl.service_id = other_servicestbl.service_id
                 JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = jcb_crane_bookings_tbl.booking_id
-                WHERE jcb_crane_bookings_tbl.customer_id = %s AND booking_completed = '-1' AND scheduled_bookings_tbl.category_id = 3
+                WHERE jcb_crane_bookings_tbl.customer_id = %s 
+                AND booking_completed = '-1' 
+                AND scheduled_bookings_tbl.category_id = 3
             """
 
             # Query for other driver service scheduled bookings
             driver_query = """
                 SELECT 
-                    booking_id, booking_timing, booking_date, total_price, 
-                    pickup_address, drop_address, booking_status,
+                    other_driver_bookings_tbl.booking_id, 
+                    booking_timing, 
+                    booking_date, 
+                    total_price, 
+                    pickup_address, 
+                    COALESCE(drop_address, '') as drop_address, 
+                    booking_status,
                     sub_categorytbl.sub_cat_name,
-                    other_servicestbl.service_name,
+                    COALESCE(other_servicestbl.service_name, '') as service_name,
                     sub_categorytbl.category_image,
                     'driver' as category_type,
                     '4' as category_id,
-                    schedule_id, scheduled_time, scheduled_date
+                    schedule_id, 
+                    scheduled_time, 
+                    scheduled_date
                 FROM vtpartner.other_driver_bookings_tbl
                 LEFT JOIN vtpartner.sub_categorytbl ON sub_categorytbl.sub_cat_id = other_driver_bookings_tbl.sub_cat_id
                 LEFT JOIN vtpartner.other_servicestbl ON other_driver_bookings_tbl.service_id = other_servicestbl.service_id
                 JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = other_driver_bookings_tbl.booking_id
-                WHERE other_driver_bookings_tbl.customer_id = %s AND booking_completed = '-1' AND scheduled_bookings_tbl.category_id = 4
+                WHERE other_driver_bookings_tbl.customer_id = %s 
+                AND booking_completed = '-1' 
+                AND scheduled_bookings_tbl.category_id = 4
             """
 
             # Query for handyman service scheduled bookings
             handyman_query = """
                 SELECT 
-                    booking_id, booking_timing, booking_date, total_price, 
-                    pickup_address, drop_address, booking_status,
+                    handyman_bookings_tbl.booking_id, 
+                    booking_timing, 
+                    booking_date, 
+                    total_price, 
+                    pickup_address, 
+                    COALESCE(drop_address, '') as drop_address, 
+                    booking_status,
                     sub_categorytbl.sub_cat_name,
-                    other_servicestbl.service_name,
+                    COALESCE(other_servicestbl.service_name, '') as service_name,
                     sub_categorytbl.category_image,
                     'handyman' as category_type,
                     '5' as category_id,
-                    schedule_id, scheduled_time, scheduled_date
+                    schedule_id, 
+                    scheduled_time, 
+                    scheduled_date
                 FROM vtpartner.handyman_bookings_tbl
                 LEFT JOIN vtpartner.sub_categorytbl ON sub_categorytbl.sub_cat_id = handyman_bookings_tbl.sub_cat_id
                 LEFT JOIN vtpartner.other_servicestbl ON handyman_bookings_tbl.service_id = other_servicestbl.service_id
                 JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = handyman_bookings_tbl.booking_id
-                WHERE handyman_bookings_tbl.customer_id = %s AND booking_completed = '-1' AND scheduled_bookings_tbl.category_id = 5
+                WHERE handyman_bookings_tbl.customer_id = %s 
+                AND booking_completed = '-1' 
+                AND scheduled_bookings_tbl.category_id = 5
             """
 
-            # Execute all queries
+            print("Executing goods query with params:", [customer_id])
             goods_results = select_query(goods_query, [customer_id])
+            print("Goods results:", goods_results)
+
+            print("Executing cab query with params:", [customer_id])
             cab_results = select_query(cab_query, [customer_id])
+            print("Cab results:", cab_results)
+
+            print("Executing JCB/Crane query with params:", [customer_id])
             jcb_crane_results = select_query(jcb_crane_query, [customer_id])
+            print("JCB/Crane results:", jcb_crane_results)
+
+            print("Executing driver query with params:", [customer_id])
             driver_results = select_query(driver_query, [customer_id])
+            print("Driver results:", driver_results)
+
+            print("Executing handyman query with params:", [customer_id])
             handyman_results = select_query(handyman_query, [customer_id])
+            print("Handyman results:", handyman_results)
 
             # Combine all results
             all_bookings = []
@@ -5257,7 +5315,10 @@ def get_scheduled_bookings(request):
             all_bookings.sort(key=lambda x: float(x["scheduled_time"]), reverse=True)
 
             if not all_bookings:
-                return JsonResponse({"status": False, "message": "No scheduled bookings found"}, status=404)
+                return JsonResponse({
+                    "status": False,
+                    "message": "No scheduled bookings found"
+                }, status=404)
 
             return JsonResponse({
                 "status": True,
@@ -5268,14 +5329,13 @@ def get_scheduled_bookings(request):
             print("Error executing query:", err)
             return JsonResponse({
                 "status": False,
-                "message": "Internal Server Error"
+                "message": f"Internal Server Error: {str(err)}"
             }, status=500)
 
     return JsonResponse({
         "status": False,
         "message": "Method not allowed"
-    }, status=405)
-    
+    }, status=405)  
     
 @csrf_exempt 
 def customers_all_orders(request):
