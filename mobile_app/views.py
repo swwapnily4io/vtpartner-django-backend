@@ -5142,7 +5142,7 @@ def get_scheduled_bookings(request):
                     scheduled_bookings_tbl.scheduled_date
                 FROM vtpartner.bookings_tbl
                 JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = bookings_tbl.booking_id
-                JOIN vtpartner.goods_driverstbl ON goods_driverstbl.goods_driver_id = bookings_tbl.driver_id
+               
                 JOIN vtpartner.vehiclestbl ON vehiclestbl.vehicle_id = goods_driverstbl.vehicle_id
                 WHERE bookings_tbl.customer_id = %s 
                 AND bookings_tbl.booking_completed = '-1' 
