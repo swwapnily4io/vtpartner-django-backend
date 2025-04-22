@@ -3189,7 +3189,7 @@ def goods_order_details(request):
                     last_retry_time,
                     error_message,
                     booking_timezone,
-                    goods_vehicle_id,
+                    orders_tbl.goods_vehicle_id,
                     vehicle_price_type,
                     vehicle_radius_km
                 FROM vtpartner.vehiclestbl, vtpartner.orders_tbl, vtpartner.goods_driverstbl, vtpartner.customers_tbl 
