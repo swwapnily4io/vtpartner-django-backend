@@ -5138,7 +5138,7 @@ def get_scheduled_bookings(request):
                     'goods' as category_type,
                     '1' as category_id,
                     scheduled_bookings_tbl.schedule_id, 
-                    scheduled_bookings_tbl.scheduled_time, 
+                    bookings_tbl.scheduled_time, 
                     scheduled_bookings_tbl.scheduled_date
                 FROM vtpartner.bookings_tbl
                 JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = bookings_tbl.booking_id
@@ -5165,7 +5165,7 @@ def get_scheduled_bookings(request):
                     'cab' as category_type,
                     '2' as category_id,
                     scheduled_bookings_tbl.schedule_id, 
-                    scheduled_bookings_tbl.scheduled_time, 
+                    cab_bookings_tbl.scheduled_time, 
                     scheduled_bookings_tbl.scheduled_date
                 FROM vtpartner.cab_bookings_tbl
                 JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = cab_bookings_tbl.booking_id
@@ -5193,7 +5193,7 @@ def get_scheduled_bookings(request):
                     'jcb_crane' as category_type,
                     '3' as category_id,
                     scheduled_bookings_tbl.schedule_id, 
-                    scheduled_bookings_tbl.scheduled_time, 
+                    jcb_crane_bookings_tbl.scheduled_time, 
                     scheduled_bookings_tbl.scheduled_date
                 FROM vtpartner.jcb_crane_bookings_tbl
                 JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = jcb_crane_bookings_tbl.booking_id
@@ -5221,7 +5221,7 @@ def get_scheduled_bookings(request):
                     'driver' as category_type,
                     '4' as category_id,
                     scheduled_bookings_tbl.schedule_id, 
-                    scheduled_bookings_tbl.scheduled_time, 
+                    other_driver_bookings_tbl.scheduled_time, 
                     scheduled_bookings_tbl.scheduled_date
                 FROM vtpartner.other_driver_bookings_tbl
                 JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = other_driver_bookings_tbl.booking_id
@@ -5249,7 +5249,7 @@ def get_scheduled_bookings(request):
                     'handyman' as category_type,
                     '5' as category_id,
                     scheduled_bookings_tbl.schedule_id, 
-                    scheduled_bookings_tbl.scheduled_time, 
+                    handyman_bookings_tbl.scheduled_time, 
                     scheduled_bookings_tbl.scheduled_date
                 FROM vtpartner.handyman_bookings_tbl
                 JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = handyman_bookings_tbl.booking_id
