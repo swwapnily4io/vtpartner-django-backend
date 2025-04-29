@@ -15765,7 +15765,8 @@ def generate_order_id_for_booking_id_other_driver(request):
                         service_id,
                         sub_cat_id,
                         is_scheduled,
-                        scheduled_time
+                        scheduled_time,
+                        penalty_amount
                         
                     )
                     SELECT 
@@ -15796,7 +15797,8 @@ def generate_order_id_for_booking_id_other_driver(request):
                         service_id,
                         sub_cat_id,
                         is_scheduled,
-                        scheduled_time
+                        scheduled_time,
+                        penalty_amount
                         
                     FROM vtpartner.other_driver_bookings_tbl
                     WHERE booking_id = %s
@@ -18338,6 +18340,7 @@ def generate_order_id_for_booking_id_jcb_crane_driver(request):
         customer_id = data.get("customer_id")
         total_amount = data.get("total_amount")
         
+        
 
         # List of required fields
         required_fields = {
@@ -18420,7 +18423,8 @@ def generate_order_id_for_booking_id_jcb_crane_driver(request):
                         service_id,
                         time,
                         is_scheduled,
-                        scheduled_time
+                        scheduled_time,
+                        penalty_amount
                     )
                     SELECT 
                         customer_id, 
@@ -18446,7 +18450,8 @@ def generate_order_id_for_booking_id_jcb_crane_driver(request):
                         service_id,
                         time,
                         is_scheduled,
-                        scheduled_time
+                        scheduled_time,
+                        penalty_amount
                     FROM vtpartner.jcb_crane_bookings_tbl
                     WHERE booking_id = %s
                     RETURNING order_id;
@@ -20681,7 +20686,8 @@ def generate_order_id_for_booking_id_handyman(request):
                         sub_cat_id,
                         service_id,
                         is_scheduled,
-                        scheduled_time
+                        scheduled_time,
+                        penalty_amount
                     )
                     SELECT 
                         customer_id, 
@@ -20707,7 +20713,8 @@ def generate_order_id_for_booking_id_handyman(request):
                         sub_cat_id,
                         service_id,
                         is_scheduled,
-                        scheduled_time
+                        scheduled_time,
+                        penalty_amount
                     FROM vtpartner.handyman_bookings_tbl
                     WHERE booking_id = %s
                     RETURNING order_id;
