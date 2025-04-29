@@ -15630,8 +15630,12 @@ def update_booking_status_other_driver(request):
                     # Execute the query
                     row_count = update_query(update_pickup_epoch_query, values)
                 elif booking_status == "Make Payment":
-                   body = f"Please do the payment against Booking ID {booking_id} for Driver Service. Total Amount=Rs.{total_payment}/-"
-                   title = "Make Payment For Driver Service"
+                    if penalty_amount > 0:
+                        penalty_text = "Penalty Amount - Rs."+str(penalty_amount)+"/-"
+                    else:
+                        penalty_text = ""
+                    body = f"Please do the payment against Booking ID {booking_id} for Driver Service. Total Amount=Rs.{total_payment}/-\n{penalty_text}"
+                    title = "Make Payment For Driver Service"
                 elif booking_status == "End Trip":
                     body = "You have been successfully reached the destination"
                     title = "Reached Destination"
@@ -18284,7 +18288,11 @@ def update_booking_status_jcb_crane_driver(request):
                     # Execute the query
                     row_count = update_query(update_pickup_epoch_query, values)
                 elif booking_status == "Make Payment":
-                    body = f"Please make payment for the JCB/Crane Service your work has been finished.\nBooking ID - {booking_id}\nPay Rs.{total_payment}/-"
+                    if penalty_amount > 0:
+                        penalty_text = "Penalty Amount - Rs."+str(penalty_amount)+"/-"
+                    else:
+                        penalty_text
+                    body = f"Please make payment for the JCB/Crane Service your work has been finished.\nBooking ID - {booking_id}\nPay Rs.{total_payment}/-\n{penalty_text}"
                     title = "Make Payment for JCB/Crane Service"
                 elif booking_status == "End Service":
                     body = "Your package has been delivered successfully"
@@ -20539,7 +20547,11 @@ def update_booking_status_handyman(request):
                     # Execute the query
                     row_count = update_query(update_pickup_epoch_query, values)
                 elif booking_status == "Make Payment":
-                    body = f"Please make payment for the HandyMan Service your work has been finished.\nBooking ID - {booking_id}\nPay Rs.{total_payment}/-"
+                    if penalty_amount > 0:
+                        penalty_text = "Penalty Amount - Rs."+str(penalty_amount)+"/-"
+                    else:
+                        penalty_text
+                    body = f"Please make payment for the HandyMan Service your work has been finished.\nBooking ID - {booking_id}\nPay Rs.{total_payment}/-\n{penalty_text}"
                     title = "Make Payment For HandyMan Service"
                 elif booking_status == "End Service":
                     body = "Your package has been delivered successfully"
