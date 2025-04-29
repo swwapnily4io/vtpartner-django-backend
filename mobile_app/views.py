@@ -15555,6 +15555,7 @@ def update_booking_status_other_driver(request):
         customer_id = data.get("customer_id")
         total_payment = data.get("total_payment")
         penalty_amount = data.get("penalty_amount")
+        penalty_amount = float(penalty_amount)
         
 
         # List of required fields
@@ -18218,6 +18219,7 @@ def update_booking_status_jcb_crane_driver(request):
         customer_id = data.get("customer_id")
         total_payment = data.get("total_payment")
         penalty_amount = data.get("penalty_amount")
+        penalty_amount = float(penalty_amount)
 
         # List of required fields
         required_fields = {
@@ -20479,6 +20481,7 @@ def update_booking_status_handyman(request):
         customer_id = data.get("customer_id")
         total_payment = data.get("total_payment")
         penalty_amount = data.get("penalty_amount")
+        penalty_amount = float(penalty_amount)
 
         # List of required fields
         required_fields = {
