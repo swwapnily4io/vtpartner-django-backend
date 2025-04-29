@@ -2146,7 +2146,7 @@ def get_other_driver_auth_token( other_driver_id):
     auth_token = ""
     try:
         query = """
-        select authtoken from vtpartner.other_driverstbl where cab_driver_id=%s 
+        select authtoken from vtpartner.other_driverstbl where other_driver_id=%s 
         """
         params = [other_driver_id]
         result = select_query(query, params)  # Assuming select_query is defined elsewhere
@@ -2168,7 +2168,7 @@ def get_jcb_crane_driver_auth_token( jcb_crane_driver_id):
     auth_token = ""
     try:
         query = """
-        select authtoken from vtpartner.jcb_crane_driverstbl where cab_driver_id=%s 
+        select authtoken from vtpartner.jcb_crane_driverstbl where jcb_crane_driver_id=%s 
         """
         params = [jcb_crane_driver_id]
         result = select_query(query, params)  # Assuming select_query is defined elsewhere
@@ -2189,7 +2189,7 @@ def get_handyman_agent_auth_token( handyman_agent_id):
     auth_token = ""
     try:
         query = """
-        select authtoken from vtpartner.handymans_tbl where cab_driver_id=%s 
+        select authtoken from vtpartner.handymans_tbl where handyman_id=%s 
         """
         params = [handyman_agent_id]
         result = select_query(query, params)  # Assuming select_query is defined elsewhere
