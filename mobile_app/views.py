@@ -14145,7 +14145,7 @@ def jcb_crane_driver_booking_details_live_track(request):
                 jcb_crane_driverstbl.mobile_no AS driver_mobile_no,
                 sub_cat_name,
                 service_name,
-                jcb_crane_driverstbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+                jcb_crane_driverstbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount
             FROM 
                 vtpartner.jcb_crane_bookings_tbl
             LEFT JOIN 
@@ -14202,7 +14202,8 @@ def jcb_crane_driver_booking_details_live_track(request):
                     "coupon_applied":row[31],
                     "coupon_id":row[32],
                     "coupon_amount":row[33],
-                    "before_coupon_amount":row[34]
+                    "before_coupon_amount":row[34],
+                    "penalty_amount":row[35]
 
                     
                 }
