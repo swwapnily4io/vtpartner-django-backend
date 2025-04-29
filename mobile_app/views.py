@@ -14274,7 +14274,7 @@ def handyman_agent_booking_details_live_track(request):
                 handymans_tbl.mobile_no AS driver_mobile_no,
                 sub_cat_name,
                 service_name,
-                handymans_tbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+                handymans_tbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount
             FROM 
                 vtpartner.handyman_bookings_tbl
             LEFT JOIN 
@@ -14331,7 +14331,8 @@ def handyman_agent_booking_details_live_track(request):
                     "coupon_applied":row[31],
                     "coupon_id":row[32],
                     "coupon_amount":row[33],
-                    "before_coupon_amount":row[34]
+                    "before_coupon_amount":row[34],
+                    "penalty_amount":row[35]
                 }
                 for row in result
             ]
@@ -16700,7 +16701,7 @@ def other_driver_booking_details_live_track(request):
                 sub_cat_name,
                 service_name,
                 other_driverstbl.profile_pic,
-                coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount
             FROM 
                 vtpartner.other_driver_bookings_tbl
             LEFT JOIN 
@@ -16760,7 +16761,8 @@ def other_driver_booking_details_live_track(request):
                     "coupon_applied":row[34],
                     "coupon_id":row[35],
                     "coupon_amount":row[36],
-                    "before_coupon_amount":row[37]
+                    "before_coupon_amount":row[37],
+                    "penalty_amount":row[38]
 
                     
                 }
