@@ -811,7 +811,7 @@ def find_nearby_jcb_crane_agents(booking):
         AND driver.category_id = sub_categorytbl.cat_id
         AND driver.sub_cat_id = %s
         AND (driver.service_id = -1 OR driver.service_id = %s) 
-        ORDER BY distanc
+        ORDER BY distance;
         """
     values = [pickup_lat, pickup_lng, pickup_lat, pickup_lat, pickup_lng, pickup_lat, sub_cat_id,service_id]
 
