@@ -15678,8 +15678,8 @@ def update_booking_status_other_driver(request):
         server_token = data.get("server_token")
         customer_id = data.get("customer_id")
         total_payment = data.get("total_payment")
-        # penalty_amount = data.get("penalty_amount")
-        # penalty_amount = float(penalty_amount)
+        penalty_amount = data.get("penalty_amount")
+        penalty_amount = float(penalty_amount)
         
 
         # List of required fields
@@ -15698,15 +15698,15 @@ def update_booking_status_other_driver(request):
             )
             
         try:
-            # if penalty_amount > 0:
-            #     penalty_query = """
-            #         update vtpartner.jcb_crane_bookings_tbl set penalty_amount=%s where booking_id=%s
-            #         """
-            #     penalty_values = [
-            #             penalty_amount,
-            #             booking_id
-            #         ] 
-            #     row_count = update_query(penalty_query, penalty_values)   
+            if penalty_amount > 0:
+                penalty_query = """
+                    update vtpartner.jcb_crane_bookings_tbl set penalty_amount=%s where booking_id=%s
+                    """
+                penalty_values = [
+                        penalty_amount,
+                        booking_id
+                    ] 
+                row_count = update_query(penalty_query, penalty_values)   
 
             query = """
                 update vtpartner.other_driver_bookings_tbl set booking_status=%s where booking_id=%s
@@ -15761,8 +15761,8 @@ def update_booking_status_other_driver(request):
                     row_count = update_query(update_pickup_epoch_query, values)
                 elif booking_status == "Make Payment":
                     penalty_text = ""
-                    # if penalty_amount > 0:
-                    #     penalty_text = "Penalty Amount - Rs."+str(penalty_amount)+"/-"
+                    if penalty_amount > 0:
+                        penalty_text = "Penalty Amount - Rs."+str(penalty_amount)+"/-"
                     
                     body = f"Please do the payment against Booking ID {booking_id} for Driver Service. Total Amount=Rs.{total_payment}/-\n{penalty_text}"
                     title = "Make Payment For Driver Service"
