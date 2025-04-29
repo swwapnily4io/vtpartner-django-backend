@@ -14145,7 +14145,7 @@ def jcb_crane_driver_booking_details_live_track(request):
                 jcb_crane_driverstbl.mobile_no AS driver_mobile_no,
                 sub_cat_name,
                 service_name,
-                jcb_crane_driverstbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount
+                jcb_crane_driverstbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount,penalty_charges_amount
             FROM 
                 vtpartner.jcb_crane_bookings_tbl
             LEFT JOIN 
@@ -14203,7 +14203,9 @@ def jcb_crane_driver_booking_details_live_track(request):
                     "coupon_id":row[32],
                     "coupon_amount":row[33],
                     "before_coupon_amount":row[34],
-                    "penalty_amount":row[35]
+                    "penalty_amount":row[35],
+                    "penalty_charges_amount":row[36]
+                    
 
                     
                 }
@@ -14274,7 +14276,7 @@ def handyman_agent_booking_details_live_track(request):
                 handymans_tbl.mobile_no AS driver_mobile_no,
                 sub_cat_name,
                 service_name,
-                handymans_tbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount
+                handymans_tbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount,penalty_charges_amount
             FROM 
                 vtpartner.handyman_bookings_tbl
             LEFT JOIN 
@@ -14332,7 +14334,8 @@ def handyman_agent_booking_details_live_track(request):
                     "coupon_id":row[32],
                     "coupon_amount":row[33],
                     "before_coupon_amount":row[34],
-                    "penalty_amount":row[35]
+                    "penalty_amount":row[35],
+                    "penalty_charges_amount":row[36]
                 }
                 for row in result
             ]
@@ -16703,7 +16706,7 @@ def other_driver_booking_details_live_track(request):
                 sub_cat_name,
                 service_name,
                 other_driverstbl.profile_pic,
-                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount
+                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount,penalty_charges_amount
             FROM 
                 vtpartner.other_driver_bookings_tbl
             LEFT JOIN 
@@ -16764,7 +16767,8 @@ def other_driver_booking_details_live_track(request):
                     "coupon_id":row[35],
                     "coupon_amount":row[36],
                     "before_coupon_amount":row[37],
-                    "penalty_amount":row[38]
+                    "penalty_amount":row[38],
+                    "penalty_charges_amount":row[39]
 
                     
                 }
