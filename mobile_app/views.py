@@ -424,33 +424,53 @@ def find_nearby_goods_drivers(booking):
 
     # Find nearby drivers (implement your own logic)
     query = """
-        SELECT main.goods_driver_id, goods_driverstbl.authtoken
-        FROM vtpartner.active_goods_drivertbl AS main
-        INNER JOIN (
-            SELECT goods_driver_id, MAX(entry_time) AS max_entry_time
-            FROM vtpartner.active_goods_drivertbl
-            GROUP BY goods_driver_id
-        ) AS latest ON main.goods_driver_id = latest.goods_driver_id
-                    AND main.entry_time = latest.max_entry_time
-        JOIN vtpartner.goods_driverstbl ON main.goods_driver_id = goods_driverstbl.goods_driver_id
-        JOIN vtpartner.vehiclestbl ON goods_driverstbl.vehicle_id = vehiclestbl.vehicle_id
-        JOIN vtpartner.vehicle_city_wise_price_tbl ON vehiclestbl.vehicle_id = vehicle_city_wise_price_tbl.vehicle_id
-        AND vehicle_city_wise_price_tbl.city_id = %s AND vehicle_city_wise_price_tbl.price_type_id = %s
-        WHERE main.current_status = 1
-        AND (6371 * acos(
-                cos(radians(%s)) * cos(radians(main.current_lat)) *
-                cos(radians(main.current_lng) - radians(%s)) +
-                sin(radians(%s)) * sin(radians(main.current_lat))
-            )) <= %s
-        AND goods_driverstbl.category_id = vehiclestbl.category_id
-        AND goods_driverstbl.category_id = '1' AND goods_driverstbl.vehicle_id = %s
-        AND goods_driverstbl.body_type = %s
-        ORDER BY distance;
-    """
-    values = [
-        city_id, vehicle_price_type, pickup_lat, pickup_lng, pickup_lat,
-        vehicle_radius_km, goods_vehicle_id, body_type
-    ]
+        SELECT 
+                        main.active_id, 
+                        main.goods_driver_id, 
+                        main.current_lat, 
+                        main.current_lng, 
+                        main.entry_time, 
+                        main.current_status, 
+                        goods_driverstbl.driver_first_name,
+                        goods_driverstbl.profile_pic, 
+                        vehiclestbl.image AS vehicle_image, 
+                        vehiclestbl.vehicle_name,
+                        vehiclestbl.weight,
+                        vehicle_city_wise_price_tbl.starting_price_per_km,
+                        vehicle_city_wise_price_tbl.base_fare,
+                        vehiclestbl.vehicle_id,
+                        vehiclestbl.size_image,
+                        goods_driverstbl.authtoken,
+                        (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) AS distance
+                    FROM vtpartner.active_goods_drivertbl AS main
+                    INNER JOIN (
+                        SELECT goods_driver_id, MAX(entry_time) AS max_entry_time
+                        FROM vtpartner.active_goods_drivertbl
+                        GROUP BY goods_driver_id
+                    ) AS latest ON main.goods_driver_id = latest.goods_driver_id
+                                AND main.entry_time = latest.max_entry_time
+                    JOIN vtpartner.goods_driverstbl ON main.goods_driver_id = goods_driverstbl.goods_driver_id
+                    JOIN vtpartner.vehiclestbl ON goods_driverstbl.vehicle_id = vehiclestbl.vehicle_id
+                    JOIN vtpartner.vehicle_city_wise_price_tbl ON vehiclestbl.vehicle_id = vehicle_city_wise_price_tbl.vehicle_id
+                    AND vehicle_city_wise_price_tbl.city_id = %s  AND vehicle_city_wise_price_tbl.price_type_id=%s
+                    WHERE main.current_status = 1
+                    AND (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) <= %s
+                    AND goods_driverstbl.category_id = vehiclestbl.category_id
+                    AND goods_driverstbl.category_id = '1' AND  goods_driverstbl.vehicle_id=%s
+                    AND goods_driverstbl.body_type = %s
+                    ORDER BY distance;
+
+                    """
+    values = [pickup_lat, pickup_lng, pickup_lat,city_id,vehicle_price_type, pickup_lat, pickup_lng, pickup_lat,vehicle_radius_km ,goods_vehicle_id,
+                              body_type]
     nearby_drivers = select_query(query, values)
 
     # Prepare FCM data
@@ -489,29 +509,52 @@ def find_nearby_cab_drivers(booking):
      last_retry_time, error_message, booking_timezone, is_scheduled, scheduled_time, cab_vehicle_id) = booking
 
     query = """
-        SELECT main.cab_driver_id, cab_driverstbl.authtoken
-        FROM vtpartner.active_cab_drivertbl AS main
-        INNER JOIN (
-            SELECT cab_driver_id, MAX(entry_time) AS max_entry_time
-            FROM vtpartner.active_cab_drivertbl
-            GROUP BY cab_driver_id
-        ) AS latest ON main.cab_driver_id = latest.cab_driver_id
-                    AND main.entry_time = latest.max_entry_time
-        JOIN vtpartner.cab_driverstbl ON main.cab_driver_id = cab_driverstbl.cab_driver_id
-        JOIN vtpartner.vehiclestbl ON cab_driverstbl.vehicle_id = vehiclestbl.vehicle_id
-        JOIN vtpartner.vehicle_city_wise_price_tbl ON vehiclestbl.vehicle_id = vehicle_city_wise_price_tbl.vehicle_id
-        AND vehicle_city_wise_price_tbl.city_id = %s AND vehicle_city_wise_price_tbl.price_type_id = 1
-        WHERE main.current_status = 1
-        AND (6371 * acos(
-                cos(radians(%s)) * cos(radians(main.current_lat)) *
-                cos(radians(main.current_lng) - radians(%s)) +
-                sin(radians(%s)) * sin(radians(main.current_lat))
-            )) <= 5
-        AND cab_driverstbl.category_id = vehiclestbl.category_id
-        AND cab_driverstbl.category_id = '2' AND cab_driverstbl.vehicle_id = %s
-        ORDER BY distance ASC;
-    """
-    values = [city_id, pickup_lat, pickup_lng, pickup_lat, cab_vehicle_id]
+        
+                        SELECT 
+                        main.active_id, 
+                        main.cab_driver_id, 
+                        main.current_lat, 
+                        main.current_lng, 
+                        main.entry_time, 
+                        main.current_status, 
+                        cab_driverstbl.driver_first_name,
+                        cab_driverstbl.profile_pic, 
+                        vehiclestbl.image AS vehicle_image, 
+                        vehiclestbl.vehicle_name,
+                        vehiclestbl.weight,
+                        vehicle_city_wise_price_tbl.starting_price_per_km,
+                        vehicle_city_wise_price_tbl.base_fare,
+                        vehiclestbl.vehicle_id,
+                        vehiclestbl.size_image,
+                        cab_driverstbl.authtoken,
+                        (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) AS distance
+                    FROM vtpartner.active_cab_drivertbl AS main
+                    INNER JOIN (
+                        SELECT cab_driver_id, MAX(entry_time) AS max_entry_time
+                        FROM vtpartner.active_cab_drivertbl
+                        GROUP BY cab_driver_id
+                    ) AS latest ON main.cab_driver_id = latest.cab_driver_id
+                                AND main.entry_time = latest.max_entry_time
+                    JOIN vtpartner.cab_driverstbl ON main.cab_driver_id = cab_driverstbl.cab_driver_id
+                    JOIN vtpartner.vehiclestbl ON cab_driverstbl.vehicle_id = vehiclestbl.vehicle_id
+                    JOIN vtpartner.vehicle_city_wise_price_tbl ON vehiclestbl.vehicle_id = vehicle_city_wise_price_tbl.vehicle_id
+                    AND vehicle_city_wise_price_tbl.city_id = %s  AND vehicle_city_wise_price_tbl.price_type_id=%s
+                    WHERE main.current_status = 1
+                    AND (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) <= %s
+                    AND cab_driverstbl.category_id = vehiclestbl.category_id
+                    AND cab_driverstbl.category_id = '2' AND  cab_driverstbl.vehicle_id=%s
+                    ORDER BY distance ASC;
+
+                    """
+    values = [pickup_lat, pickup_lng, pickup_lat,city_id,1, pickup_lat, pickup_lng, pickup_lat, 5,cab_vehicle_id]
     nearby_drivers = select_query(query, values)
 
     fcm_data = {
@@ -550,26 +593,48 @@ def find_nearby_other_drivers(booking):
      retry_count, last_retry_time, error_message, booking_timezone, is_scheduled, scheduled_time) = booking
 
     query = """
-        SELECT main.other_driver_id, other_driverstbl.authtoken
-        FROM vtpartner.active_other_drivertbl AS main
-        INNER JOIN (
-            SELECT other_driver_id, MAX(entry_time) AS max_entry_time
-            FROM vtpartner.active_other_drivertbl
-            GROUP BY other_driver_id
-        ) AS latest ON main.other_driver_id = latest.other_driver_id
-                    AND main.entry_time = latest.max_entry_time
-        JOIN vtpartner.other_driverstbl ON main.other_driver_id = other_driverstbl.other_driver_id
-        WHERE main.current_status = 1
-        AND (6371 * acos(
-                cos(radians(%s)) * cos(radians(main.current_lat)) *
-                cos(radians(main.current_lng) - radians(%s)) +
-                sin(radians(%s)) * sin(radians(main.current_lat))
-            )) <= 5
-        AND other_driverstbl.sub_cat_id = %s
-        AND (other_driverstbl.service_id = -1 OR other_driverstbl.service_id = %s)
-        ORDER BY distance;
-    """
-    values = [pickup_lat, pickup_lng, pickup_lat, sub_cat_id, service_id]
+        SELECT 
+                        main.active_id,
+                        main.other_driver_id,
+                        main.current_lat,
+                        main.current_lng,
+                        main.entry_time,
+                        main.current_status,
+                        other.driver_first_name,
+                        other.driver_last_name,
+                        other.profile_pic,
+                        sub_categorytbl.sub_cat_name,
+                        sub_categorytbl.price_per_hour,
+                        other_servicestbl.service_name,
+                        other_servicestbl.price_per_hour AS service_price_per_hour,
+                        (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) AS distance
+                    FROM vtpartner.active_other_drivertbl AS main
+                    INNER JOIN (
+                        SELECT other_driver_id, MAX(entry_time) AS max_entry_time
+                        FROM vtpartner.active_other_drivertbl
+                        GROUP BY other_driver_id
+                    ) AS latest ON main.other_driver_id = latest.other_driver_id
+                                AND main.entry_time = latest.max_entry_time
+                    JOIN vtpartner.other_driverstbl AS other ON main.other_driver_id = other.other_driver_id
+                    LEFT JOIN vtpartner.sub_categorytbl ON other.sub_cat_id = sub_categorytbl.sub_cat_id
+                    LEFT JOIN vtpartner.other_servicestbl ON other.service_id = other_servicestbl.service_id
+                    WHERE main.current_status = 1
+                    AND (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) <= 5
+                    AND other.category_id = sub_categorytbl.cat_id
+                    AND other.sub_cat_id = %s 
+                    AND (other.service_id = -1 OR other.service_id = %s) 
+                    ORDER BY distance;
+
+                    """
+    values = [pickup_lat, pickup_lng, pickup_lat, pickup_lat, pickup_lng, pickup_lat, sub_cat_id,service_id]
     nearby_drivers = select_query(query, values)
 
     fcm_data = {
@@ -608,7 +673,26 @@ def find_nearby_jcb_crane_agents(booking):
      retry_count, last_retry_time, error_message, booking_timezone, is_scheduled, scheduled_time) = booking
 
     query = """
-        SELECT main.jcb_crane_driver_id, jcb_crane_driverstbl.authtoken
+            SELECT                                       
+            main.active_id,
+            main.jcb_crane_driver_id,
+            main.current_lat,
+            main.current_lng,
+            main.entry_time,
+            main.current_status,
+            driver.driver_name AS jcb_crane_driver_name,
+            driver.profile_pic,
+            driver.vehicle_plate_no,
+            driver.vehicle_fuel_type,
+            sub_categorytbl.sub_cat_name,
+            sub_categorytbl.price_per_hour,
+            other_servicestbl.service_name,
+            other_servicestbl.price_per_hour AS service_price_per_hour,
+            (6371 * acos(
+                cos(radians(%s)) * cos(radians(main.current_lat)) *
+                cos(radians(main.current_lng) - radians(%s)) +
+                sin(radians(%s)) * sin(radians(main.current_lat))
+            )) AS distance
         FROM vtpartner.active_jcb_crane_drivertbl AS main
         INNER JOIN (
             SELECT jcb_crane_driver_id, MAX(entry_time) AS max_entry_time
@@ -616,18 +700,22 @@ def find_nearby_jcb_crane_agents(booking):
             GROUP BY jcb_crane_driver_id
         ) AS latest ON main.jcb_crane_driver_id = latest.jcb_crane_driver_id
                     AND main.entry_time = latest.max_entry_time
-        JOIN vtpartner.jcb_crane_driverstbl ON main.jcb_crane_driver_id = jcb_crane_driverstbl.jcb_crane_driver_id
+        JOIN vtpartner.jcb_crane_driverstbl AS driver ON main.jcb_crane_driver_id = driver.jcb_crane_driver_id
+        LEFT JOIN vtpartner.sub_categorytbl ON driver.sub_cat_id = sub_categorytbl.sub_cat_id
+        LEFT JOIN vtpartner.other_servicestbl ON driver.service_id = other_servicestbl.service_id
         WHERE main.current_status = 1
         AND (6371 * acos(
                 cos(radians(%s)) * cos(radians(main.current_lat)) *
                 cos(radians(main.current_lng) - radians(%s)) +
                 sin(radians(%s)) * sin(radians(main.current_lat))
             )) <= 5
-        AND jcb_crane_driverstbl.sub_cat_id = %s
-        AND (jcb_crane_driverstbl.service_id = -1 OR jcb_crane_driverstbl.service_id = %s)
-        ORDER BY distance;
-    """
-    values = [pickup_lat, pickup_lng, pickup_lat, sub_cat_id, service_id]
+        AND driver.category_id = sub_categorytbl.cat_id
+        AND driver.sub_cat_id = %s
+        AND (driver.service_id = -1 OR driver.service_id = %s) 
+        ORDER BY distanc
+        """
+    values = [pickup_lat, pickup_lng, pickup_lat, pickup_lat, pickup_lng, pickup_lat, sub_cat_id,service_id]
+
     nearby_drivers = select_query(query, values)
 
     fcm_data = {
@@ -665,26 +753,47 @@ def find_nearby_handyman_agents(booking):
      retry_count, last_retry_time, error_message, booking_timezone, is_scheduled, scheduled_time) = booking
 
     query = """
-        SELECT main.handyman_id, handymans_tbl.authtoken
-        FROM vtpartner.active_handyman_tbl AS main
-        INNER JOIN (
-            SELECT handyman_id, MAX(entry_time) AS max_entry_time
-            FROM vtpartner.active_handyman_tbl
-            GROUP BY handyman_id
-        ) AS latest ON main.handyman_id = latest.handyman_id
-                    AND main.entry_time = latest.max_entry_time
-        JOIN vtpartner.handymans_tbl ON main.handyman_id = handymans_tbl.handyman_id
-        WHERE main.current_status = 1
-        AND (6371 * acos(
-                cos(radians(%s)) * cos(radians(main.current_lat)) *
-                cos(radians(main.current_lng) - radians(%s)) +
-                sin(radians(%s)) * sin(radians(main.current_lat))
-            )) <= 5
-        AND handymans_tbl.sub_cat_id = %s
-        AND (handymans_tbl.service_id = -1 OR handymans_tbl.service_id = %s)
-        ORDER BY distance;
-    """
-    values = [pickup_lat, pickup_lng, pickup_lat, sub_cat_id, service_id]
+        SELECT                            
+                        main.active_id,
+                        main.handyman_id,
+                        main.current_lat,
+                        main.current_lng,
+                        main.entry_time,
+                        main.current_status,
+                        handyman.name AS handyman_name,
+                        handyman.profile_pic,
+                        sub_categorytbl.sub_cat_name,
+                        sub_categorytbl.price_per_hour,
+                        other_servicestbl.service_name,
+                        other_servicestbl.price_per_hour AS service_price_per_hour,
+                        (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) AS distance
+                    FROM vtpartner.active_handyman_tbl AS main
+                    INNER JOIN (
+                        SELECT handyman_id, MAX(entry_time) AS max_entry_time
+                        FROM vtpartner.active_handyman_tbl
+                        GROUP BY handyman_id
+                    ) AS latest ON main.handyman_id = latest.handyman_id
+                                AND main.entry_time = latest.max_entry_time
+                    JOIN vtpartner.handymans_tbl AS handyman ON main.handyman_id = handyman.handyman_id
+                    LEFT JOIN vtpartner.sub_categorytbl ON handyman.sub_cat_id = sub_categorytbl.sub_cat_id
+                    LEFT JOIN vtpartner.other_servicestbl ON handyman.service_id = other_servicestbl.service_id
+                    WHERE main.current_status = 1
+                    AND (6371 * acos(
+                            cos(radians(%s)) * cos(radians(main.current_lat)) *
+                            cos(radians(main.current_lng) - radians(%s)) +
+                            sin(radians(%s)) * sin(radians(main.current_lat))
+                        )) <= 5
+                    AND handyman.category_id = sub_categorytbl.cat_id
+                    AND handyman.sub_cat_id = %s 
+                    AND (handyman.service_id = -1 OR handyman.service_id = %s) 
+                    ORDER BY distance;
+
+                    """
+    values = [pickup_lat, pickup_lng, pickup_lat, pickup_lat, pickup_lng, pickup_lat, sub_cat_id,service_id]
     nearby_drivers = select_query(query, values)
 
     fcm_data = {
