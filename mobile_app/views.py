@@ -482,23 +482,51 @@ def find_nearby_goods_drivers(booking):
 
     notification_count = 0
     for driver in nearby_drivers:
-        driver_id, driver_auth_token = driver
+        driver_id = driver[1]
+        driver_auth_token = driver[15]  # Correct index for authtoken
+        print(f"driver_id={driver_id}, auth_token={driver_auth_token}")
+
         if driver_auth_token:
-            message = (
-                f"You have a new Scheduled Ride Request\n"
-                f"Pickup: {pickup_address}\n"
-                f"Drops: {drop_locations_text}"
-            )
-            sendFMCMsg(
-                driver_auth_token,
-                message,
-                "New Scheduled Ride Request",
-                fcm_data,
-                server_access_token,
-                "Agent"
-            )
-            notification_count += 1
+            try:
+                message = (
+                    f"You have a new Scheduled Ride Request\n"
+                    f"Pickup: {pickup_address}\n"
+                    f"Drops: {drop_locations_text}"
+                )
+                sendFMCMsg(
+                    driver_auth_token,
+                    message,
+                    "New Scheduled Ride Request",
+                    fcm_data,
+                    server_access_token,
+                    "Agent"
+                )
+                print(f"Notification sent to goods driver ID {driver_id}")
+                notification_count += 1
+            except Exception as err:
+                print(f"Error sending notification to goods driver ID {driver_id}: {err}")
+        else:
+            print(f"Skipped notification for goods driver ID {driver_id} due to missing auth token")
     return notification_count
+    # notification_count = 0
+    # for driver in nearby_drivers:
+    #     driver_id, driver_auth_token = driver
+    #     if driver_auth_token:
+    #         message = (
+    #             f"You have a new Scheduled Ride Request\n"
+    #             f"Pickup: {pickup_address}\n"
+    #             f"Drops: {drop_locations_text}"
+    #         )
+    #         sendFMCMsg(
+    #             driver_auth_token,
+    #             message,
+    #             "New Scheduled Ride Request",
+    #             fcm_data,
+    #             server_access_token,
+    #             "Agent"
+    #         )
+    #         notification_count += 1
+    # return notification_count
     
 def find_nearby_cab_drivers(booking):
     (booking_id, customer_id, driver_id, pickup_lat, pickup_lng, destination_lat, destination_lng,
@@ -519,6 +547,7 @@ def find_nearby_cab_drivers(booking):
                         main.current_status, 
                         cab_driverstbl.driver_first_name,
                         cab_driverstbl.profile_pic, 
+                        cab_driverstbl.authtoken,
                         vehiclestbl.image AS vehicle_image, 
                         vehiclestbl.vehicle_name,
                         vehiclestbl.weight,
@@ -565,23 +594,51 @@ def find_nearby_cab_drivers(booking):
 
     notification_count = 0
     for driver in nearby_drivers:
-        driver_id, driver_auth_token = driver
+        driver_id = driver[1]
+        driver_auth_token = driver[8]  # Correct index for authtoken
+        print(f"driver_id={driver_id}, auth_token={driver_auth_token}")
+
         if driver_auth_token:
-            message = (
-                f"You have a new Scheduled Cab Ride Request\n"
-                f"Pickup: {pickup_address}\n"
-                f"Drop: {drop_address}"
-            )
-            sendFMCMsg(
-                driver_auth_token,
-                message,
-                "New Scheduled Cab Ride Request",
-                fcm_data,
-                server_access_token,
-                "Agent"
-            )
-            notification_count += 1
+            try:
+                message = (
+                    f"You have a new Scheduled Cab Ride Request\n"
+                    f"Pickup: {pickup_address}\n"
+                    f"Drop: {drop_address}"
+                )
+                sendFMCMsg(
+                    driver_auth_token,
+                    message,
+                    "New Scheduled Cab Ride Request",
+                    fcm_data,
+                    server_access_token,
+                    "Agent"
+                )
+                print(f"Notification sent to cab driver ID {driver_id}")
+                notification_count += 1
+            except Exception as err:
+                print(f"Error sending notification to cab driver ID {driver_id}: {err}")
+        else:
+            print(f"Skipped notification for cab driver ID {driver_id} due to missing auth token")
     return notification_count
+    # notification_count = 0
+    # for driver in nearby_drivers:
+    #     driver_id, driver_auth_token = driver
+    #     if driver_auth_token:
+    #         message = (
+    #             f"You have a new Scheduled Cab Ride Request\n"
+    #             f"Pickup: {pickup_address}\n"
+    #             f"Drop: {drop_address}"
+    #         )
+    #         sendFMCMsg(
+    #             driver_auth_token,
+    #             message,
+    #             "New Scheduled Cab Ride Request",
+    #             fcm_data,
+    #             server_access_token,
+    #             "Agent"
+    #         )
+    #         notification_count += 1
+    # return notification_count
 
 #Other driver scheduled bookings search
 def find_nearby_other_drivers(booking):
@@ -602,6 +659,7 @@ def find_nearby_other_drivers(booking):
                         main.current_status,
                         other.driver_first_name,
                         other.driver_last_name,
+                        other.authtoken,
                         other.profile_pic,
                         sub_categorytbl.sub_cat_name,
                         sub_categorytbl.price_per_hour,
@@ -645,23 +703,51 @@ def find_nearby_other_drivers(booking):
 
     notification_count = 0
     for driver in nearby_drivers:
-        driver_id, driver_auth_token = driver
+        driver_id = driver[1]
+        driver_auth_token = driver[8]  # Correct index for authtoken
+        print(f"driver_id={driver_id}, auth_token={driver_auth_token}")
+
         if driver_auth_token:
-            message = (
-                f"You have a new Scheduled Other Driver Request\n"
-                f"Pickup: {pickup_address}\n"
-                f"Drop: {drop_address}"
-            )
-            sendFMCMsg(
-                driver_auth_token,
-                message,
-                "New Scheduled Other Driver Request",
-                fcm_data,
-                server_access_token,
-                "Agent"
-            )
-            notification_count += 1
+            try:
+                message = (
+                    f"You have a new Scheduled Other Driver Request\n"
+                    f"Pickup: {pickup_address}\n"
+                    f"Drop: {drop_address}"
+                )
+                sendFMCMsg(
+                    driver_auth_token,
+                    message,
+                    "New Scheduled Other Driver Request",
+                    fcm_data,
+                    server_access_token,
+                    "Agent"
+                )
+                print(f"Notification sent to other driver ID {driver_id}")
+                notification_count += 1
+            except Exception as err:
+                print(f"Error sending notification to other driver ID {driver_id}: {err}")
+        else:
+            print(f"Skipped notification for other driver ID {driver_id} due to missing auth token")
     return notification_count
+    # notification_count = 0
+    # for driver in nearby_drivers:
+    #     driver_id, driver_auth_token = driver
+    #     if driver_auth_token:
+    #         message = (
+    #             f"You have a new Scheduled Other Driver Request\n"
+    #             f"Pickup: {pickup_address}\n"
+    #             f"Drop: {drop_address}"
+    #         )
+    #         sendFMCMsg(
+    #             driver_auth_token,
+    #             message,
+    #             "New Scheduled Other Driver Request",
+    #             fcm_data,
+    #             server_access_token,
+    #             "Agent"
+    #         )
+    #         notification_count += 1
+    # return notification_count
 
 #JCb Crane scheduled bookings search
 def find_nearby_jcb_crane_agents(booking):
@@ -681,6 +767,7 @@ def find_nearby_jcb_crane_agents(booking):
             main.entry_time,
             main.current_status,
             driver.driver_name AS jcb_crane_driver_name,
+            driver.authtoken,
             driver.profile_pic,
             driver.vehicle_plate_no,
             driver.vehicle_fuel_type,
@@ -726,22 +813,45 @@ def find_nearby_jcb_crane_agents(booking):
 
     notification_count = 0
     for driver in nearby_drivers:
-        driver_id, driver_auth_token = driver
+        driver_id = driver[1]
+        driver_auth_token = driver[7]  # Correct index for authtoken
+        print(f"driver_id={driver_id}, auth_token={driver_auth_token}")
+
         if driver_auth_token:
-            message = (
-                f"You have a new Scheduled JCB/Crane Request\n"
-                f"Work Location: {pickup_address}."
-            )
-            sendFMCMsg(
-                driver_auth_token,
-                message,
-                "New Scheduled JCB/Crane Request",
-                fcm_data,
-                server_access_token,
-                "Agent"
-            )
-            notification_count += 1
+            try:
+                sendFMCMsg(
+                    driver_auth_token,
+                    f"You have a new Work Request for \nWork Location: {pickup_address}.",
+                    "New JCB/Crane Ride Request",
+                    fcm_data,
+                    server_access_token,
+                    "Agent"
+                )
+                print(f"Notification sent to jcb driver ID {driver_id}")
+                notification_count += 1
+            except Exception as err:
+                print(f"Error sending notification to jcb driver ID {driver_id}: {err}")
+        else:
+            print(f"Skipped notification for jcb driver ID {driver_id} due to missing auth token")
     return notification_count
+    # notification_count = 0
+    # for driver in nearby_drivers:
+    #     driver_id, driver_auth_token = driver
+    #     if driver_auth_token:
+    #         message = (
+    #             f"You have a new Scheduled JCB/Crane Request\n"
+    #             f"Work Location: {pickup_address}."
+    #         )
+    #         sendFMCMsg(
+    #             driver_auth_token,
+    #             message,
+    #             "New Scheduled JCB/Crane Request",
+    #             fcm_data,
+    #             server_access_token,
+    #             "Agent"
+    #         )
+    #         notification_count += 1
+    # return notification_count
 
 #Handyman Scheduled Bookings search
 def find_nearby_handyman_agents(booking):
