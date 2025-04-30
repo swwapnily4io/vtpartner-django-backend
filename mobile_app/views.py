@@ -20605,7 +20605,9 @@ def update_booking_status_handyman(request):
         customer_id = data.get("customer_id")
         total_payment = data.get("total_payment")
         penalty_amount = data.get("penalty_amount")
+        print("penalty_amount before:"+penalty_amount)
         penalty_amount = float(penalty_amount)
+        print("penalty_amount after:" + str(penalty_amount))
 
         # List of required fields
         required_fields = {
