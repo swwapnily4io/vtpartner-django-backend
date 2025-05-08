@@ -6070,6 +6070,134 @@ def get_goods_drivers_current_month_earnings(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
 @csrf_exempt
+def get_goods_scheduled_bookings_details(request):
+    if request.method == "POST":
+        try:
+            query = """
+                SELECT 
+                    bookings_tbl.booking_id,
+                    bookings_tbl.customer_id,
+                    bookings_tbl.driver_id,
+                    bookings_tbl.pickup_lat,
+                    bookings_tbl.pickup_lng,
+                    bookings_tbl.destination_lat,
+                    bookings_tbl.destination_lng,
+                    bookings_tbl.distance,
+                    bookings_tbl.time,
+                    bookings_tbl.total_price,
+                    bookings_tbl.base_price,
+                    bookings_tbl.booking_timing,
+                    bookings_tbl.booking_date,
+                    bookings_tbl.booking_status,
+                    bookings_tbl.driver_arrival_time,
+                    bookings_tbl.otp,
+                    bookings_tbl.gst_amount,
+                    bookings_tbl.igst_amount,
+                    bookings_tbl.goods_type_id,
+                    bookings_tbl.payment_method,
+                    bookings_tbl.city_id,
+                    bookings_tbl.cancelled_reason,
+                    bookings_tbl.cancel_time,
+                    bookings_tbl.order_id,
+                    bookings_tbl.sender_name,
+                    bookings_tbl.sender_number,
+                    bookings_tbl.receiver_name,
+                    bookings_tbl.receiver_number,
+                    goods_driverstbl.driver_first_name,
+                    goods_driverstbl.authtoken AS driver_authtoken,
+                    customers_tbl.customer_name,
+                    customers_tbl.authtoken AS customer_authtoken,
+                    bookings_tbl.pickup_address,
+                    bookings_tbl.drop_address,
+                    customers_tbl.mobile_no AS customer_mobile_no,
+                    goods_driverstbl.mobile_no AS driver_mobile_no,
+                    vehiclestbl.vehicle_id,
+                    vehiclestbl.vehicle_name,
+                    vehiclestbl.image,
+                    bookings_tbl.is_scheduled,
+                    bookings_tbl.scheduled_time,
+                    bookings_tbl.drop_locations,
+                    bookings_tbl.drop_contacts,
+                    bookings_tbl.multiple_drops
+                FROM 
+                    vtpartner.bookings_tbl
+                LEFT JOIN 
+                    vtpartner.goods_driverstbl 
+                    ON goods_driverstbl.goods_driver_id = bookings_tbl.driver_id
+                INNER JOIN 
+                    vtpartner.customers_tbl 
+                    ON customers_tbl.customer_id = bookings_tbl.customer_id
+                LEFT JOIN 
+                    vtpartner.vehiclestbl 
+                    ON vehiclestbl.vehicle_id = goods_driverstbl.vehicle_id
+                WHERE bookings_tbl.is_scheduled = true
+                ORDER BY 
+                    bookings_tbl.scheduled_time ASC;
+            """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                mapped_results.append({
+                    "booking_id": str(row[0]),
+                    "customer_id": str(row[1]),
+                    "driver_id": str(row[2]),
+                    "pickup_lat": str(row[3]),
+                    "pickup_lng": str(row[4]),
+                    "destination_lat": str(row[5]),
+                    "destination_lng": str(row[6]),
+                    "distance": str(row[7]),
+                    "total_time": str(row[8]),
+                    "total_price": str(row[9]),
+                    "base_price": str(row[10]),
+                    "booking_timing": str(row[11]),
+                    "booking_date": str(row[12]),
+                    "booking_status": str(row[13]),
+                    "driver_arrival_time": str(row[14]),
+                    "otp": str(row[15]),
+                    "gst_amount": str(row[16]),
+                    "igst_amount": str(row[17]),
+                    "goods_type_id": str(row[18]),
+                    "payment_method": str(row[19]),
+                    "city_id": str(row[20]),
+                    "cancelled_reason": str(row[21]),
+                    "cancel_time": str(row[22]),
+                    "order_id": str(row[23]),
+                    "sender_name": str(row[24]),
+                    "sender_number": str(row[25]),
+                    "receiver_name": str(row[26]),
+                    "receiver_number": str(row[27]),
+                    "driver_first_name": str(row[28]) if row[28] else "Not Assigned",
+                    "goods_driver_auth_token": str(row[29]) if row[29] else "",
+                    "customer_name": str(row[30]),
+                    "customers_auth_token": str(row[31]),
+                    "pickup_address": str(row[32]),
+                    "drop_address": str(row[33]),
+                    "customer_mobile_no": str(row[34]),
+                    "driver_mobile_no": str(row[35]) if row[35] else "Not Assigned",
+                    "vehicle_id": str(row[36]) if row[36] else "",
+                    "vehicle_name": str(row[37]) if row[37] else "Not Assigned",
+                    "vehicle_image": str(row[38]) if row[38] else "",
+                    "is_scheduled": row[39],
+                    "scheduled_time": str(row[40]),
+                    "drop_locations": row[41],
+                    "drop_contacts": row[42],
+                    "multiple_drops": row[43]
+                })
+
+            return JsonResponse({"results": mapped_results}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
 def get_goods_all_ongoing_bookings_details(request):
     if request.method == "POST":
         try:
@@ -6117,7 +6245,12 @@ def get_goods_all_ongoing_bookings_details(request):
                     goods_driverstbl.mobile_no AS driver_mobile_no,
                     vehiclestbl.vehicle_id,
                     vehiclestbl.vehicle_name,
-                    vehiclestbl.image
+                    vehiclestbl.image,
+                    bookings_tbl.is_scheduled,
+                    bookings_tbl.scheduled_time,
+                    bookings_tbl.drop_locations,
+                    bookings_tbl.drop_contacts,
+                    bookings_tbl.multiple_drops
                 FROM 
                     vtpartner.bookings_tbl
                 INNER JOIN 
@@ -6174,7 +6307,12 @@ def get_goods_all_ongoing_bookings_details(request):
                     goods_driverstbl.mobile_no AS driver_mobile_no,
                     vehiclestbl.vehicle_id,
                     vehiclestbl.vehicle_name,
-                    vehiclestbl.image
+                    vehiclestbl.image,
+                    bookings_tbl.is_scheduled,
+                    bookings_tbl.scheduled_time,
+                    bookings_tbl.drop_locations,
+                    bookings_tbl.drop_contacts,
+                    bookings_tbl.multiple_drops
                 FROM 
                     vtpartner.bookings_tbl
                 INNER JOIN 
@@ -6231,7 +6369,12 @@ def get_goods_all_ongoing_bookings_details(request):
                     goods_driverstbl.mobile_no AS driver_mobile_no,
                     vehiclestbl.vehicle_id,
                     vehiclestbl.vehicle_name,
-                    vehiclestbl.image
+                    vehiclestbl.image,
+                    bookings_tbl.is_scheduled,
+                    bookings_tbl.scheduled_time,
+                    bookings_tbl.drop_locations,
+                    bookings_tbl.drop_contacts,
+                    bookings_tbl.multiple_drops
                 FROM 
                     vtpartner.bookings_tbl
                 INNER JOIN 
@@ -6297,6 +6440,11 @@ def get_goods_all_ongoing_bookings_details(request):
                     "vehicle_id": str(row[36]),
                     "vehicle_name": str(row[37]),
                     "vehicle_image": str(row[38]),
+                    "is_scheduled": row[39],
+                    "scheduled_time": str(row[40]),
+                    "drop_locations": row[41],
+                    "drop_contacts": row[42],
+                    "multiple_drops": row[43]
                 })
 
             return JsonResponse({"results": mapped_results}, status=200)
@@ -6354,7 +6502,12 @@ def get_goods_all_cancelled_bookings_details(request):
                     goods_driverstbl.mobile_no AS driver_mobile_no,
                     vehiclestbl.vehicle_id,
                     vehiclestbl.vehicle_name,
-                    vehiclestbl.image
+                    vehiclestbl.image,
+                    bookings_tbl.is_scheduled,
+                    bookings_tbl.scheduled_time,
+                    bookings_tbl.drop_locations,
+                    bookings_tbl.drop_contacts,
+                    bookings_tbl.multiple_drops
                 FROM 
                     vtpartner.bookings_tbl
                 INNER JOIN 
@@ -6411,7 +6564,12 @@ def get_goods_all_cancelled_bookings_details(request):
                     goods_driverstbl.mobile_no AS driver_mobile_no,
                     vehiclestbl.vehicle_id,
                     vehiclestbl.vehicle_name,
-                    vehiclestbl.image
+                    vehiclestbl.image,
+                    bookings_tbl.is_scheduled,
+                    bookings_tbl.scheduled_time,
+                    bookings_tbl.drop_locations,
+                    bookings_tbl.drop_contacts,
+                    bookings_tbl.multiple_drops
                 FROM 
                     vtpartner.bookings_tbl
                 INNER JOIN 
@@ -6477,6 +6635,11 @@ def get_goods_all_cancelled_bookings_details(request):
                     "vehicle_id": str(row[36]),
                     "vehicle_name": str(row[37]),
                     "vehicle_image": str(row[38]),
+                    "is_scheduled": row[39],
+                    "scheduled_time": str(row[40]),
+                    "drop_locations": row[41],
+                    "drop_contacts": row[42],
+                    "multiple_drops": row[43]
                 })
 
             return JsonResponse({"results": mapped_results}, status=200)
