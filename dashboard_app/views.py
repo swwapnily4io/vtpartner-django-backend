@@ -6129,11 +6129,8 @@ def get_goods_scheduled_bookings_details(request):
                     ON customers_tbl.customer_id = bookings_tbl.customer_id
                 LEFT JOIN 
                     vtpartner.vehiclestbl 
-                    ON vehiclestbl.vehicle_id = goods_driverstbl.vehicle_id
-                WHERE 
-                    bookings_tbl.is_scheduled = true
-                    AND bookings_tbl.booking_status != 'Cancelled'
-                    AND bookings_tbl.booking_status != 'End Trip'
+                    ON vehiclestbl.vehicle_id = bookings_tbl.goods_vehicle_id
+                WHERE bookings_tbl.is_scheduled = true
                 ORDER BY 
                     bookings_tbl.scheduled_time ASC;
             """
@@ -6174,14 +6171,14 @@ def get_goods_scheduled_bookings_details(request):
                     "sender_number": str(row[25]),
                     "receiver_name": str(row[26]),
                     "receiver_number": str(row[27]),
-                    "driver_first_name": str(row[28]) if row[28] else "Not Assigned",
+                    "driver_first_name": str(row[28]) if row[28] else "Driver Not Assigned",
                     "goods_driver_auth_token": str(row[29]) if row[29] else "",
                     "customer_name": str(row[30]),
                     "customers_auth_token": str(row[31]),
                     "pickup_address": str(row[32]),
                     "drop_address": str(row[33]),
                     "customer_mobile_no": str(row[34]),
-                    "driver_mobile_no": str(row[35]) if row[35] else "Not Assigned",
+                    "driver_mobile_no": str(row[35]) if row[35] else "Driver Not Assigned",
                     "vehicle_id": str(row[36]) if row[36] else "",
                     "vehicle_name": str(row[37]) if row[37] else "Not Assigned",
                     "vehicle_image": str(row[38]) if row[38] else "",
@@ -6199,6 +6196,7 @@ def get_goods_scheduled_bookings_details(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 @csrf_exempt
 def get_goods_all_ongoing_bookings_details(request):
     if request.method == "POST":
