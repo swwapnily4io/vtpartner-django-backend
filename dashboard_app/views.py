@@ -2350,7 +2350,8 @@ def all_sub_categories(request):
 
             # Query to get subcategories
             query = """
-                SELECT sub_cat_id, sub_cat_name, cat_id, image, epoch_time 
+                SELECT sub_cat_id, sub_cat_name, cat_id, image, epoch_time, 
+                service_base_price, penalty_charges_amount 
                 FROM vtpartner.sub_categorytbl 
                 WHERE cat_id = %s 
                 ORDER BY sub_cat_id DESC
@@ -2369,6 +2370,8 @@ def all_sub_categories(request):
                     "cat_id": row[2],
                     "image": row[3],
                     "epoch_time": row[4],
+                    "service_base_price": row[5],
+                    "penalty_charges_amount": row[6],
                 }
                 for row in result
             ]
@@ -2389,12 +2392,16 @@ def add_sub_category(request):
             category_id = data.get('category_id')
             sub_cat_name = data.get('sub_cat_name')
             image = data.get('image')
+            service_base_price = data.get('service_base_price')
+            penalty_charges_amount = data.get('penalty_charges_amount')
 
             # List of required fields
             required_fields = {
                 'category_id': category_id,
                 'sub_cat_name': sub_cat_name,
                 'image': image,
+                'service_base_price': service_base_price,
+                'penalty_charges_amount': penalty_charges_amount,
             }
 
             # Check for missing fields
@@ -2422,10 +2429,11 @@ def add_sub_category(request):
 
             # Proceed to insert the new sub-category
             query = """
-                INSERT INTO vtpartner.sub_categorytbl (sub_cat_name, cat_id, image) 
-                VALUES (%s, %s, %s)
+                INSERT INTO vtpartner.sub_categorytbl 
+                (sub_cat_name, cat_id, image, service_base_price, penalty_charges_amount) 
+                VALUES (%s, %s, %s, %s, %s)
             """
-            values = (sub_cat_name, category_id, image)
+            values = (sub_cat_name, category_id, image,service_base_price, penalty_charges_amount)
             row_count = insert_query(query, values)  # Assuming insert_query is defined
 
             # Send success response
@@ -2446,6 +2454,8 @@ def edit_sub_category(request):
             sub_cat_id = data.get('sub_cat_id')
             sub_cat_name = data.get('sub_cat_name')
             image = data.get('image')
+            service_base_price = data.get('service_base_price')
+            penalty_charges_amount = data.get('penalty_charges_amount')
 
             # List of required fields
             required_fields = {
@@ -2453,6 +2463,8 @@ def edit_sub_category(request):
                 'sub_cat_id': sub_cat_id,
                 'sub_cat_name': sub_cat_name,
                 'image': image,
+                'service_base_price': service_base_price,
+                'penalty_charges_amount': penalty_charges_amount,
             }
 
             # Check for missing fields
@@ -2480,11 +2492,16 @@ def edit_sub_category(request):
 
             # Proceed to update the sub-category
             query = """
-                UPDATE vtpartner.sub_categorytbl 
-                SET sub_cat_name = %s, cat_id = %s, image = %s, epoch_time = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)
+                 UPDATE vtpartner.sub_categorytbl 
+                SET sub_cat_name = %s, 
+                    cat_id = %s, 
+                    image = %s, 
+                    service_base_price = %s,
+                    penalty_charges_amount = %s,
+                    epoch_time = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)
                 WHERE sub_cat_id = %s
             """
-            values = (sub_cat_name, category_id, image, sub_cat_id)
+            values = (sub_cat_name, category_id, image,service_base_price,penalty_charges_amount, sub_cat_id)
             row_count = update_query(query, values)  # Assuming update_query is defined
 
             # Send success response
