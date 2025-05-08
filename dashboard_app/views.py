@@ -6315,19 +6315,26 @@ def get_goods_all_ongoing_bookings_details(request):
                     bookings_tbl.multiple_drops
                 FROM 
                     vtpartner.bookings_tbl
-                INNER JOIN 
+                LEFT JOIN 
                     vtpartner.goods_driverstbl 
                     ON goods_driverstbl.goods_driver_id = bookings_tbl.driver_id
                 INNER JOIN 
                     vtpartner.customers_tbl 
                     ON customers_tbl.customer_id = bookings_tbl.customer_id
-                INNER JOIN 
+                LEFT JOIN 
                     vtpartner.vehiclestbl 
-                    ON vehiclestbl.vehicle_id = goods_driverstbl.vehicle_id
-                
+                    ON vehiclestbl.vehicle_id = bookings_tbl.goods_vehicle_id
+                WHERE 
+                    (bookings_tbl.booking_status != 'Cancelled' 
+                    AND bookings_tbl.booking_status != 'End Trip')
+                    OR bookings_tbl.is_scheduled = true
                 ORDER BY 
+                    CASE 
+                        WHEN bookings_tbl.is_scheduled = true THEN 0
+                        ELSE 1
+                    END,
                     bookings_tbl.booking_id DESC;
-            """
+                """
             else:
                 query = """
                 SELECT 
@@ -6429,17 +6436,17 @@ def get_goods_all_ongoing_bookings_details(request):
                     "sender_number": str(row[25]),
                     "receiver_name": str(row[26]),
                     "receiver_number": str(row[27]),
-                    "driver_first_name": str(row[28]),
-                    "goods_driver_auth_token": str(row[29]),
+                    "driver_first_name": str(row[28]) if row[28] else "Driver Not Assigned",
+                    "goods_driver_auth_token": str(row[29]) if row[29] else "",
                     "customer_name": str(row[30]),
                     "customers_auth_token": str(row[31]),
                     "pickup_address": str(row[32]),
                     "drop_address": str(row[33]),
                     "customer_mobile_no": str(row[34]),
-                    "driver_mobile_no": str(row[35]),
-                    "vehicle_id": str(row[36]),
-                    "vehicle_name": str(row[37]),
-                    "vehicle_image": str(row[38]),
+                    "driver_mobile_no": str(row[35]) if row[35] else "Driver Not Assigned",
+                    "vehicle_id": str(row[36]) if row[36] else "",
+                    "vehicle_name": str(row[37]) if row[37] else "Not Assigned",
+                    "vehicle_image": str(row[38]) if row[38] else "",
                     "is_scheduled": row[39],
                     "scheduled_time": str(row[40]),
                     "drop_locations": row[41],
