@@ -1249,8 +1249,10 @@ def vehicle_prices(request):
 
             query = """
                 SELECT price_id, vehicle_city_wise_price_tbl.city_id, vehicle_city_wise_price_tbl.vehicle_id,
-                       starting_price_per_km, minimum_time, vehicle_city_wise_price_tbl.price_type_id,
-                       city_name, price_type, bg_image, time_created_at,vehicle_city_wise_price_tbl.outstation_distance
+                starting_price_per_km, minimum_time, vehicle_city_wise_price_tbl.price_type_id,
+                city_name, price_type, bg_image, time_created_at, 
+                vehicle_city_wise_price_tbl.outstation_distance,
+                vehicle_city_wise_price_tbl.base_fare
                 FROM vtpartner.available_citys_tbl
                 JOIN vtpartner.vehicle_city_wise_price_tbl ON vehicle_city_wise_price_tbl.city_id = available_citys_tbl.city_id
                 JOIN vtpartner.vehiclestbl ON vehicle_city_wise_price_tbl.vehicle_id = vehiclestbl.vehicle_id
@@ -1277,6 +1279,7 @@ def vehicle_prices(request):
                     "bg_image": row[8],
                     "time_created_at": row[9],
                     "outstation_distance": row[10],
+                    "base_fare": row[11],
                 }
                 for row in result
             ]
@@ -1329,7 +1332,8 @@ def add_vehicle_price(request):
             starting_price_km = data.get('starting_price_km')
             minimum_time = data.get('minimum_time')
             price_type_id = data.get('price_type_id')
-            outstation_distance = data.get('outstation_distance')  # New field
+            outstation_distance = data.get('outstation_distance')
+            base_fare = data.get('base_fare')
 
             # List of required fields
             required_fields = {
@@ -1383,10 +1387,10 @@ def add_vehicle_price(request):
             if is_local_price_type:
                 query = """
                     INSERT INTO vtpartner.vehicle_city_wise_price_tbl 
-                    (city_id, vehicle_id, starting_price_per_km, minimum_time, price_type_id, outstation_distance) 
-                    VALUES (%s, %s, %s, %s, %s, %s)
+                    (city_id, vehicle_id, starting_price_per_km, minimum_time, price_type_id, outstation_distance,base_fare) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
-                values = (city_id, vehicle_id, starting_price_km, minimum_time, price_type_id, outstation_distance)
+                values = (city_id, vehicle_id, starting_price_km, minimum_time, price_type_id, outstation_distance,base_fare)
             else:
                 query = """
                     INSERT INTO vtpartner.vehicle_city_wise_price_tbl 
@@ -1488,7 +1492,8 @@ def edit_vehicle_price(request):
             starting_price_km = data.get('starting_price_km')
             minimum_time = data.get('minimum_time')
             price_type_id = data.get('price_type_id')
-            outstation_distance = data.get('outstation_distance')  # New field
+            outstation_distance = data.get('outstation_distance')  
+            base_fare = data.get('base_fare')
             
             # List of required fields
             required_fields = {
@@ -1547,10 +1552,11 @@ def edit_vehicle_price(request):
                         minimum_time = %s, 
                         price_type_id = %s,
                         outstation_distance = %s,
+                        base_fare = %s,
                         time_created_at = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) 
                     WHERE price_id = %s
                 """
-                values = (city_id, vehicle_id, starting_price_km, minimum_time, price_type_id, outstation_distance, price_id)
+                values = (city_id, vehicle_id, starting_price_km, minimum_time, price_type_id, outstation_distance,base_fare, price_id)
             else:
                 query = """
                     UPDATE vtpartner.vehicle_city_wise_price_tbl 
