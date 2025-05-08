@@ -6329,10 +6329,6 @@ def get_goods_all_ongoing_bookings_details(request):
                     AND bookings_tbl.booking_status != 'End Trip')
                     OR bookings_tbl.is_scheduled = true
                 ORDER BY 
-                    CASE 
-                        WHEN bookings_tbl.is_scheduled = true THEN 0
-                        ELSE 1
-                    END,
                     bookings_tbl.booking_id DESC;
                 """
             else:
