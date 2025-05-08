@@ -6130,7 +6130,10 @@ def get_goods_scheduled_bookings_details(request):
                 LEFT JOIN 
                     vtpartner.vehiclestbl 
                     ON vehiclestbl.vehicle_id = goods_driverstbl.vehicle_id
-                WHERE bookings_tbl.is_scheduled = true
+                WHERE 
+                    bookings_tbl.is_scheduled = true
+                    AND bookings_tbl.booking_status != 'Cancelled'
+                    AND bookings_tbl.booking_status != 'End Trip'
                 ORDER BY 
                     bookings_tbl.scheduled_time ASC;
             """
@@ -6196,7 +6199,6 @@ def get_goods_scheduled_bookings_details(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
-
 @csrf_exempt
 def get_goods_all_ongoing_bookings_details(request):
     if request.method == "POST":
