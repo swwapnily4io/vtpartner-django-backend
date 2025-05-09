@@ -7068,8 +7068,8 @@ def get_goods_order_detail_with_id(request):
                     vehiclestbl.vehicle_id,
                     vehiclestbl.vehicle_name,
                     vehiclestbl.image,
-                    vehiclestbl.vehicle_plate_no,
-                    vehiclestbl.vehicle_fuel_type,
+                    goods_driverstbl.vehicle_plate_no,
+                    goods_driverstbl.vehicle_fuel_type,
                     goods_driverstbl.profile_pic
                 FROM 
                     vtpartner.orders_tbl
@@ -7166,7 +7166,6 @@ def get_goods_order_detail_with_id(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
-
 
 @csrf_exempt
 def get_goods_booking_detail_history_with_id(request):
