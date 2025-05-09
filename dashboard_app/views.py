@@ -6993,17 +6993,11 @@ def get_goods_order_detail_with_id(request):
         data = json.loads(request.body)
         order_id = data.get("order_id")
         
-        
-
-        # List of required fields
         required_fields = {
             "order_id": order_id,
-        
         }
-        # Check for missing fields
-        missing_fields = check_missing_fields(required_fields)
         
-        # If there are missing fields, return an error response
+        missing_fields = check_missing_fields(required_fields)
         if missing_fields:
             return JsonResponse(
                 {"message": f"Missing required fields: {', '.join(missing_fields)}"},
@@ -7012,71 +7006,167 @@ def get_goods_order_detail_with_id(request):
             
         try:
             query = """
-                select booking_id,orders_tbl.customer_id,orders_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,orders_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,goods_type_id,payment_method,orders_tbl.city_id,order_id,sender_name,sender_number,receiver_name,receiver_number,driver_first_name,goods_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,goods_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,goods_driverstbl.profile_pic from vtpartner.vehiclestbl,vtpartner.orders_tbl,vtpartner.goods_driverstbl,vtpartner.customers_tbl where goods_driverstbl.goods_driver_id=orders_tbl.driver_id and customers_tbl.customer_id=orders_tbl.customer_id and order_id=%s  and vehiclestbl.vehicle_id=goods_driverstbl.vehicle_id
+                SELECT 
+                    orders_tbl.booking_id,
+                    orders_tbl.customer_id,
+                    orders_tbl.driver_id,
+                    orders_tbl.pickup_lat,
+                    orders_tbl.pickup_lng,
+                    orders_tbl.destination_lat,
+                    orders_tbl.destination_lng,
+                    orders_tbl.distance,
+                    orders_tbl.time,
+                    orders_tbl.total_price,
+                    orders_tbl.base_price,
+                    orders_tbl.booking_timing,
+                    orders_tbl.booking_date,
+                    orders_tbl.booking_status,
+                    orders_tbl.driver_arrival_time,
+                    orders_tbl.otp,
+                    orders_tbl.gst_amount,
+                    orders_tbl.igst_amount,
+                    orders_tbl.goods_type_id,
+                    orders_tbl.payment_method,
+                    orders_tbl.city_id,
+                    orders_tbl.order_id,
+                    orders_tbl.sender_name,
+                    orders_tbl.sender_number,
+                    orders_tbl.receiver_name,
+                    orders_tbl.receiver_number,
+                    orders_tbl.pickup_address,
+                    orders_tbl.drop_address,
+                    orders_tbl.order_completed_time,
+                    orders_tbl.order_completed,
+                    orders_tbl.payment_id,
+                    orders_tbl.ratings,
+                    orders_tbl.rating_description,
+                    orders_tbl.pickup_time,
+                    orders_tbl.drop_time,
+                    orders_tbl.coupon_applied,
+                    orders_tbl.coupon_id,
+                    orders_tbl.coupon_amount,
+                    orders_tbl.before_coupon_amount,
+                    orders_tbl.is_scheduled,
+                    orders_tbl.scheduled_time,
+                    orders_tbl.drop_locations,
+                    orders_tbl.drop_contacts,
+                    orders_tbl.multiple_drops,
+                    orders_tbl.body_type,
+                    orders_tbl.retry_count,
+                    orders_tbl.last_retry_time,
+                    orders_tbl.error_message,
+                    orders_tbl.booking_timezone,
+                    orders_tbl.goods_vehicle_id,
+                    orders_tbl.vehicle_price_type,
+                    orders_tbl.vehicle_radius_km,
+                    goods_driverstbl.driver_first_name,
+                    goods_driverstbl.authtoken AS driver_authtoken,
+                    customers_tbl.customer_name,
+                    customers_tbl.authtoken AS customer_authtoken,
+                    customers_tbl.mobile_no AS customer_mobile_no,
+                    goods_driverstbl.mobile_no AS driver_mobile_no,
+                    vehiclestbl.vehicle_id,
+                    vehiclestbl.vehicle_name,
+                    vehiclestbl.image,
+                    vehiclestbl.vehicle_plate_no,
+                    vehiclestbl.vehicle_fuel_type,
+                    goods_driverstbl.profile_pic
+                FROM 
+                    vtpartner.orders_tbl
+                LEFT JOIN 
+                    vtpartner.goods_driverstbl 
+                    ON goods_driverstbl.goods_driver_id = orders_tbl.driver_id
+                INNER JOIN 
+                    vtpartner.customers_tbl 
+                    ON customers_tbl.customer_id = orders_tbl.customer_id
+                LEFT JOIN 
+                    vtpartner.vehiclestbl 
+                    ON vehiclestbl.vehicle_id = orders_tbl.goods_vehicle_id
+                WHERE 
+                    orders_tbl.order_id = %s
             """
-            result = select_query(query,[order_id])  # Assuming select_query is defined elsewhere
+            result = select_query(query, [order_id])
 
-            if result == []:
+            if not result:
                 return JsonResponse({"message": "No Data Found"}, status=404)
 
-            # Map the results to a list of dictionaries
             mapped_results = []
             for row in result:
-                # Map columns to their values
                 mapped_results.append({
-                    "booking_id": row[0],
-                    "customer_id": row[1],
-                    "driver_id": row[2],
-                    "pickup_lat": row[3],
-                    "pickup_lng": row[4],
-                    "destination_lat": row[5],
-                    "destination_lng": row[6],
-                    "distance": row[7],
-                    "total_time": row[8],
-                    "total_price": row[9],
-                    "base_price": row[10],
-                    "booking_timing": row[11],
-                    "booking_date": row[12],
-                    "booking_status": row[13],
-                    "driver_arrival_time": row[14],
-                    "otp": row[15],
-                    "gst_amount": row[16],
-                    "igst_amount": row[17],
-                    "goods_type_id": row[18],
-                    "payment_method": row[19],
-                    "city_id": row[20],
-                    # "cancelled_reason": row[21],
-                    # "cancel_time": row[22],
-                    "order_id": row[21],
-                    "sender_name": row[22],
-                    "sender_number": row[23],
-                    "receiver_name": row[24],
-                    "receiver_number": row[25],
-                    "driver_first_name": row[26],
-                    "goods_driver_auth_token": row[27],
-                    "customer_name": row[28],
-                    "customers_auth_token": row[29],
-                    "pickup_address": row[30],
-                    "drop_address": row[31],
-                    "customer_mobile_no": row[32],
-                    "driver_mobile_no": row[33],
-                    "vehicle_id": str(row[34]),
-                    "vehicle_name": str(row[35]),
-                    "vehicle_image": str(row[36]),
-                    "vehicle_plate_no": str(row[37]),
-                    "vehicle_fuel_type": str(row[38]),
-                    "profile_pic": str(row[39]),
-
+                    "booking_id": str(row[0]),
+                    "customer_id": str(row[1]),
+                    "driver_id": str(row[2]),
+                    "pickup_lat": str(row[3]),
+                    "pickup_lng": str(row[4]),
+                    "destination_lat": str(row[5]),
+                    "destination_lng": str(row[6]),
+                    "distance": str(row[7]),
+                    "total_time": str(row[8]),
+                    "total_price": str(row[9]),
+                    "base_price": str(row[10]),
+                    "booking_timing": str(row[11]),
+                    "booking_date": str(row[12]),
+                    "booking_status": str(row[13]),
+                    "driver_arrival_time": str(row[14]),
+                    "otp": str(row[15]),
+                    "gst_amount": str(row[16]),
+                    "igst_amount": str(row[17]),
+                    "goods_type_id": str(row[18]),
+                    "payment_method": str(row[19]),
+                    "city_id": str(row[20]),
+                    "order_id": str(row[21]),
+                    "sender_name": str(row[22]),
+                    "sender_number": str(row[23]),
+                    "receiver_name": str(row[24]),
+                    "receiver_number": str(row[25]),
+                    "pickup_address": str(row[26]),
+                    "drop_address": str(row[27]),
+                    "order_completed_time": str(row[28]),
+                    "order_completed": str(row[29]),
+                    "payment_id": str(row[30]),
+                    "ratings": str(row[31]),
+                    "rating_description": str(row[32]),
+                    "pickup_time": str(row[33]),
+                    "drop_time": str(row[34]),
+                    "coupon_applied": str(row[35]),
+                    "coupon_id": str(row[36]),
+                    "coupon_amount": str(row[37]),
+                    "before_coupon_amount": str(row[38]),
+                    "is_scheduled": row[39],
+                    "scheduled_time": str(row[40]),
+                    "drop_locations": row[41],
+                    "drop_contacts": row[42],
+                    "multiple_drops": row[43],
+                    "body_type": str(row[44]),
+                    "retry_count": str(row[45]),
+                    "last_retry_time": str(row[46]),
+                    "error_message": str(row[47]),
+                    "booking_timezone": str(row[48]),
+                    "goods_vehicle_id": str(row[49]),
+                    "vehicle_price_type": str(row[50]),
+                    "vehicle_radius_km": str(row[51]),
+                    "driver_first_name": str(row[52]) if row[52] else "Driver Not Assigned",
+                    "goods_driver_auth_token": str(row[53]) if row[53] else "",
+                    "customer_name": str(row[54]),
+                    "customers_auth_token": str(row[55]),
+                    "customer_mobile_no": str(row[56]),
+                    "driver_mobile_no": str(row[57]) if row[57] else "Driver Not Assigned",
+                    "vehicle_id": str(row[58]) if row[58] else "",
+                    "vehicle_name": str(row[59]) if row[59] else "Not Assigned",
+                    "vehicle_image": str(row[60]) if row[60] else "",
+                    "vehicle_plate_no": str(row[61]) if row[61] else "Not Assigned",
+                    "vehicle_fuel_type": str(row[62]) if row[62] else "Not Assigned",
+                    "profile_pic": str(row[63]) if row[63] else ""
                 })
 
             return JsonResponse({"results": mapped_results}, status=200)
-
 
         except Exception as err:
             print("Error executing query:", err)
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 
 @csrf_exempt
 def get_goods_booking_detail_history_with_id(request):
