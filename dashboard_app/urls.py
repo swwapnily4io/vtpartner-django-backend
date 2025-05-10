@@ -76,6 +76,14 @@ urlpatterns = [
     
     #Reports
     path('get_orders_report',views.get_orders_report,name='get_orders_report'),
+    #Reports
+    path('get_cab_orders_report',views.get_cab_orders_report,name='get_cab_orders_report'),
+    #Reports
+    path('get_other_driver_orders_report',views.get_other_driver_orders_report,name='get_other_driver_orders_report'),
+    #Reports
+    path('get_jcb_crane_orders_report',views.get_jcb_crane_orders_report,name='get_jcb_crane_orders_report'),
+    #Reports
+    path('get_handyman_orders_report',views.get_handyman_orders_report,name='get_handyman_orders_report'),
     
     #Admin Login
     path('all_sub_categories',views.all_sub_categories,name='all_sub_categories'),
