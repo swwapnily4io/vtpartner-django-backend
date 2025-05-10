@@ -9308,6 +9308,15 @@ def update_booking_status_driver(request):
                     elif booking_status == "Otp Verified":
                         body = "Your OTP is Verified Successfully!"
                         title = "OTP Verification"
+                    elif booking_status == "Reached Drop Location 1":
+                        body = "Your package has been delivered at drop location 1"
+                        title = "Reached Drop Location 1"
+                    elif booking_status == "Reached Drop Location 2":
+                        body = "Your package has been delivered at drop location 2"
+                        title = "Reached Drop Location 2"
+                    elif booking_status == "Reached Drop Location 3":
+                        body = "Your package has been delivered at drop location 3"
+                        title = "Reached Drop Location 3"
                     elif booking_status == "Start Trip":
                         body = "Trip has been started from your pickup location"
                         title = "Trip Started"
