@@ -6920,89 +6920,10 @@ def get_goods_booking_detail_with_id(request):
                     status=400
                 )
                 
-            # query = """
-            #     select booking_id,bookings_tbl.customer_id,bookings_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,bookings_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,goods_type_id,payment_method,bookings_tbl.city_id,cancelled_reason,cancel_time,order_id,sender_name,sender_number,receiver_name,receiver_number,driver_first_name,goods_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,goods_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,goods_driverstbl.profile_pic from vtpartner.vehiclestbl,vtpartner.bookings_tbl,vtpartner.goods_driverstbl,vtpartner.customers_tbl where goods_driverstbl.goods_driver_id=bookings_tbl.driver_id and customers_tbl.customer_id=bookings_tbl.customer_id and booking_id=%s  and vehiclestbl.vehicle_id=goods_driverstbl.vehicle_id
-            # """
-            
             query = """
-                SELECT 
-                    bookings_tbl.booking_id,
-                    bookings_tbl.customer_id,
-                    bookings_tbl.driver_id,
-                    bookings_tbl.pickup_lat,
-                    bookings_tbl.pickup_lng,
-                    bookings_tbl.destination_lat,
-                    bookings_tbl.destination_lng,
-                    bookings_tbl.distance,
-                    bookings_tbl.time,
-                    bookings_tbl.total_price,
-                    bookings_tbl.base_price,
-                    bookings_tbl.booking_timing,
-                    bookings_tbl.booking_date,
-                    bookings_tbl.booking_status,
-                    bookings_tbl.driver_arrival_time,
-                    bookings_tbl.otp,
-                    bookings_tbl.gst_amount,
-                    bookings_tbl.igst_amount,
-                    bookings_tbl.goods_type_id,
-                    bookings_tbl.payment_method,
-                    bookings_tbl.city_id,
-                    bookings_tbl.cancelled_reason,
-                    bookings_tbl.cancel_time,
-                    bookings_tbl.order_id,
-                    bookings_tbl.sender_name,
-                    bookings_tbl.sender_number,
-                    bookings_tbl.receiver_name,
-                    bookings_tbl.receiver_number,
-                    bookings_tbl.pickup_address,
-                    bookings_tbl.drop_address,
-                    bookings_tbl.booking_completed,
-                    bookings_tbl.payment_id,
-                    bookings_tbl.pickup_time,
-                    bookings_tbl.drop_time,
-                    bookings_tbl.coupon_applied,
-                    bookings_tbl.coupon_id,
-                    bookings_tbl.coupon_amount,
-                    bookings_tbl.before_coupon_amount,
-                    bookings_tbl.is_scheduled,
-                    bookings_tbl.scheduled_time,
-                    bookings_tbl.drop_locations,
-                    bookings_tbl.drop_contacts,
-                    bookings_tbl.multiple_drops,
-                    bookings_tbl.body_type,
-                    bookings_tbl.retry_count,
-                    bookings_tbl.last_retry_time,
-                    bookings_tbl.error_message,
-                    bookings_tbl.booking_timezone,
-                    bookings_tbl.goods_vehicle_id,
-                    bookings_tbl.vehicle_price_type,
-                    bookings_tbl.vehicle_radius_km,
-                    goods_driverstbl.driver_first_name,
-                    goods_driverstbl.authtoken AS driver_authtoken,
-                    customers_tbl.customer_name,
-                    customers_tbl.authtoken AS customer_authtoken,
-                    customers_tbl.mobile_no AS customer_mobile_no,
-                    goods_driverstbl.mobile_no AS driver_mobile_no,
-                    vehiclestbl.vehicle_id,
-                    vehiclestbl.vehicle_name,
-                    vehiclestbl.image,
-                    goods_driverstbl.vehicle_plate_no,
-                    goods_driverstbl.vehicle_fuel_type,
-                    goods_driverstbl.profile_pic
-                FROM 
-                    vtpartner.bookings_tbl
-                LEFT JOIN 
-                    vtpartner.goods_driverstbl 
-                    ON goods_driverstbl.goods_driver_id = bookings_tbl.driver_id
-                INNER JOIN 
-                    vtpartner.customers_tbl 
-                    ON customers_tbl.customer_id = bookings_tbl.customer_id
-                LEFT JOIN 
-                    vtpartner.vehiclestbl 
-                    ON vehiclestbl.vehicle_id = bookings_tbl.goods_vehicle_id
-                WHERE 
-                    bookings_tbl.booking_id = %s
+                select booking_id,bookings_tbl.customer_id,bookings_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,bookings_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,goods_type_id,payment_method,bookings_tbl.city_id,cancelled_reason,cancel_time,order_id,sender_name,sender_number,receiver_name,receiver_number,driver_first_name,goods_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,goods_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,goods_driverstbl.profile_pic from vtpartner.vehiclestbl,vtpartner.bookings_tbl,vtpartner.goods_driverstbl,vtpartner.customers_tbl where goods_driverstbl.goods_driver_id=bookings_tbl.driver_id and customers_tbl.customer_id=bookings_tbl.customer_id and booking_id=%s  and vehiclestbl.vehicle_id=goods_driverstbl.vehicle_id
             """
+
             result = select_query(query,[booking_id])  # Assuming select_query returns a list of tuples
 
             if not result:
@@ -7011,71 +6932,53 @@ def get_goods_booking_detail_with_id(request):
             # Map the results to a list of dictionaries
             mapped_results = []
             for row in result:
+                # Map columns to their values
                 mapped_results.append({
-                    "booking_id": str(row[0]),
-                    "customer_id": str(row[1]),
-                    "driver_id": str(row[2]),
-                    "pickup_lat": str(row[3]),
-                    "pickup_lng": str(row[4]),
-                    "destination_lat": str(row[5]),
-                    "destination_lng": str(row[6]),
-                    "distance": str(row[7]),
-                    "time": str(row[8]),
-                    "total_price": str(row[9]),
-                    "base_price": str(row[10]),
-                    "booking_timing": str(row[11]),
-                    "booking_date": str(row[12]),
-                    "booking_status": str(row[13]),
-                    "driver_arrival_time": str(row[14]),
-                    "otp": str(row[15]),
-                    "gst_amount": str(row[16]),
-                    "igst_amount": str(row[17]),
-                    "goods_type_id": str(row[18]),
-                    "payment_method": str(row[19]),
-                    "city_id": str(row[20]),
-                    "cancelled_reason": str(row[21]),
-                    "cancel_time": str(row[22]),
-                    "order_id": str(row[23]),
-                    "sender_name": str(row[24]),
-                    "sender_number": str(row[25]),
-                    "receiver_name": str(row[26]),
-                    "receiver_number": str(row[27]),
-                    "pickup_address": str(row[28]),
-                    "drop_address": str(row[29]),
-                    "booking_completed": str(row[30]),
-                    "payment_id": str(row[31]),
-                    "pickup_time": str(row[32]),
-                    "drop_time": str(row[33]),
-                    "coupon_applied": str(row[34]),
-                    "coupon_id": str(row[35]),
-                    "coupon_amount": str(row[36]),
-                    "before_coupon_amount": str(row[37]),
-                    "is_scheduled": row[38],
-                    "scheduled_time": str(row[39]),
-                    "drop_locations": row[40],
-                    "drop_contacts": row[41],
-                    "multiple_drops": row[42],
-                    "body_type": str(row[43]),
-                    "retry_count": str(row[44]),
-                    "last_retry_time": str(row[45]),
-                    "error_message": str(row[46]),
-                    "booking_timezone": str(row[47]),
-                    "goods_vehicle_id": str(row[48]),
-                    "vehicle_price_type": str(row[49]),
-                    "vehicle_radius_km": str(row[50]),
-                    "driver_first_name": str(row[51]) if row[51] else "Driver Not Assigned",
-                    "goods_driver_auth_token": str(row[52]) if row[52] else "",
-                    "customer_name": str(row[53]),
-                    "customers_auth_token": str(row[54]),
-                    "customer_mobile_no": str(row[55]),
-                    "driver_mobile_no": str(row[56]) if row[56] else "Driver Not Assigned",
-                    "vehicle_id": str(row[57]) if row[57] else "",
-                    "vehicle_name": str(row[58]) if row[58] else "Not Assigned",
-                    "vehicle_image": str(row[59]) if row[59] else "",
-                    "vehicle_plate_no": str(row[60]) if row[60] else "Not Assigned",
-                    "vehicle_fuel_type": str(row[61]) if row[61] else "Not Assigned",
-                    "profile_pic": str(row[62]) if row[62] else ""
+                    "booking_id": row[0],
+                    "customer_id": row[1],
+                    "driver_id": row[2],
+                    "pickup_lat": row[3],
+                    "pickup_lng": row[4],
+                    "destination_lat": row[5],
+                    "destination_lng": row[6],
+                    "distance": row[7],
+                    "total_time": row[8],
+                    "total_price": row[9],
+                    "base_price": row[10],
+                    "booking_timing": row[11],
+                    "booking_date": row[12],
+                    "booking_status": row[13],
+                    "driver_arrival_time": row[14],
+                    "otp": row[15],
+                    "gst_amount": row[16],
+                    "igst_amount": row[17],
+                    "goods_type_id": row[18],
+                    "payment_method": row[19],
+                    "city_id": row[20],
+                    "cancelled_reason": row[21],
+                    "cancel_time": row[22],
+                    "order_id": row[23],
+                    "sender_name": row[24],
+                    "sender_number": row[25],
+                    "receiver_name": row[26],
+                    "receiver_number": row[27],
+                    "driver_first_name": row[28],
+                    "goods_driver_auth_token": row[29],
+                    "customer_name": row[30],
+                    "customers_auth_token": row[31],
+                    "pickup_address": row[32],
+                    "drop_address": row[33],
+                    "customer_mobile_no": row[34],
+                    "driver_mobile_no": row[35],
+                    "vehicle_id": str(row[36]),
+                    "vehicle_name": str(row[37]),
+                    "vehicle_image": str(row[38]),
+                    "vehicle_plate_no": str(row[39]),
+                    "vehicle_fuel_type": str(row[40]),
+                    "profile_pic": str(row[41]),
+
                 })
+
             return JsonResponse({"results": mapped_results}, status=200)
 
         except Exception as err:
