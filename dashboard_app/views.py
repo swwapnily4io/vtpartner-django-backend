@@ -3071,7 +3071,7 @@ def all_other_services(request):
                 }, status=400)
 
             query = """
-                SELECT service_id, service_name, sub_cat_id, service_image, time_updated 
+                SELECT service_id, service_name, sub_cat_id, service_image, time_updated,service_base_price 
                 FROM vtpartner.other_servicestbl 
                 WHERE sub_cat_id = %s 
                 ORDER BY service_id DESC  -- Changed to order by service_id for better clarity
@@ -3090,6 +3090,7 @@ def all_other_services(request):
                     "sub_cat_id": row[2],
                     "service_image": row[3],
                     "time_updated": row[4],
+                    "service_base_price": row[5],
                 }
                 for row in result
             ]
@@ -3110,6 +3111,7 @@ def add_other_service(request):
             service_name = data.get('service_name')
             sub_cat_id = data.get('sub_cat_id')
             service_image = data.get('service_image')
+            service_base_price = data.get('service_base_price')
 
             # List of required fields
             required_fields = {
@@ -3144,10 +3146,10 @@ def add_other_service(request):
 
             # If service name is not duplicate, proceed to insert
             query = """
-                INSERT INTO vtpartner.other_servicestbl (service_name, sub_cat_id, service_image) 
-                VALUES (%s, %s, %s)
+                INSERT INTO vtpartner.other_servicestbl (service_name, sub_cat_id, service_image,service_base_price) 
+                VALUES (%s, %s, %s,%s)
             """
-            values = (service_name, sub_cat_id, service_image)
+            values = (service_name, sub_cat_id, service_image,service_base_price)
             row_count = insert_query(query, values)  # Assuming insert_query is defined
 
             # Send success response
@@ -3168,6 +3170,7 @@ def edit_other_service(request):
             service_name = data.get('service_name')
             sub_cat_id = data.get('sub_cat_id')
             service_image = data.get('service_image')
+            service_base_price = data.get('service_base_price')
 
             # List of required fields
             required_fields = {
@@ -3204,10 +3207,10 @@ def edit_other_service(request):
             # If service name is not duplicate, proceed to update
             query = """
                 UPDATE vtpartner.other_servicestbl 
-                SET service_name = %s, sub_cat_id = %s, service_image = %s, time_updated = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) 
+                SET service_name = %s, sub_cat_id = %s, service_image = %s, time_updated = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP),service_base_price = %s 
                 WHERE service_id = %s
             """
-            values = (service_name, sub_cat_id, service_image, service_id)
+            values = (service_name, sub_cat_id, service_image, service_base_price,service_id)
             row_count = update_query(query, values)  # Assuming update_query is defined
 
             # Send success response
