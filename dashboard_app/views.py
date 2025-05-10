@@ -1731,7 +1731,17 @@ def get_peak_hour_prices(request):
             city_id = data.get('city_id')
 
             query = """
-                SELECT p.*, c.city_name, c.bg_image
+                SELECT 
+                    p.peak_price_id,
+                    p.city_id,
+                    p.vehicle_id,
+                    p.price_per_km,
+                    p.status,
+                    p.time_created_at,
+                    p.start_time,
+                    p.end_time,
+                    c.city_name,
+                    c.bg_image
                 FROM vtpartner.vehicle_peak_hours_price_tbl p
                 JOIN vtpartner.available_citys_tbl c ON p.city_id = c.city_id
                 WHERE p.vehicle_id = %s
@@ -1748,10 +1758,10 @@ def get_peak_hour_prices(request):
                     'city_id': row[1],
                     'vehicle_id': row[2],
                     'price_per_km': float(row[3]),
-                    'start_time': row[6],  # Changed index to match table structure
-                    'end_time': row[7],    # Changed index to match table structure
                     'status': row[4],
                     'time_created_at': float(row[5]),
+                    'start_time': row[6],
+                    'end_time': row[7],
                     'city_name': row[8],
                     'bg_image': row[9]
                 })
