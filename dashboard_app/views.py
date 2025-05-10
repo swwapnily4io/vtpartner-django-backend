@@ -2034,7 +2034,8 @@ def get_orders_report(request):
                     receiver_number, driver_first_name, goods_driverstbl.authtoken,
                     customer_name, customers_tbl.authtoken, pickup_address,
                     drop_address, customers_tbl.mobile_no, goods_driverstbl.mobile_no,
-                    vehiclestbl.vehicle_id, vehiclestbl.vehicle_name, vehiclestbl.image 
+                    vehiclestbl.vehicle_id, vehiclestbl.vehicle_name, vehiclestbl.image,
+                    orders_tbl.drop_locations, orders_tbl.drop_contacts, orders_tbl.multiple_drops
                 FROM vtpartner.vehiclestbl, vtpartner.orders_tbl,
                      vtpartner.goods_driverstbl, vtpartner.customers_tbl 
                 WHERE goods_driverstbl.goods_driver_id = orders_tbl.driver_id 
@@ -2090,6 +2091,9 @@ def get_orders_report(request):
                     "customer_mobile_no": str(row[32]),
                     "driver_mobile_no": str(row[33]),
                     "vehicle_name": str(row[35]),
+                    "drop_locations": row[37],  # Added drop_locations
+                    "drop_contacts": row[38],   # Added drop_contacts
+                    "multiple_drops": row[39]   # Added multiple_drops
                 })
 
             return JsonResponse({
@@ -2103,7 +2107,6 @@ def get_orders_report(request):
             return JsonResponse({"message": str(err)}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
-
 @csrf_exempt
 def add_coupon(request):
     if request.method == "POST":
