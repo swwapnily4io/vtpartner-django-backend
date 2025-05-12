@@ -397,7 +397,7 @@ def process_scheduled_bookings_generic(
     expired_bookings = select_query(expire_query, [no_driver_status])
     if expired_bookings:
         #sending notification to customer about the booking expired
-        
+        send_expired_booking_notifications(expired_bookings, table_name)
         print(f"Expired {len(expired_bookings)} bookings for {table_name}")
 
 #finding the customer and sending notification
