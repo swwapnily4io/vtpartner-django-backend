@@ -451,15 +451,15 @@ def send_expired_booking_notifications(expired_bookings, table_name):
             }
 
             # Customize message based on booking type
-            if table_name == "bookings_tbl":
+            if table_name == "vtpartner.bookings_tbl":
                 service_type = "Goods"
-            elif table_name == "cab_bookings_tbl":
+            elif table_name == "vtpartner.cab_bookings_tbl":
                 service_type = "Cab"
-            elif table_name == "jcb_crane_bookings_tbl":
+            elif table_name == "vtpartner.jcb_crane_bookings_tbl":
                 service_type = "JCB Crane"
-            elif table_name == "other_driver_bookings_tbl":
+            elif table_name == "vtpartner.other_driver_bookings_tbl":
                 service_type = "Driver"
-            elif table_name == "handyman_bookings_tbl":
+            elif table_name == "vtpartner.handyman_bookings_tbl":
                 service_type = "Handyman"
             else:
                 service_type = "Service"
