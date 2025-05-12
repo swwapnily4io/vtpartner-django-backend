@@ -465,7 +465,7 @@ def send_expired_booking_notifications(expired_bookings, table_name):
                 service_type = "Service"
 
             notification_title = f"{service_type} Booking Expired"
-            notification_message = f"Sorry, we couldn't find a {service_type.lower()} for your scheduled booking. Please try booking again."
+            notification_message = f"Sorry, we couldn't find a {service_type.lower()} agent for your Scheduled Booking ID [{str(booking_id[0])}]. Please try booking again."
 
             # Send notification
             sendFMCMsg(
