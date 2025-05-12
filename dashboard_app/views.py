@@ -303,20 +303,19 @@ def send_status_update_notification(driver_id, status, reason, driver_tbl_name, 
         # Prepare notification data
         notification_title = "Status Update"
         
-        # Format notification message
-        if reason and reason != "None" and reason != "(None,)":
-            notification_message = f"Your status has been updated to {status_text} - {reason}"
-        else:
-            notification_message = f"Your status has been updated to {status_text}"
-            
-        # Clean up driver_id if it's a tuple
-        driver_id = driver_id[0] if isinstance(driver_id, tuple) else driver_id
-        
         # Clean up reason if it's a tuple or None
         if isinstance(reason, tuple):
             reason = reason[0]
-        if reason == "None" or reason == "(None,)":
+        if reason in [None, "None", "(None,)", ""]:
             reason = ""
+            
+        # Format notification message
+        notification_message = f"Your status has been updated to {status_text}"
+        if reason:
+            notification_message += f" - {reason}"
+            
+        # Clean up driver_id if it's a tuple
+        driver_id = driver_id[0] if isinstance(driver_id, tuple) else driver_id
             
         fcm_data = {
             "intent": "status_update",
@@ -341,6 +340,7 @@ def send_status_update_notification(driver_id, status, reason, driver_tbl_name, 
         
     except Exception as e:
         print(f"Error sending status update notification: {str(e)}")
+        
 # Utility function to check for missing fields
 def check_missing_fields(fields):
     missing_fields = [field for field, value in fields.items() if not value]
