@@ -324,7 +324,7 @@ SERVER_TIMEZONE = pytz.UTC  # Server runs on UTC
 
 
 LOCAL_TIMEZONE = pytz.timezone('Asia/Kolkata')
-RETRY_LIMIT = 1
+RETRY_LIMIT = 3
 
 def get_current_local_time():
     return datetime.now(pytz.UTC).astimezone(LOCAL_TIMEZONE)
@@ -444,7 +444,7 @@ def send_expired_booking_notifications(expired_bookings, table_name):
             # Prepare notification data
             fcm_data = {
                 "booking_id": str(booking_id[0]),
-                "type": "booking_expired",
+                "intent": "booking_expired",
                 "table_name": table_name,
                 "pickup_address": pickup_address,
                 "drop_address": drop_address
