@@ -14588,7 +14588,7 @@ def get_cab_scheduled_bookings_details(request):
                     vehiclestbl.image
                 FROM 
                     vtpartner.cab_bookings_tbl bookings_tbl
-                INNER JOIN 
+                LEFT JOIN 
                     vtpartner.cab_driverstbl 
                     ON cab_driverstbl.cab_driver_id = bookings_tbl.driver_id
                 INNER JOIN 
