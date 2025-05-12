@@ -28,8 +28,293 @@ from django.conf import settings
 import boto3
 from botocore.exceptions import ClientError
 import re
+import os
+from dotenv import load_dotenv
+from google.oauth2 import service_account
+from google.auth.transport.requests import Request
+
 
 from PIL import Image  # Pillow library for image processing
+
+def get_agent_app_firebase_access_token_internal():
+    print("agent_app_token_fetched")
+    try:
+        # Create a service account credential dictionary
+        # load_dotenv('/root/.env_vtpartner')
+        load_dotenv('/root/.env_vtpartner_agent')
+        credentials_dict = {
+            "type": "service_account",
+            "project_id": os.getenv('FIREBASE_PROJECT_ID'),
+            "private_key_id": os.getenv('FIREBASE_PRIVATE_KEY_ID'),
+            "private_key": os.getenv('FIREBASE_PRIVATE_KEY'),
+            "client_email": os.getenv('FIREBASE_CLIENT_EMAIL'),
+            "client_id": os.getenv('FIREBASE_CLIENT_ID'),
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{os.getenv('FIREBASE_CLIENT_EMAIL')}",
+             "universe_domain": "googleapis.com"
+        }
+
+        credentials = service_account.Credentials.from_service_account_info(
+            credentials_dict,
+            scopes=['https://www.googleapis.com/auth/firebase.messaging']
+        )
+        
+        if not credentials.valid:
+            credentials.refresh(Request())
+            
+        return credentials.token
+
+    except Exception as e:
+        print(f"Error getting Firebase access token: {str(e)}")
+        return str(e)
+        
+
+def get_customer_firebase_access_token_internal():
+    """
+    Get Firebase access token for customer app.
+    Returns:
+        str: The access token if successful, None if failed
+    """
+    try:
+        # Load environment variables
+        load_dotenv('/root/.env_vtpartner_customer')
+        
+        # Get required credentials
+        project_id = os.getenv('CUSTOMER_FIREBASE_PROJECT_ID')
+        private_key = os.getenv('CUSTOMER_FIREBASE_PRIVATE_KEY')
+        client_email = os.getenv('CUSTOMER_FIREBASE_CLIENT_EMAIL')
+        
+        # Validate required credentials
+        if not all([project_id, private_key, client_email]):
+            print("Missing required environment variables for Firebase credentials")
+            return None
+
+        # Create credentials dictionary
+        credentials_dict = {
+            "type": "service_account",
+            "project_id": project_id,
+            "private_key_id": os.getenv('CUSTOMER_FIREBASE_PRIVATE_KEY_ID'),
+            "private_key": private_key.replace('\\n', '\n'),
+            "client_email": client_email,
+            "client_id": os.getenv('CUSTOMER_FIREBASE_CLIENT_ID'),
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{client_email}"
+        }
+
+        # Create credentials object
+        credentials = service_account.Credentials.from_service_account_info(
+            credentials_dict,
+            scopes=['https://www.googleapis.com/auth/firebase.messaging']
+        )
+        
+        # Refresh token if needed
+        if not credentials.valid:
+            credentials.refresh(Request())
+            
+        return credentials.token
+
+    except Exception as e:
+        print(f"Error getting Customer App Firebase access token: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        return None
+
+def sendFMCMsg(deviceToken, msg, title, data, serverToken, app_type):
+    """
+    Send FCM notification to a specific device
+    
+    Args:
+        deviceToken (str): The device token to send notification to
+        msg (str): Notification message
+        title (str): Notification title
+        data (dict): Additional data to send with notification
+        serverToken (str): Server token for authentication
+        app_type (str): Type of app ("Agent" or "User")
+    """
+    try:
+        # Clean the device token
+        deviceToken = deviceToken.replace('__colon__', ':')
+        print(f"deviceToken::{deviceToken}")
+        print(f"serverKey::{serverToken}")
+        
+        # Validate the device token
+        if not deviceToken:
+            print("Invalid device token")
+            return
+
+        
+
+        # Set up headers with the access token
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {serverToken}',
+        }
+
+        # Update the data dictionary with title and body
+        data.update({
+            "title": title,
+            "body": msg            
+        })
+        # Prepare notification payload
+        if app_type == "Agent":
+            payload = {
+                "message": {
+                    "token": deviceToken,
+                    # "notification": {
+                    #     "title": title,
+                    #     "body": msg
+                    # },
+                    "data": data,
+                    # "android": {
+                    #     "priority": "high",
+                    #     "notification": {
+                    #         "sound": "default",
+                    #         "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                    #     }
+                    # },
+                    # "apns": {
+                    #     "payload": {
+                    #         "aps": {
+                    #             "sound": "default",
+                    #             "badge": 1
+                    #         }
+                    #     }
+                    # }
+                }
+            }
+        else:
+            payload = {
+            "message": {
+                "token": deviceToken,
+                # "notification": {
+                #     "title": title,
+                #     "body": msg
+                # },
+                "data": data,
+                # "android": {
+                #     "priority": "high",
+                #     "notification": {
+                #         "sound": "default",
+                #         "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                #     }
+                # },
+                # "apns": {
+                #     "payload": {
+                #         "aps": {
+                #             "sound": "default",
+                #             "badge": 1
+                #         }
+                #     }
+                # }
+                }
+            }
+        
+        
+        print("fcm payload::",payload)
+
+        # Determine the correct FCM endpoint based on app type
+        if app_type == "Agent":
+            project_id = "vt-partner-agent-app"
+        else:    
+            project_id = "vt-partner-8317b"
+            
+        url = f"https://fcm.googleapis.com/v1/projects/{project_id}/messages:send"
+
+        # Send the notification
+        try:
+            response = requests.post(
+                url, 
+                headers=headers, 
+                data=json.dumps(payload),
+                timeout=10  # Add timeout to prevent hanging
+            )
+            
+            # Log the response
+            print("FCM Response:")
+            print(response.json())
+            print("Status Code:", response.status_code)
+            
+            # Handle different response status codes
+            if response.status_code == 200:
+                print("Notification sent successfully")
+                return True
+            elif response.status_code == 401:
+                print("Authentication error. Check your credentials.")
+            elif response.status_code == 404:
+                print("Invalid FCM endpoint")
+            else:
+                print(f"FCM error: {response.status_code}")
+                
+            return False
+
+        except requests.exceptions.Timeout:
+            print("Request timed out while sending notification")
+        except requests.exceptions.RequestException as e:
+            print(f"Error sending FCM notification: {e}")
+        
+    except Exception as e:
+        print(f"Unexpected error in sendFMCMsg: {e}")
+        return False
+   
+def send_status_update_notification(driver_id, status, reason, driver_tbl_name):
+    """
+    Send FCM notification to agent about their status change
+    
+    Args:
+        driver_id: ID of the driver
+        status: New status
+        reason: Reason for status change (optional)
+        driver_tbl_name: Type of driver (cab, goods, handyman, etc.)
+    """
+    try:
+        # Get agent's auth token based on driver type
+        auth_token_query = f"""
+            SELECT authtoken FROM {driver_tbl_name} 
+            WHERE {driver_id} = %s
+        """
+        result = select_query(auth_token_query, [driver_id])
+        
+        if not result or not result[0][0]:
+            print(f"No auth token found for {driver_tbl_name} driver {driver_id}")
+            return
+            
+        agent_auth_token = result[0][0]
+        
+        # Get server access token
+        server_access_token = get_agent_app_firebase_access_token_internal()
+        if not server_access_token:
+            print("Failed to get Firebase access token")
+            return
+            
+        # Prepare notification data
+        notification_title = "Status Update"
+        notification_message = f"Your status has been updated to {status}"
+        if reason:
+            notification_message += f" - {reason}"
+            
+        fcm_data = {
+            "intent": "status_update",
+            "driver_id": str(driver_id),
+            "status": status,
+            "reason": reason if reason else ""
+        }
+        
+        # Send notification
+        sendFMCMsg(
+            agent_auth_token,
+            notification_message,
+            notification_title,
+            fcm_data,
+            server_access_token,
+            "Agent"
+        )
+        
+    except Exception as e:
+        print(f"Error sending status update notification: {str(e)}")    
 
 # Utility function to check for missing fields
 def check_missing_fields(fields):
@@ -4905,6 +5190,14 @@ def update_handyman_status(request):
             update_values = [status, handyman_id]
 
         row_count = update_query(query, update_values)
+        if row_count > 0:
+            # Send notification to agent
+            send_status_update_notification(
+                handyman_id,
+                status,
+                reason,
+                "vtpartner.handymans_tbl"
+            )
 
         return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
 
@@ -4955,6 +5248,14 @@ def update_other_driver_status(request):
             update_values = [status, other_driver_id]
 
         row_count = update_query(query, update_values)
+        if row_count > 0:
+            # Send notification to agent
+            send_status_update_notification(
+                other_driver_id,
+                status,
+                reason,
+                "vtpartner.other_driverstbl"
+            )
 
         return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
 
@@ -5005,6 +5306,14 @@ def update_jcb_crane_driver_status(request):
             update_values = [status, jcb_crane_driver_id]
 
         row_count = update_query(query, update_values)
+        if row_count > 0:
+            # Send notification to agent
+            send_status_update_notification(
+                jcb_crane_driver_id,
+                status,
+                reason,
+                "vtpartner.jcb_crane_driverstbl"
+            )
 
         return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
 
@@ -5059,6 +5368,14 @@ def update_cab_driver_status(request):
             """
 
         row_count = update_query(query, update_values)
+        if row_count > 0:
+            # Send notification to agent
+            send_status_update_notification(
+                cab_driver_id,
+                status,
+                reason,
+                "vtpartner.cab_driverstbl"
+            )
 
         return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
 
@@ -5115,6 +5432,14 @@ def update_goods_driver_status(request):
 
 
         row_count = update_query(query, update_values)
+        if row_count > 0:
+            # Send notification to agent
+            send_status_update_notification(
+                goods_driver_id,
+                status,
+                reason,
+                "vtpartner.goods_driverstbl"
+            )
 
         return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
 
