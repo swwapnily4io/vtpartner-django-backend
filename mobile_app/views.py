@@ -396,8 +396,92 @@ def process_scheduled_bookings_generic(
     """
     expired_bookings = select_query(expire_query, [no_driver_status])
     if expired_bookings:
+        #sending notification to customer about the booking expired
+        
         print(f"Expired {len(expired_bookings)} bookings for {table_name}")
 
+#finding the customer and sending notification
+def send_expired_booking_notifications(expired_bookings, table_name):
+    """
+    Send notifications to customers about expired bookings
+    
+    Args:
+        expired_bookings: List of expired booking records
+        table_name: Name of the booking table (e.g., 'bookings_tbl', 'cab_bookings_tbl', etc.)
+    """
+    try:
+        # Get Firebase access token
+        server_access_token = get_customer_firebase_access_token_internal()
+        if not server_access_token:
+            print("Failed to get Firebase access token")
+            return
+
+        for booking in expired_bookings:
+            booking_id = booking[0]  # Assuming booking_id is the first column
+            customer_id = booking[1]  # Assuming customer_id is the second column
+
+            # Get customer's auth token
+            customer_query = """
+                SELECT authtoken, customer_name, mobile_no 
+                FROM vtpartner.customers_tbl 
+                WHERE customer_id = %s
+            """
+            customer_result = select_query(customer_query, [customer_id])
+            
+            if not customer_result:
+                print(f"Customer not found for booking_id: {booking_id}")
+                continue
+
+            customer_auth_token = customer_result[0][0]
+            customer_name = customer_result[0][1]
+            customer_mobile = customer_result[0][2]
+
+            # Skip if customer has no auth token
+            if not customer_auth_token or customer_auth_token == '-1':
+                print(f"No auth token for customer {customer_id}")
+                continue
+
+            # Prepare notification data
+            fcm_data = {
+                "booking_id": str(booking_id),
+                "type": "booking_expired",
+                "table_name": table_name
+            }
+
+            # Customize message based on booking type
+            if table_name == "bookings_tbl":
+                service_type = "Goods"
+            elif table_name == "cab_bookings_tbl":
+                service_type = "Cab"
+            elif table_name == "jcb_crane_bookings_tbl":
+                service_type = "JCB Crane"
+            elif table_name == "other_driver_bookings_tbl":
+                service_type = "Driver"
+            elif table_name == "handyman_bookings_tbl":
+                service_type = "Handyman"
+            else:
+                service_type = "Service"
+
+            notification_title = f"{service_type} Booking Expired"
+            notification_message = f"Sorry, we couldn't find a {service_type.lower()} Agent for your scheduled booking. Please try booking again."
+
+            # Send notification
+            sendFMCMsg(
+                customer_auth_token,
+                notification_message,
+                notification_title,
+                fcm_data,
+                server_access_token,
+                "Customer"
+            )
+
+            print(f"Sent expiration notification to customer {customer_id} for booking {booking_id}")
+
+    except Exception as e:
+        print(f"Error sending expired booking notifications: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        
 #Nearby Goods Drivers        
 def find_nearby_goods_drivers(booking):
     (booking_id, customer_id, driver_id, pickup_lat, pickup_lng, destination_lat, destination_lng,
@@ -1130,6 +1214,59 @@ def get_customer_app_firebase_access_token(request):
             "message": str(e)
         }, status=500)
 
+def get_customer_firebase_access_token_internal():
+    """
+    Get Firebase access token for customer app.
+    Returns:
+        str: The access token if successful, None if failed
+    """
+    try:
+        # Load environment variables
+        load_dotenv('/root/.env_vtpartner_customer')
+        
+        # Get required credentials
+        project_id = os.getenv('CUSTOMER_FIREBASE_PROJECT_ID')
+        private_key = os.getenv('CUSTOMER_FIREBASE_PRIVATE_KEY')
+        client_email = os.getenv('CUSTOMER_FIREBASE_CLIENT_EMAIL')
+        
+        # Validate required credentials
+        if not all([project_id, private_key, client_email]):
+            print("Missing required environment variables for Firebase credentials")
+            return None
+
+        # Create credentials dictionary
+        credentials_dict = {
+            "type": "service_account",
+            "project_id": project_id,
+            "private_key_id": os.getenv('CUSTOMER_FIREBASE_PRIVATE_KEY_ID'),
+            "private_key": private_key.replace('\\n', '\n'),
+            "client_email": client_email,
+            "client_id": os.getenv('CUSTOMER_FIREBASE_CLIENT_ID'),
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{client_email}"
+        }
+
+        # Create credentials object
+        credentials = service_account.Credentials.from_service_account_info(
+            credentials_dict,
+            scopes=['https://www.googleapis.com/auth/firebase.messaging']
+        )
+        
+        # Refresh token if needed
+        if not credentials.valid:
+            credentials.refresh(Request())
+            
+        return credentials.token
+
+    except Exception as e:
+        print(f"Error getting Customer App Firebase access token: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        return None
+    
+    
 def get_inside_agent_app_firebase_access_token():
     print("agent_app_token_fetched")
     try:
