@@ -260,15 +260,16 @@ def sendFMCMsg(deviceToken, msg, title, data, serverToken, app_type):
         print(f"Unexpected error in sendFMCMsg: {e}")
         return False
    
-def send_status_update_notification(driver_id, status, reason, driver_tbl_name,driver_col_name):
+def send_status_update_notification(driver_id, status, reason, driver_tbl_name, driver_col_name):
     """
     Send FCM notification to agent about their status change
     
     Args:
         driver_id: ID of the driver
-        status: New status
+        status: New status (0, 1, 2, or 3)
         reason: Reason for status change (optional)
-        driver_tbl_name: Type of driver (cab, goods, handyman, etc.)
+        driver_tbl_name: Name of the driver table
+        driver_col_name: Name of the driver ID column
     """
     try:
         # Get agent's auth token based on driver type
@@ -290,17 +291,32 @@ def send_status_update_notification(driver_id, status, reason, driver_tbl_name,d
             print("Failed to get Firebase access token")
             return
             
+        # Convert status to string and get status text
+        status = int(status[0]) if isinstance(status, tuple) else int(status)
+        status_text = {
+            0: "Unverified",
+            1: "Verified",
+            2: "Blocked",
+            3: "Rejected"
+        }.get(status, "Unknown")
+            
         # Prepare notification data
         notification_title = "Status Update"
-        notification_message = f"Your status has been updated to {status}"
+        notification_message = f"Your status has been updated to {status_text}"
         if reason:
+            reason = reason[0] if isinstance(reason, tuple) else reason
             notification_message += f" - {reason}"
+            
+        # Clean up driver_id if it's a tuple
+        driver_id = driver_id[0] if isinstance(driver_id, tuple) else driver_id
             
         fcm_data = {
             "intent": "status_update",
             "driver_id": str(driver_id),
-            "status": status,
-            "reason": reason if reason else ""
+            "status": str(status),
+            "reason": str(reason) if reason else "",
+            "title": notification_title,
+            "body": notification_message
         }
         
         # Send notification
@@ -314,8 +330,7 @@ def send_status_update_notification(driver_id, status, reason, driver_tbl_name,d
         )
         
     except Exception as e:
-        print(f"Error sending status update notification: {str(e)}")    
-
+        print(f"Error sending status update notification: {str(e)}")
 # Utility function to check for missing fields
 def check_missing_fields(fields):
     missing_fields = [field for field, value in fields.items() if not value]
