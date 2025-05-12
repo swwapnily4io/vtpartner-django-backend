@@ -260,7 +260,7 @@ def sendFMCMsg(deviceToken, msg, title, data, serverToken, app_type):
         print(f"Unexpected error in sendFMCMsg: {e}")
         return False
    
-def send_status_update_notification(driver_id, status, reason, driver_tbl_name):
+def send_status_update_notification(driver_id, status, reason, driver_tbl_name,driver_col_name):
     """
     Send FCM notification to agent about their status change
     
@@ -274,7 +274,7 @@ def send_status_update_notification(driver_id, status, reason, driver_tbl_name):
         # Get agent's auth token based on driver type
         auth_token_query = f"""
             SELECT authtoken FROM {driver_tbl_name} 
-            WHERE {driver_id} = %s
+            WHERE {driver_col_name} = %s
         """
         result = select_query(auth_token_query, [driver_id])
         
@@ -5196,7 +5196,8 @@ def update_handyman_status(request):
                 handyman_id,
                 status,
                 reason,
-                "vtpartner.handymans_tbl"
+                "vtpartner.handymans_tbl",
+                "handyman_id"
             )
 
         return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
@@ -5254,7 +5255,8 @@ def update_other_driver_status(request):
                 other_driver_id,
                 status,
                 reason,
-                "vtpartner.other_driverstbl"
+                "vtpartner.other_driverstbl",
+                "other_driver_id"
             )
 
         return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
@@ -5312,7 +5314,8 @@ def update_jcb_crane_driver_status(request):
                 jcb_crane_driver_id,
                 status,
                 reason,
-                "vtpartner.jcb_crane_driverstbl"
+                "vtpartner.jcb_crane_driverstbl",
+                "jcb_crane_driver_id"
             )
 
         return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
@@ -5374,7 +5377,8 @@ def update_cab_driver_status(request):
                 cab_driver_id,
                 status,
                 reason,
-                "vtpartner.cab_driverstbl"
+                "vtpartner.cab_driverstbl",
+                "cab_driver_id"
             )
 
         return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
@@ -5438,7 +5442,8 @@ def update_goods_driver_status(request):
                 goods_driver_id,
                 status,
                 reason,
-                "vtpartner.goods_driverstbl"
+                "vtpartner.goods_driverstbl",
+                "goods_driver_id"
             )
 
         return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
