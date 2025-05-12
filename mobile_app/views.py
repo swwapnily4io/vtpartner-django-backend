@@ -378,7 +378,8 @@ def process_scheduled_bookings_generic(
             else:
                 # Reset retry_count if at least one notification sent
                 update_query(
-                    f"UPDATE {table_name} SET retry_count = 0 WHERE booking_id = %s",
+                    # f"UPDATE {table_name} SET retry_count = 0 WHERE booking_id = %s",
+                    f"UPDATE {table_name} SET retry_count = COALESCE(retry_count, 0) + 1 WHERE booking_id = %s",
                     [booking_id]
                 )
         except Exception as err:
