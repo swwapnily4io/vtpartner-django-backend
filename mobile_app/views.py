@@ -2722,42 +2722,93 @@ def all_vehicles_with_price_details(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+# @csrf_exempt
+# def allowed_pin_code(request):
+#     if request.method == "POST":
+#         data = json.loads(request.body)
+#         pincode = data.get("pincode")
+
+#          # List of required fields
+#         required_fields = {
+#             "pincode": pincode,
+#         }
+#         # Check for missing fields
+#          # Use the utility function to check for missing fields
+#         missing_fields = check_missing_fields(required_fields)
+        
+#         # If there are missing fields, return an error response
+#         if missing_fields:
+#             return JsonResponse(
+#             {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+#             status=400
+#         )
+                
+                
+#         try:
+#             query = """
+#             select city_id from vtpartner.allowed_pincodes_tbl where pincode=%s and status='1'
+#             """
+#             params = [pincode]
+#             result = select_query(query, params)  # Assuming select_query is defined elsewhere
+
+#             if result == []:
+#                 return JsonResponse({"message": "No Data Found"}, status=404)
+                                
+#             # Map the results to a list of dictionaries with meaningful keys
+#             response_value = [
+#                 {
+#                     "city_id": row[0]
+#                 }
+#                 for row in result
+#             ]
+#             # Return customer response
+#             return JsonResponse({"results": response_value}, status=200)
+
+#         except Exception as err:
+#             print("Error executing query:", err)
+#             return JsonResponse({"message": "An error occurred"}, status=500)
+
+#     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 @csrf_exempt
 def allowed_pin_code(request):
     if request.method == "POST":
         data = json.loads(request.body)
         pincode = data.get("pincode")
 
-         # List of required fields
+        # List of required fields
         required_fields = {
             "pincode": pincode,
         }
         # Check for missing fields
-         # Use the utility function to check for missing fields
         missing_fields = check_missing_fields(required_fields)
         
         # If there are missing fields, return an error response
         if missing_fields:
             return JsonResponse(
-            {"message": f"Missing required fields: {', '.join(missing_fields)}"},
-            status=400
-        )
-                
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
                 
         try:
+            # Modified query to join with available_citys_tbl
             query = """
-            select city_id from vtpartner.allowed_pincodes_tbl where pincode=%s and status='1'
+            SELECT a.city_id, c.outstation_distance 
+            FROM vtpartner.allowed_pincodes_tbl a
+            JOIN vtpartner.available_citys_tbl c ON a.city_id = c.city_id
+            WHERE a.pincode = %s AND a.status = '1'
             """
             params = [pincode]
-            result = select_query(query, params)  # Assuming select_query is defined elsewhere
+            result = select_query(query, params)
 
             if result == []:
                 return JsonResponse({"message": "No Data Found"}, status=404)
                                 
-            # Map the results to a list of dictionaries with meaningful keys
+            # Map the results to include outstation_distance
             response_value = [
                 {
-                    "city_id": row[0]
+                    "city_id": row[0],
+                    "outstation_distance": row[1]
                 }
                 for row in result
             ]
