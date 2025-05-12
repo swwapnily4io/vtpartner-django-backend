@@ -406,7 +406,7 @@ def find_nearby_goods_drivers(booking):
      pickup_address, drop_address, booking_completed, payment_id, pickup_time, drop_time, coupon_applied,
      coupon_id, coupon_amount, before_coupon_amount, is_scheduled, scheduled_time, drop_locations,
      drop_contacts, multiple_drops, body_type, retry_count, last_retry_time, error_message,
-     booking_timezone, goods_vehicle_id, vehicle_price_type, vehicle_radius_km) = booking
+     booking_timezone, goods_vehicle_id, vehicle_price_type, vehicle_radius_km,booking_type_locations) = booking
     
 
     # Parse JSON fields
@@ -467,11 +467,12 @@ def find_nearby_goods_drivers(booking):
                     AND goods_driverstbl.category_id = vehiclestbl.category_id
                     AND goods_driverstbl.category_id = '1' AND  goods_driverstbl.vehicle_id=%s
                     AND goods_driverstbl.body_type = %s
+                    AND (goods_driverstbl.location_preference=%s OR goods_driverstbl.location_preference='0')
                     ORDER BY distance;
 
                     """
     values = [pickup_lat, pickup_lng, pickup_lat,city_id,vehicle_price_type, pickup_lat, pickup_lng, pickup_lat,vehicle_radius_km ,goods_vehicle_id,
-                              body_type]
+                              body_type,booking_type_locations]
     nearby_drivers = select_query(query, values)
 
     # Prepare FCM data
@@ -8275,6 +8276,7 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
         drop_contacts = data.get("drop_contacts", [])
         multiple_drops = data.get("multiple_drops", 0)
         body_type = data.get("body_type", "Any")
+        booking_type_locations = data.get("booking_type_locations", 0)
 
         # List of required fields
         required_fields = {
@@ -8364,13 +8366,13 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                     payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
                     coupon_applied,coupon_id,coupon_amount,before_coupon_amount,
                     is_scheduled, scheduled_time, drop_locations, drop_contacts,
-                    multiple_drops, body_type,vehicle_price_type, vehicle_radius_km,goods_vehicle_id
+                    multiple_drops, body_type,vehicle_price_type, vehicle_radius_km,goods_vehicle_id,booking_type_locations
                 ) 
                 VALUES (
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
                     %s, %s,%s, %s,%s, %s,%s, %s,%s,%s,%s,%s,
-                    %s, %s, %s, %s, %s, %s, %s, %s,%s
+                    %s, %s, %s, %s, %s, %s, %s, %s,%s,%s
                 ) 
                 RETURNING booking_id;
             """
@@ -8392,7 +8394,7 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                 gst_amount, igst_amount, payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
                 coupon_applied,coupon_id,coupon_amount,before_coupon_amount,
                 is_scheduled, scheduled_time, drop_locations_json, drop_contacts_json,
-                multiple_drops, body_type,price_type,5,vehicle_id
+                multiple_drops, body_type,price_type,5,vehicle_id,booking_type_locations
             ]
 
             # Assuming insert_query is a function that runs the query
@@ -8467,11 +8469,12 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                     AND goods_driverstbl.category_id = vehiclestbl.category_id
                     AND goods_driverstbl.category_id = '1' AND  goods_driverstbl.vehicle_id=%s
                     AND goods_driverstbl.body_type = %s
+                    AND (goods_driverstbl.location_preference=%s OR goods_driverstbl.location_preference='0')
                     ORDER BY distance;
 
                     """
                     values = [pickup_lat, pickup_lng, pickup_lat,city_id,price_type, pickup_lat, pickup_lng, pickup_lat, radius_km,vehicle_id,
-                              body_type]
+                              body_type,booking_type_locations]
 
                     # Execute the query
                     nearby_drivers = select_query(query, values)
