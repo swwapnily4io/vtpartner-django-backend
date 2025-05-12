@@ -16962,6 +16962,117 @@ def jcb_crane_driver_current_location(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+@csrf_exempt
+def get_handyman_scheduled_bookings_details(request):
+    if request.method == "POST":
+        try:
+            query = """
+                SELECT 
+                    bookings_tbl.booking_id,
+                    bookings_tbl.customer_id,
+                    bookings_tbl.driver_id,
+                    bookings_tbl.pickup_lat,
+                    bookings_tbl.pickup_lng,
+                    bookings_tbl.destination_lat,
+                    bookings_tbl.destination_lng,
+                    bookings_tbl.distance,
+                    bookings_tbl.time,
+                    bookings_tbl.total_price,
+                    bookings_tbl.base_price,
+                    bookings_tbl.booking_timing,
+                    bookings_tbl.booking_date,
+                    bookings_tbl.booking_status,
+                    bookings_tbl.driver_arrival_time,
+                    bookings_tbl.otp,
+                    bookings_tbl.gst_amount,
+                    bookings_tbl.igst_amount,
+                    bookings_tbl.payment_method,
+                    bookings_tbl.city_id,
+                    bookings_tbl.cancelled_reason,
+                    bookings_tbl.cancel_time,
+                    bookings_tbl.order_id,
+                    bookings_tbl.pickup_address,
+                    bookings_tbl.drop_address,
+                    bookings_tbl.scheduled_time,
+                    handymans_tbl.name AS handyman_name,
+                    handymans_tbl.authtoken AS handyman_authtoken,
+                    customers_tbl.customer_name,
+                    customers_tbl.authtoken AS customer_authtoken,
+                    customers_tbl.mobile_no AS customer_mobile_no,
+                    handymans_tbl.mobile_no AS handyman_mobile_no,
+                    sub_categorytbl.sub_cat_name,
+                    other_servicestbl.service_name
+                FROM 
+                    vtpartner.handyman_bookings_tbl bookings_tbl
+                LEFT JOIN 
+                    vtpartner.handymans_tbl 
+                    ON handymans_tbl.handyman_id = bookings_tbl.driver_id
+                INNER JOIN 
+                    vtpartner.customers_tbl 
+                    ON customers_tbl.customer_id = bookings_tbl.customer_id
+                LEFT JOIN 
+                    vtpartner.sub_categorytbl 
+                    ON sub_categorytbl.sub_cat_id = bookings_tbl.sub_cat_id
+                LEFT JOIN 
+                    vtpartner.other_servicestbl 
+                    ON other_servicestbl.service_id = bookings_tbl.service_id
+                WHERE 
+                    bookings_tbl.is_scheduled = true
+                ORDER BY 
+                    bookings_tbl.scheduled_time ASC;
+            """
+
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No Data Found"}, status=404)
+
+            mapped_results = []
+            for row in result:
+                mapped_results.append({
+                    "booking_id": str(row[0]),
+                    "customer_id": str(row[1]),
+                    "driver_id": str(row[2]),
+                    "pickup_lat": str(row[3]),
+                    "pickup_lng": str(row[4]),
+                    "destination_lat": str(row[5]),
+                    "destination_lng": str(row[6]),
+                    "distance": str(row[7]),
+                    "total_time": str(row[8]),
+                    "total_price": str(row[9]),
+                    "base_price": str(row[10]),
+                    "booking_timing": str(row[11]),
+                    "booking_date": str(row[12]),
+                    "booking_status": str(row[13]),
+                    "driver_arrival_time": str(row[14]),
+                    "otp": str(row[15]),
+                    "gst_amount": str(row[16]),
+                    "igst_amount": str(row[17]),
+                    "payment_method": str(row[18]),
+                    "city_id": str(row[19]),
+                    "cancelled_reason": str(row[20]),
+                    "cancel_time": str(row[21]),
+                    "order_id": str(row[22]),
+                    "pickup_address": str(row[23]),
+                    "drop_address": str(row[24]),
+                    "scheduled_time": str(row[25]),
+                    "handyman_name": str(row[26] if row[26] else "Handyman Not Assigned"),
+                    "handyman_auth_token": str(row[27]),
+                    "customer_name": str(row[28]),
+                    "customer_auth_token": str(row[29]),
+                    "customer_mobile_no": str(row[30]),
+                    "handyman_mobile_no": str(row[31]) if row[31] else "Handyman Not Assigned",
+                    "sub_cat_name": str(row[32]),
+                    "service_name": str(row[33]),
+                })
+
+            return JsonResponse({"results": mapped_results}, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt
 def get_handyman_all_ongoing_bookings_details(request):

@@ -378,6 +378,7 @@ urlpatterns = [
     path('jcb_crane_driver_current_location', views.jcb_crane_driver_current_location, name='jcb_crane_driver_current_location'),
     
     # Handyman Bookings and Order Details Paths
+    path('get_handyman_scheduled_bookings_details', views.get_handyman_scheduled_bookings_details, name='get_handyman_scheduled_bookings_details'),
     path('get_handyman_all_ongoing_bookings_details', views.get_handyman_all_ongoing_bookings_details, name='get_handyman_all_ongoing_bookings_details'),
     path('get_handyman_all_cancelled_bookings_details', views.get_handyman_all_cancelled_bookings_details, name='get_handyman_all_cancelled_bookings_details'),
     path('get_handyman_all_completed_orders_details', views.get_handyman_all_completed_orders_details, name='get_handyman_all_completed_orders_details'),
