@@ -348,6 +348,7 @@ urlpatterns = [
     path('get_handyman_current_month_earnings', views.get_handyman_current_month_earnings, name='get_handyman_current_month_earnings'),
     
     # Cab Booking URLs
+    path('get_cab_scheduled_bookings_details', views.get_cab_scheduled_bookings_details, name='get_cab_scheduled_bookings_details'),
     path('get_cab_all_ongoing_bookings_details', views.get_cab_all_ongoing_bookings_details, name='get_cab_all_ongoing_bookings_details'),
     path('get_cab_all_cancelled_bookings_details', views.get_cab_all_cancelled_bookings_details, name='get_cab_all_cancelled_bookings_details'),
     path('get_cab_all_completed_orders_details', views.get_cab_all_completed_orders_details, name='get_cab_all_completed_orders_details'),
