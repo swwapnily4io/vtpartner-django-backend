@@ -324,7 +324,7 @@ SERVER_TIMEZONE = pytz.UTC  # Server runs on UTC
 
 
 LOCAL_TIMEZONE = pytz.timezone('Asia/Kolkata')
-RETRY_LIMIT = 3
+RETRY_LIMIT = 1
 
 def get_current_local_time():
     return datetime.now(pytz.UTC).astimezone(LOCAL_TIMEZONE)
@@ -416,36 +416,38 @@ def send_expired_booking_notifications(expired_bookings, table_name):
             print("Failed to get Firebase access token")
             return
 
-        for booking in expired_bookings:
-            booking_id = booking[0]  # Assuming booking_id is the first column
-            customer_id = booking[1]  # Assuming customer_id is the second column
-
-            # Get customer's auth token
-            customer_query = """
-                SELECT authtoken, customer_name, mobile_no 
-                FROM vtpartner.customers_tbl 
-                WHERE customer_id = %s
+        for booking_id in expired_bookings:
+            # Get customer's auth token and booking details
+            customer_query = f"""
+                SELECT c.authtoken, c.customer_name, c.mobile_no, b.pickup_address, b.drop_address
+                FROM vtpartner.customers_tbl c
+                JOIN {table_name} b ON c.customer_id = b.customer_id
+                WHERE b.booking_id = %s
             """
-            customer_result = select_query(customer_query, [customer_id])
+            customer_result = select_query(customer_query, [booking_id[0]])  # booking_id is a tuple with one element
             
             if not customer_result:
-                print(f"Customer not found for booking_id: {booking_id}")
+                print(f"Customer not found for booking_id: {booking_id[0]}")
                 continue
 
             customer_auth_token = customer_result[0][0]
             customer_name = customer_result[0][1]
             customer_mobile = customer_result[0][2]
+            pickup_address = customer_result[0][3]
+            drop_address = customer_result[0][4]
 
             # Skip if customer has no auth token
             if not customer_auth_token or customer_auth_token == '-1':
-                print(f"No auth token for customer {customer_id}")
+                print(f"No auth token for customer {customer_mobile}")
                 continue
 
             # Prepare notification data
             fcm_data = {
-                "booking_id": str(booking_id),
+                "booking_id": str(booking_id[0]),
                 "type": "booking_expired",
-                "table_name": table_name
+                "table_name": table_name,
+                "pickup_address": pickup_address,
+                "drop_address": drop_address
             }
 
             # Customize message based on booking type
@@ -463,7 +465,7 @@ def send_expired_booking_notifications(expired_bookings, table_name):
                 service_type = "Service"
 
             notification_title = f"{service_type} Booking Expired"
-            notification_message = f"Sorry, we couldn't find a {service_type.lower()} Agent for your scheduled booking. Please try booking again."
+            notification_message = f"Sorry, we couldn't find a {service_type.lower()} for your scheduled booking. Please try booking again."
 
             # Send notification
             sendFMCMsg(
@@ -475,13 +477,13 @@ def send_expired_booking_notifications(expired_bookings, table_name):
                 "Customer"
             )
 
-            print(f"Sent expiration notification to customer {customer_id} for booking {booking_id}")
+            print(f"Sent expiration notification to customer {customer_mobile} for booking {booking_id[0]}")
 
     except Exception as e:
         print(f"Error sending expired booking notifications: {str(e)}")
         import traceback
         print(traceback.format_exc())
-        
+             
 #Nearby Goods Drivers        
 def find_nearby_goods_drivers(booking):
     (booking_id, customer_id, driver_id, pickup_lat, pickup_lng, destination_lat, destination_lng,
