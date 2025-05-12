@@ -358,6 +358,7 @@ urlpatterns = [
     path('cab_driver_current_location', views.cab_driver_current_location, name='cab_driver_current_location'),
     
     # Other Drivers Bookings and Order Details Paths
+    path('get_other_driver_scheduled_bookings_details', views.get_other_driver_scheduled_bookings_details, name='get_other_driver_scheduled_bookings_details'),
     path('get_other_driver_all_ongoing_bookings_details', views.get_other_driver_all_ongoing_bookings_details, name='get_other_driver_all_ongoing_bookings_details'),
     path('get_other_driver_all_cancelled_bookings_details', views.get_other_driver_all_cancelled_bookings_details, name='get_other_driver_all_cancelled_bookings_details'),
     path('get_other_driver_all_completed_orders_details', views.get_other_driver_all_completed_orders_details, name='get_other_driver_all_completed_orders_details'),
