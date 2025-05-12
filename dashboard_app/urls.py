@@ -368,6 +368,7 @@ urlpatterns = [
     path('other_driver_current_location', views.other_driver_current_location, name='other_driver_current_location'),
     
     # Jcb Crane Drivers Bookings and Order Details Paths
+    path('get_jcb_crane_scheduled_bookings_details', views.get_jcb_crane_scheduled_bookings_details, name='get_jcb_crane_scheduled_bookings_details'),
     path('get_jcb_crane_driver_all_ongoing_bookings_details', views.get_jcb_crane_driver_all_ongoing_bookings_details, name='get_jcb_crane_driver_all_ongoing_bookings_details'),
     path('get_jcb_crane_driver_all_cancelled_bookings_details', views.get_jcb_crane_driver_all_cancelled_bookings_details, name='get_jcb_crane_driver_all_cancelled_bookings_details'),
     path('get_jcb_crane_driver_all_completed_orders_details', views.get_jcb_crane_driver_all_completed_orders_details, name='get_jcb_crane_driver_all_completed_orders_details'),
