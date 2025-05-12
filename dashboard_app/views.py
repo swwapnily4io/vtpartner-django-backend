@@ -14596,7 +14596,7 @@ def get_cab_scheduled_bookings_details(request):
                     ON customers_tbl.customer_id = bookings_tbl.customer_id
                 INNER JOIN 
                     vtpartner.vehiclestbl 
-                    ON vehiclestbl.vehicle_id = cab_driverstbl.vehicle_id
+                    ON vehiclestbl.vehicle_id = bookings_tbl.cab_vehicle_id
                 WHERE 
                     bookings_tbl.is_scheduled = true
                 ORDER BY 
