@@ -39,6 +39,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     '100.24.44.74'
+    '.kaps9.in',
 ]
 
 
