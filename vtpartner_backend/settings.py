@@ -37,6 +37,7 @@ ALLOWED_HOSTS = ['vtpartner.org','www.vtpartner.org','vtpartner.in','kaps9.in','
 
 
 print("Host header:", os.environ.get("HTTP_HOST"))
+print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
 
 # Application definition
 
