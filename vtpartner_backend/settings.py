@@ -36,6 +36,8 @@ DEBUG = True
 ALLOWED_HOSTS = ['vtpartner.org','www.vtpartner.org','vtpartner.in','kaps9.in','www.kaps9.in','www.vtpartner.in','localhost','127.0.0.1','77.37.47.156','http://localhost:3004','http://100.24.44.74/','100.24.44.74','https://100.24.44.74/']
 
 
+print("Host header:", os.environ.get("HTTP_HOST"))
+
 # Application definition
 
 INSTALLED_APPS = [
