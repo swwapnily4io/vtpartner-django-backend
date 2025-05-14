@@ -69,7 +69,11 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.vtpartner.in",
     "https://www.kaps9.in",
     "http://www.kaps9.in",
-    'http://localhost:3004'
+    'http://localhost:3004',
+    "http://kaps9.in",
+    "https://kaps9.in",
+    "https://100.24.44.74",
+    "http://100.24.44.74"
 ]
 
 ROOT_URLCONF = 'vtpartner_backend.urls'
