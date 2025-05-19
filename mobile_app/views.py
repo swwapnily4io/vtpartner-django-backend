@@ -29,8 +29,6 @@ from google.oauth2 import service_account
 from google.auth.transport.requests import Request
 import boto3
 from botocore.exceptions import ClientError
-from django.core.cache import cache 
-from functools import wraps
 # Load environment variables from the root directory
 
 
@@ -1243,9 +1241,6 @@ def get_agent_app_firebase_access_token(request):
         
         if not credentials.valid:
             credentials.refresh(Request())
-        
-        # Store token in cache for 55 minutes
-        cache.set("firebase_server_token", credentials.token, timeout=55 * 60)
             
         return JsonResponse({
             "status": "success",
@@ -1258,25 +1253,6 @@ def get_agent_app_firebase_access_token(request):
             "status": "error",
             "message": str(e)
         }, status=500)
-        
-def authenticate_server(view_func):
-    @wraps(view_func)
-    def _wrapped_view(request, *args, **kwargs):
-        auth_header = request.headers.get('Authorization')
-        if not auth_header or not auth_header.startswith("Bearer "):
-            return JsonResponse({"message": "Missing or invalid Authorization header"}, status=401)
-
-        token = auth_header.split("Bearer ")[1]
-        if not is_valid_server_token(token):
-            return JsonResponse({"message": "Invalid or expired token"}, status=401)
-
-        return view_func(request, *args, **kwargs)
-    
-    return _wrapped_view
-
-def is_valid_server_token(token):
-    cached_token = cache.get("firebase_server_token")
-    return token == cached_token
         
 @csrf_exempt
 def get_customer_app_firebase_access_token(request):
@@ -1313,9 +1289,6 @@ def get_customer_app_firebase_access_token(request):
         
         if not credentials.valid:
             credentials.refresh(Request())
-        
-        # Store token in cache for 55 minutes
-        cache.set("firebase_server_token", credentials.token, timeout=55 * 60)
             
         return JsonResponse({
             "status": "success",
@@ -3538,7 +3511,6 @@ ORDER BY distance;
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt
-@authenticate_server
 def update_firebase_customer_token(request):
     if request.method == "POST":
         data = json.loads(request.body)
