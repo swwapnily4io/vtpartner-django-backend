@@ -1081,6 +1081,23 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(run_all_scheduled_booking_processors, 'interval', minutes=1)
 scheduler.start()
 
+def is_valid_customer_fcm_token(customer_id, fcm_token):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT authtoken FROM vtpartner.customers_tbl WHERE customer_id = %s",
+                [customer_id]
+            )
+            result = cursor.fetchone()
+            if result:
+                stored_token = result[0]
+                return stored_token == fcm_token
+            return False
+    except Exception as e:
+        print(f"Error checking token for customer_id={customer_id}: {e}")
+        return False
+    
+
 def get_agent_app_firebase_access_token_internal():
     print("agent_app_token_fetched")
     try:
@@ -3517,6 +3534,9 @@ def update_firebase_customer_token(request):
         customer_id = data.get("customer_id")
         authToken = data.get("authToken")
         
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+            return JsonResponse({"message": "Unauthorized - Invalid FCM Token"}, status=401)
+
 
         # List of required fields
         required_fields = {
