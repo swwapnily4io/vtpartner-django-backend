@@ -1091,6 +1091,7 @@ def is_valid_customer_fcm_token(customer_id, fcm_token):
             result = cursor.fetchone()
             if result:
                 stored_token = result[0]
+                print(f"Stored token: {stored_token}, Provided token: {fcm_token}")
                 return stored_token == fcm_token
             return False
     except Exception as e:
