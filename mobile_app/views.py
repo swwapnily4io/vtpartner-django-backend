@@ -1222,7 +1222,7 @@ def get_agent_app_firebase_access_token_internal():
         return str(e)
 
 @csrf_exempt
-def get_customer_auth_token(request):
+def get_customer_api_auth_token(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
