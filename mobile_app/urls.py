@@ -6,6 +6,8 @@ app_name = 'vt_partner'
 urlpatterns = [
     #Send OTP 
     path('send_otp',views.send_otp,name='send_otp'),
+    #To get customer auth token for apis
+    path('get_customer_auth_token',views.get_customer_auth_token,name='get_customer_auth_token'),
     #To get Agent App Request Token HTTp FCM
     path('get_agent_app_firebase_access_token',views.get_agent_app_firebase_access_token,name='get_agent_app_firebase_access_token'),
     #Send OTP 

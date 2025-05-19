@@ -1220,7 +1220,44 @@ def get_agent_app_firebase_access_token_internal():
     except Exception as e:
         print(f"Error getting Firebase access token: {str(e)}")
         return str(e)
-        
+
+@csrf_exempt
+def get_customer_auth_token(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            customer_id = data.get("customer_id")
+
+            # Validate required fields
+            required_fields = {
+                "customer_id": customer_id,
+            }
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+
+            # Query to get authToken
+            query = "SELECT authtoken FROM vtpartner.customers_tbl WHERE customer_id = %s"
+            result = select_query(query, [customer_id])
+
+            if not result:
+                return JsonResponse({"message": "Customer not found"}, status=404)
+
+            auth_token = result[0][0]
+
+            return JsonResponse({
+                "customer_id": customer_id,
+                "authToken": auth_token
+            }, status=200)
+
+        except Exception as err:
+            print("Error in get_customer_auth_token:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)       
         
 @csrf_exempt
 def get_agent_app_firebase_access_token(request):
@@ -1228,11 +1265,11 @@ def get_agent_app_firebase_access_token(request):
     try:
         # Create a service account credential dictionary
         # load_dotenv('/root/.env_vtpartner')
-        data = json.loads(request.body)
-        authToken = data.get('authToken')
-        customer_id = data.get('customer_id')
-        if not is_valid_customer_fcm_token(customer_id, authToken):
-            return JsonResponse({"message": "Unauthorized - Invalid FCM Token"}, status=401)
+        # data = json.loads(request.body)
+        # authToken = data.get('authToken')
+        # customer_id = data.get('customer_id')
+        # if not is_valid_customer_fcm_token(customer_id, authToken):
+        #     return JsonResponse({"message": "Unauthorized - Invalid FCM Token"}, status=401)
         load_dotenv('/root/.env_vtpartner_agent')
         project_id = os.getenv('FIREBASE_PROJECT_ID')
         private_key = os.getenv('FIREBASE_PRIVATE_KEY')
