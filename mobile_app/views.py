@@ -1226,6 +1226,11 @@ def get_agent_app_firebase_access_token(request):
     try:
         # Create a service account credential dictionary
         # load_dotenv('/root/.env_vtpartner')
+        
+        authToken = request.POST.get('authToken')
+        customer_id = request.POST.get('customer_id')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+            return JsonResponse({"message": "Unauthorized - Invalid FCM Token"}, status=401)
         load_dotenv('/root/.env_vtpartner_agent')
         project_id = os.getenv('FIREBASE_PROJECT_ID')
         private_key = os.getenv('FIREBASE_PRIVATE_KEY')
