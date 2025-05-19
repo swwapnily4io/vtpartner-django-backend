@@ -22541,7 +22541,7 @@ def edit_handyman_agent_drop_location(request):
         if result:
             # Send FCM notification to driver
             
-            driver_auth_token = get_goods_driver_auth_token(driver_id)
+            driver_auth_token = get_handyman_agent_auth_token(driver_id)
             agent_server_token = get_agent_app_firebase_access_token_internal()
         
             
@@ -22641,7 +22641,7 @@ def edit_jcb_crane_driver_drop_location(request):
         if result:
             # Send FCM notification to driver
             
-            driver_auth_token = get_goods_driver_auth_token(driver_id)
+            driver_auth_token = get_jcb_crane_driver_auth_token(driver_id)
             agent_server_token = get_agent_app_firebase_access_token_internal()
         
             
@@ -22890,7 +22890,6 @@ def edit_goods_drop_location(request):
         booking_id = data["booking_id"]
         drop_address = data["drop_address"]
         
-        
         required_fields = {
             "booking_id": data.get("booking_id"),
             "customer_id": data.get("customer_id"),
@@ -22909,7 +22908,7 @@ def edit_goods_drop_location(request):
         if missing_fields:
             return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
 
-        # First check if booking exists and has single drop
+        # Check if booking exists and has single drop
         check_query = """
             SELECT multiple_drops 
             FROM vtpartner.bookings_tbl 
@@ -22918,21 +22917,23 @@ def edit_goods_drop_location(request):
             AND driver_id = %s
         """
         
-        result = select_query(check_query, [data["booking_id"], data["customer_id"], data["driver_id"]])
+        result = select_query(check_query, [booking_id, data["customer_id"], driver_id])
         
-        if not result:
+        if not result or len(result) == 0:
             return JsonResponse({
                 "message": "No booking found with provided details",
                 "success": False
             }, status=404)
             
-        if result["multiple_drops"] > 0:
+        multiple_drops = result[0][0]  # Access first row, first column
+        if multiple_drops > 0:
             return JsonResponse({
                 "message": "Cannot update location for multiple drop booking",
                 "success": False
             }, status=400)
 
-        update_query = """
+        # Update booking details
+        update_query_str = """
             UPDATE vtpartner.bookings_tbl
             SET drop_address = %s,
                 destination_lat = %s,
@@ -22946,40 +22947,40 @@ def edit_goods_drop_location(request):
             RETURNING booking_id
         """
 
-        params = [
-            data["drop_address"],
+        update_params = [
+            drop_address,
             data["destination_lat"],
             data["destination_lng"],
             data["distance"],
             data["time"],
             data["total_price"],
-            data["booking_id"],
+            booking_id,
             data["customer_id"],
-            data["driver_id"]
+            driver_id
         ]
 
-        result = update_query(update_query, params)
+        update_result = update_query(update_query_str, update_params)
         
-        if result:
+        if update_result:
             # Send FCM notification to driver
             driver_auth_token = get_goods_driver_auth_token(driver_id)
             agent_server_token = get_agent_app_firebase_access_token_internal()
-        
             
-            #send notification to goods driver for booking editting the drop location
+            # Prepare FCM notification data
             fcm_data = {
-                'intent':'driver_home',
-                'booking_id':str(booking_id)
+                'intent': 'driver_home',
+                'booking_id': str(booking_id)
             }
             
+            # Send notification
             print("sending fcm to agent edit drop location for Goods")
             sendFMCMsg(
-            driver_auth_token,
-            f'Customer has updated the drop location to {drop_address}',
-            f'Drop Location Updated - [Booking ID: {str(booking_id)}]',
-            fcm_data,
-            agent_server_token,
-            "Agent"
+                driver_auth_token,
+                f'Customer has updated the drop location to {drop_address}',
+                f'Drop Location Updated - [Booking ID: {str(booking_id)}]',
+                fcm_data,
+                agent_server_token,
+                "Agent"
             )
             
             return JsonResponse({
