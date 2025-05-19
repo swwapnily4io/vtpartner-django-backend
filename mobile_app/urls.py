@@ -442,4 +442,15 @@ urlpatterns = [
     path('get_handyman_details',views.get_handyman_details,name='get_handyman_details'),
     #My All Rides
     path('update_handyman_details',views.update_handyman_details,name='update_handyman_details'),
+    
+    #Edit Drop Locations
+    path('edit_handyman_agent_drop_location', views.edit_handyman_agent_drop_location, name='edit_handyman_agent_drop_location'),
+    
+    path('edit_jcb_crane_driver_drop_location', views.edit_jcb_crane_driver_drop_location, name='edit_jcb_crane_driver_drop_location'),
+    
+    path('edit_other_driver_drop_location', views.edit_other_driver_drop_location, name='edit_other_driver_drop_location'),
+    
+    path('edit_cab_drop_location', views.edit_cab_drop_location, name='edit_cab_drop_location'),
+    
+    path('edit_goods_drop_location', views.edit_goods_drop_location, name='edit_goods_drop_location'),
 ]

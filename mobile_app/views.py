@@ -1080,6 +1080,94 @@ def run_all_scheduled_booking_processors():
 scheduler = BackgroundScheduler()
 scheduler.add_job(run_all_scheduled_booking_processors, 'interval', minutes=1)
 scheduler.start()
+
+def get_agent_app_firebase_access_token_internal():
+    print("agent_app_token_fetched")
+    try:
+        # Create a service account credential dictionary
+        # load_dotenv('/root/.env_vtpartner')
+        load_dotenv('/root/.env_vtpartner_agent')
+        credentials_dict = {
+            "type": "service_account",
+            "project_id": os.getenv('FIREBASE_PROJECT_ID'),
+            "private_key_id": os.getenv('FIREBASE_PRIVATE_KEY_ID'),
+            "private_key": os.getenv('FIREBASE_PRIVATE_KEY'),
+            "client_email": os.getenv('FIREBASE_CLIENT_EMAIL'),
+            "client_id": os.getenv('FIREBASE_CLIENT_ID'),
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{os.getenv('FIREBASE_CLIENT_EMAIL')}",
+             "universe_domain": "googleapis.com"
+        }
+
+        credentials = service_account.Credentials.from_service_account_info(
+            credentials_dict,
+            scopes=['https://www.googleapis.com/auth/firebase.messaging']
+        )
+        
+        if not credentials.valid:
+            credentials.refresh(Request())
+            
+        return credentials.token
+
+    except Exception as e:
+        print(f"Error getting Firebase access token: {str(e)}")
+        return str(e)
+        
+
+def get_customer_firebase_access_token_internal():
+    """
+    Get Firebase access token for customer app.
+    Returns:
+        str: The access token if successful, None if failed
+    """
+    try:
+        # Load environment variables
+        load_dotenv('/root/.env_vtpartner_customer')
+        
+        # Get required credentials
+        project_id = os.getenv('CUSTOMER_FIREBASE_PROJECT_ID')
+        private_key = os.getenv('CUSTOMER_FIREBASE_PRIVATE_KEY')
+        client_email = os.getenv('CUSTOMER_FIREBASE_CLIENT_EMAIL')
+        
+        # Validate required credentials
+        if not all([project_id, private_key, client_email]):
+            print("Missing required environment variables for Firebase credentials")
+            return None
+
+        # Create credentials dictionary
+        credentials_dict = {
+            "type": "service_account",
+            "project_id": project_id,
+            "private_key_id": os.getenv('CUSTOMER_FIREBASE_PRIVATE_KEY_ID'),
+            "private_key": private_key.replace('\\n', '\n'),
+            "client_email": client_email,
+            "client_id": os.getenv('CUSTOMER_FIREBASE_CLIENT_ID'),
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": f"https://www.googleapis.com/robot/v1/metadata/x509/{client_email}"
+        }
+
+        # Create credentials object
+        credentials = service_account.Credentials.from_service_account_info(
+            credentials_dict,
+            scopes=['https://www.googleapis.com/auth/firebase.messaging']
+        )
+        
+        # Refresh token if needed
+        if not credentials.valid:
+            credentials.refresh(Request())
+            
+        return credentials.token
+
+    except Exception as e:
+        print(f"Error getting Customer App Firebase access token: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        return None
+
     
 def get_agent_app_firebase_access_token_internal():
     print("agent_app_token_fetched")
@@ -22391,3 +22479,522 @@ def update_handyman_details(request):
             return JsonResponse({"message": str(err)}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def edit_handyman_agent_drop_location(request):
+    if request.method != "POST":
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        
+        driver_id = data["driver_id"]
+        booking_id = data["booking_id"]
+        drop_address = data["drop_address"]
+        
+        required_fields = {
+            "booking_id": data.get("booking_id"),
+            "customer_id": data.get("customer_id"), 
+            "driver_id": data.get("driver_id"),
+            "drop_lat": data.get("drop_lat"),
+            "drop_lng": data.get("drop_lng"),
+            "drop_address": data.get("drop_address"),
+            "destination_lat": data.get("destination_lat"),
+            "destination_lng": data.get("destination_lng"),
+            "distance": data.get("distance"),
+            "time": data.get("time"),
+            "total_price": data.get("total_price")
+        }
+
+        missing_fields = check_missing_fields(required_fields)
+        if missing_fields:
+            return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+
+        query = """
+            UPDATE vtpartner.handyman_bookings_tbl
+            SET pickup_address = %s,
+                pickup_lat = %s,
+                pickup_lng = %s,
+                distance = %s,
+                time = %s,
+                total_price = %s
+            WHERE booking_id = %s 
+            AND customer_id = %s
+            AND driver_id = %s
+            RETURNING booking_id
+        """
+
+        params = [
+            data["drop_address"],
+            data["destination_lat"],
+            data["destination_lng"],
+            data["distance"],
+            data["time"],
+            data["total_price"],
+            data["booking_id"],
+            data["customer_id"],
+            data["driver_id"]
+        ]
+
+        result = update_query(query, params)
+        
+        if result:
+            # Send FCM notification to driver
+            
+            driver_auth_token = get_goods_driver_auth_token(driver_id)
+            agent_server_token = get_agent_app_firebase_access_token_internal()
+        
+            
+            #send notification to goods driver for booking editting the drop location
+            fcm_data = {
+                'intent':'handyman_agent_home',
+                'booking_id':str(booking_id)
+            }
+            
+            print("sending fcm to agent edit drop location for handyman")
+            sendFMCMsg(
+            driver_auth_token,
+            f'Customer has updated the Work location to {drop_address}',
+            f'Work Location Updated - [Booking ID: {str(booking_id)}]',
+            fcm_data,
+            agent_server_token,
+            "Agent"
+            )
+            
+            
+            return JsonResponse({
+                "message": "Work location updated successfully",
+                "success": True
+            }, status=200)
+        else:
+            return JsonResponse({
+                "message": "No booking found with provided details",
+                "success": False
+            }, status=404)
+
+    except Exception as err:
+        print("Error updating handyman work location:", err)
+        return JsonResponse({
+            "message": "Internal Server Error",
+            "success": False
+        }, status=500)
+
+
+@csrf_exempt
+def edit_jcb_crane_driver_drop_location(request):
+    if request.method != "POST":
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        
+        driver_id = data["driver_id"]
+        booking_id = data["booking_id"]
+        drop_address = data["drop_address"]
+        
+        required_fields = {
+            "booking_id": data.get("booking_id"),
+            "customer_id": data.get("customer_id"), 
+            "driver_id": data.get("driver_id"),
+            "drop_lat": data.get("drop_lat"),
+            "drop_lng": data.get("drop_lng"),
+            "drop_address": data.get("drop_address"),
+            "destination_lat": data.get("destination_lat"),
+            "destination_lng": data.get("destination_lng"),
+            "distance": data.get("distance"),
+            "time": data.get("time"),
+            "total_price": data.get("total_price")
+        }
+
+        missing_fields = check_missing_fields(required_fields)
+        if missing_fields:
+            return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+
+        query = """
+            UPDATE vtpartner.jcb_crane_bookings_tbl
+            SET pickup_address = %s,
+                pickup_lat = %s,
+                pickup_lng = %s,
+                distance = %s,
+                time = %s,
+                total_price = %s
+            WHERE booking_id = %s 
+            AND customer_id = %s
+            AND driver_id = %s
+            RETURNING booking_id
+        """
+
+        params = [
+            data["drop_address"],
+            data["destination_lat"],
+            data["destination_lng"],
+            data["distance"],
+            data["time"],
+            data["total_price"],
+            data["booking_id"],
+            data["customer_id"],
+            data["driver_id"]
+        ]
+
+        result = update_query(query, params)
+        
+        if result:
+            # Send FCM notification to driver
+            
+            driver_auth_token = get_goods_driver_auth_token(driver_id)
+            agent_server_token = get_agent_app_firebase_access_token_internal()
+        
+            
+            #send notification to goods driver for booking editting the drop location
+            fcm_data = {
+                'intent':'jcb_crane_driver_home',
+                'booking_id':str(booking_id)
+            }
+            
+            print("sending fcm to agent edit drop location for jcb crane")
+            sendFMCMsg(
+            driver_auth_token,
+            f'Customer has updated the Work location to {drop_address}',
+            f'Work Location Updated - [Booking ID: {str(booking_id)}]',
+            fcm_data,
+            agent_server_token,
+            "Agent"
+            )
+            
+            
+            return JsonResponse({
+                "message": "Work location updated successfully",
+                "success": True
+            }, status=200)
+        else:
+            return JsonResponse({
+                "message": "No booking found with provided details",
+                "success": False
+            }, status=404)
+
+    except Exception as err:
+        print("Error updating jcb crane work location:", err)
+        return JsonResponse({
+            "message": "Internal Server Error",
+            "success": False
+        }, status=500)
+
+
+@csrf_exempt
+def edit_other_driver_drop_location(request):
+    if request.method != "POST":
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        
+        driver_id = data["driver_id"]
+        booking_id = data["booking_id"]
+        drop_address = data["drop_address"]
+        
+        required_fields = {
+            "booking_id": data.get("booking_id"),
+            "customer_id": data.get("customer_id"), 
+            "driver_id": data.get("driver_id"),
+            "drop_lat": data.get("drop_lat"),
+            "drop_lng": data.get("drop_lng"),
+            "drop_address": data.get("drop_address"),
+            "destination_lat": data.get("destination_lat"),
+            "destination_lng": data.get("destination_lng"),
+            "distance": data.get("distance"),
+            "time": data.get("time"),
+            "total_price": data.get("total_price")
+        }
+
+        missing_fields = check_missing_fields(required_fields)
+        if missing_fields:
+            return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+
+        query = """
+            UPDATE vtpartner.other_driver_bookings_tbl
+            SET drop_address = %s,
+                destination_lat = %s,
+                destination_lng = %s,
+                distance = %s,
+                time = %s,
+                total_price = %s
+            WHERE booking_id = %s 
+            AND customer_id = %s
+            AND driver_id = %s
+            RETURNING booking_id
+        """
+
+        params = [
+            data["drop_address"],
+            data["destination_lat"],
+            data["destination_lng"],
+            data["distance"],
+            data["time"],
+            data["total_price"],
+            data["booking_id"],
+            data["customer_id"],
+            data["driver_id"]
+        ]
+
+        result = update_query(query, params)
+        
+        if result:
+            # Send FCM notification to driver
+            
+            driver_auth_token = get_goods_driver_auth_token(driver_id)
+            agent_server_token = get_agent_app_firebase_access_token_internal()
+        
+            
+            #send notification to goods driver for booking editting the drop location
+            fcm_data = {
+                'intent':'other_driver_home',
+                'booking_id':str(booking_id)
+            }
+            
+            print("sending fcm to agent edit drop location for driver")
+            sendFMCMsg(
+            driver_auth_token,
+            f'Customer has updated the drop location to {drop_address}',
+            f'Drop Location Updated - [Booking ID: {str(booking_id)}]',
+            fcm_data,
+            agent_server_token,
+            "Agent"
+            )
+            
+            
+            return JsonResponse({
+                "message": "Drop location updated successfully",
+                "success": True
+            }, status=200)
+        else:
+            return JsonResponse({
+                "message": "No booking found with provided details",
+                "success": False
+            }, status=404)
+
+    except Exception as err:
+        print("Error updating driver drop location:", err)
+        return JsonResponse({
+            "message": "Internal Server Error",
+            "success": False
+        }, status=500)
+
+@csrf_exempt
+def edit_cab_drop_location(request):
+    if request.method != "POST":
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        
+        driver_id = data["driver_id"]
+        booking_id = data["booking_id"]
+        drop_address = data["drop_address"]
+        
+        required_fields = {
+            "booking_id": data.get("booking_id"),
+            "customer_id": data.get("customer_id"), 
+            "driver_id": data.get("driver_id"),
+            "drop_lat": data.get("drop_lat"),
+            "drop_lng": data.get("drop_lng"),
+            "drop_address": data.get("drop_address"),
+            "destination_lat": data.get("destination_lat"),
+            "destination_lng": data.get("destination_lng"),
+            "distance": data.get("distance"),
+            "time": data.get("time"),
+            "total_price": data.get("total_price")
+        }
+
+        missing_fields = check_missing_fields(required_fields)
+        if missing_fields:
+            return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+
+        query = """
+            UPDATE vtpartner.cab_bookings_tbl
+            SET drop_address = %s,
+                destination_lat = %s,
+                destination_lng = %s,
+                distance = %s,
+                time = %s,
+                total_price = %s
+            WHERE booking_id = %s 
+            AND customer_id = %s
+            AND driver_id = %s
+            RETURNING booking_id
+        """
+
+        params = [
+            data["drop_address"],
+            data["destination_lat"],
+            data["destination_lng"],
+            data["distance"],
+            data["time"],
+            data["total_price"],
+            data["booking_id"],
+            data["customer_id"],
+            data["driver_id"]
+        ]
+
+        result = update_query(query, params)
+        
+        if result:
+            # Send FCM notification to driver
+            
+            driver_auth_token = get_goods_driver_auth_token(driver_id)
+            agent_server_token = get_agent_app_firebase_access_token_internal()
+        
+            
+            #send notification to goods driver for booking editting the drop location
+            fcm_data = {
+                'intent':'cab_driver_home',
+                'booking_id':str(booking_id)
+            }
+            
+            print("sending fcm to agent edit drop location for cab")
+            sendFMCMsg(
+            driver_auth_token,
+            f'Customer has updated the drop location to {drop_address}',
+            f'Drop Location Updated - [Booking ID: {str(booking_id)}]',
+            fcm_data,
+            agent_server_token,
+            "Agent"
+            )
+            
+            
+            return JsonResponse({
+                "message": "Drop location updated successfully",
+                "success": True
+            }, status=200)
+        else:
+            return JsonResponse({
+                "message": "No booking found with provided details",
+                "success": False
+            }, status=404)
+
+    except Exception as err:
+        print("Error updating cab drop location:", err)
+        return JsonResponse({
+            "message": "Internal Server Error",
+            "success": False
+        }, status=500)
+
+@csrf_exempt
+def edit_goods_drop_location(request):
+    if request.method != "POST":
+        return JsonResponse({"message": "Method not allowed"}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        
+        driver_id = data["driver_id"]
+        booking_id = data["booking_id"]
+        drop_address = data["drop_address"]
+        
+        
+        required_fields = {
+            "booking_id": data.get("booking_id"),
+            "customer_id": data.get("customer_id"),
+            "driver_id": data.get("driver_id"),
+            "drop_lat": data.get("drop_lat"),
+            "drop_lng": data.get("drop_lng"),
+            "drop_address": data.get("drop_address"),
+            "destination_lat": data.get("destination_lat"),
+            "destination_lng": data.get("destination_lng"),
+            "distance": data.get("distance"),
+            "time": data.get("time"),
+            "total_price": data.get("total_price")
+        }
+
+        missing_fields = check_missing_fields(required_fields)
+        if missing_fields:
+            return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+
+        # First check if booking exists and has single drop
+        check_query = """
+            SELECT multiple_drops 
+            FROM vtpartner.bookings_tbl 
+            WHERE booking_id = %s 
+            AND customer_id = %s 
+            AND driver_id = %s
+        """
+        
+        result = select_query(check_query, [data["booking_id"], data["customer_id"], data["driver_id"]])
+        
+        if not result:
+            return JsonResponse({
+                "message": "No booking found with provided details",
+                "success": False
+            }, status=404)
+            
+        if result["multiple_drops"] > 0:
+            return JsonResponse({
+                "message": "Cannot update location for multiple drop booking",
+                "success": False
+            }, status=400)
+
+        update_query = """
+            UPDATE vtpartner.bookings_tbl
+            SET drop_address = %s,
+                destination_lat = %s,
+                destination_lng = %s,
+                distance = %s,
+                time = %s,
+                total_price = %s
+            WHERE booking_id = %s 
+            AND customer_id = %s 
+            AND driver_id = %s
+            RETURNING booking_id
+        """
+
+        params = [
+            data["drop_address"],
+            data["destination_lat"],
+            data["destination_lng"],
+            data["distance"],
+            data["time"],
+            data["total_price"],
+            data["booking_id"],
+            data["customer_id"],
+            data["driver_id"]
+        ]
+
+        result = update_query(update_query, params)
+        
+        if result:
+            # Send FCM notification to driver
+            driver_auth_token = get_goods_driver_auth_token(driver_id)
+            agent_server_token = get_agent_app_firebase_access_token_internal()
+        
+            
+            #send notification to goods driver for booking editting the drop location
+            fcm_data = {
+                'intent':'driver_home',
+                'booking_id':str(booking_id)
+            }
+            
+            print("sending fcm to agent edit drop location for Goods")
+            sendFMCMsg(
+            driver_auth_token,
+            f'Customer has updated the drop location to {drop_address}',
+            f'Drop Location Updated - [Booking ID: {str(booking_id)}]',
+            fcm_data,
+            agent_server_token,
+            "Agent"
+            )
+            
+            return JsonResponse({
+                "message": "Drop location updated successfully",
+                "success": True
+            }, status=200)
+        else:
+            return JsonResponse({
+                "message": "Failed to update drop location",
+                "success": False
+            }, status=500)
+
+    except Exception as err:
+        print("Error updating goods drop location:", err)
+        return JsonResponse({
+            "message": "Internal Server Error",
+            "success": False
+        }, status=500)
