@@ -1249,6 +1249,7 @@ def get_customer_api_auth_token(request):
             auth_token = result[0][0]
 
             return JsonResponse({
+                "message": "Success",
                 "customer_id": customer_id,
                 "authToken": auth_token
             }, status=200)
