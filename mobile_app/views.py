@@ -1096,7 +1096,6 @@ def is_valid_customer_fcm_token(customer_id, fcm_token):
     except Exception as e:
         print(f"Error checking token for customer_id={customer_id}: {e}")
         return False
-    
 
 def get_agent_app_firebase_access_token_internal():
     print("agent_app_token_fetched")
@@ -3534,9 +3533,6 @@ def update_firebase_customer_token(request):
         customer_id = data.get("customer_id")
         authToken = data.get("authToken")
         
-        if not is_valid_customer_fcm_token(customer_id, authToken):
-            return JsonResponse({"message": "Unauthorized - Invalid FCM Token"}, status=401)
-
 
         # List of required fields
         required_fields = {
