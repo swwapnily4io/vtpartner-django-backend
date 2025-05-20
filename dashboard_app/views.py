@@ -1360,7 +1360,7 @@ def all_vehicles(request):
 
             query = """
                 SELECT vehicle_id, vehicle_name, weight, vehicle_types_tbl.vehicle_type_id,
-                       vehicle_types_tbl.vehicle_type_name, description, image, size_image
+                       vehicle_types_tbl.vehicle_type_name, description, image, size_image,minimum_waiting_time,penalty_charge
                 FROM vtpartner.vehiclestbl
                 JOIN vtpartner.vehicle_types_tbl ON vehiclestbl.vehicle_type_id = vehicle_types_tbl.vehicle_type_id
                 WHERE category_id = %s
@@ -1382,6 +1382,8 @@ def all_vehicles(request):
                     "description": row[5],
                     "image": row[6],
                     "size_image": row[7],
+                    "minimum_waiting_time": row[8],
+                    "penalty_charge": row[9],
                 }
                 for row in result
             ]
@@ -1406,6 +1408,8 @@ def add_vehicle(request):
             description = body.get("description")
             image = body.get("image")
             size_image = body.get("size_image")
+            minimum_waiting_time = body.get("minimum_waiting_time", 10)  # Default 10 minutes
+            penalty_charge = body.get("penalty_charge", 10.0)  # Default 10.0 per minute
 
             # List of required fields
             required_fields = {
@@ -1416,6 +1420,8 @@ def add_vehicle(request):
                 "description": description,
                 "image": image,
                 "size_image": size_image,
+                "minimum_waiting_time": minimum_waiting_time,
+                "penalty_charge": penalty_charge
             }
 
             # Check for missing fields
@@ -1440,17 +1446,13 @@ def add_vehicle(request):
             # If vehicle name is not duplicate, proceed to insert
             query = """
                 INSERT INTO vtpartner.vehiclestbl 
-                (vehicle_name, weight, vehicle_type_id, description, image, size_image, category_id) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                (vehicle_name, weight, vehicle_type_id, description, image, 
+                size_image, category_id, minimum_waiting_time, penalty_charge) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             values = [
-                vehicle_name,
-                weight,
-                vehicle_type_id,
-                description,
-                image,
-                size_image,
-                category_id,
+                vehicle_name, weight, vehicle_type_id, description,
+                image, size_image, category_id, minimum_waiting_time, penalty_charge
             ]
             row_count = insert_query(query, values)  # Assuming insert_query is defined
 
@@ -1476,6 +1478,8 @@ def edit_vehicle(request):
             description = body.get("description")
             image = body.get("image")
             size_image = body.get("size_image")
+            minimum_waiting_time = body.get("minimum_waiting_time", 10)
+            penalty_charge = body.get("penalty_charge", 10.0)
 
             # List of required fields
             required_fields = {
@@ -1487,6 +1491,8 @@ def edit_vehicle(request):
                 "description": description,
                 "image": image,
                 "size_image": size_image,
+                "minimum_waiting_time": minimum_waiting_time,
+                "penalty_charge": penalty_charge
             }
 
             # Check for missing fields
@@ -1512,18 +1518,14 @@ def edit_vehicle(request):
             query = """
                 UPDATE vtpartner.vehiclestbl 
                 SET vehicle_name = %s, weight = %s, vehicle_type_id = %s, 
-                    description = %s, image = %s, size_image = %s, category_id = %s 
+                    description = %s, image = %s, size_image = %s, category_id = %s,
+                    minimum_waiting_time = %s, penalty_charge = %s
                 WHERE vehicle_id = %s
             """
             values = [
-                vehicle_name,
-                weight,
-                vehicle_type_id,
-                description,
-                image,
-                size_image,
-                category_id,
-                vehicle_id,
+                vehicle_name, weight, vehicle_type_id, description,
+                image, size_image, category_id, minimum_waiting_time,
+                penalty_charge, vehicle_id
             ]
             row_count = update_query(query, values)  # Assuming update_query is defined
 
