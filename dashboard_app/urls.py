@@ -397,6 +397,11 @@ urlpatterns = [
     path('edit_control_setting', views.edit_control_setting, name='edit_control_setting'),
     
     
+    path('get_city_branches', views.get_city_branches, name='get_city_branches'),
+    path('add_branch', views.add_branch, name='add_branch'),
+    path('update_branch', views.update_branch, name='update_branch'),
+    
+    
     
     
     
