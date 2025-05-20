@@ -18166,3 +18166,220 @@ def add_super_admin_to_branch(branch_id):
             
     except Exception as err:
         print("Error adding super admin access:", err)
+
+@csrf_exempt
+def get_branch_admins(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            branch_id = data.get("branch_id")
+            
+            if not branch_id:
+                return JsonResponse({"message": "Branch ID is required"}, status=400)
+
+            query = """
+                SELECT a.admin_id, a.admin_name, a.email, a.mobile_no, 
+                       a.admin_role, a.reg_date, aba.can_read, 
+                       aba.can_write, aba.can_delete
+                FROM vtpartner.admintbl a
+                JOIN vtpartner.admin_branch_access aba 
+                ON a.admin_id = aba.admin_id
+                WHERE aba.branch_id = %s
+                ORDER BY a.admin_id DESC
+            """
+            
+            result = select_query(query, [branch_id])
+            admins = [
+                {
+                    "admin_id": row[0],
+                    "admin_name": row[1],
+                    "email": row[2],
+                    "mobile_no": row[3],
+                    "admin_role": row[4],
+                    "reg_date": row[5],
+                    "can_read": row[6],
+                    "can_write": row[7],
+                    "can_delete": row[8]
+                }
+                for row in result
+            ]
+            
+            return JsonResponse({"admins": admins}, status=200)
+
+        except Exception as err:
+            print("Error fetching admins:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def add_branch_admin(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            required_fields = {
+                "admin_name": data.get("admin_name"),
+                "email": data.get("email"),
+                "mobile_no": data.get("mobile_no"),
+                "admin_role": data.get("admin_role"),
+                "password": data.get("password"),
+                "branch_id": data.get("branch_id")
+            }
+
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+
+            # First insert into admintbl
+            admin_query = """
+                INSERT INTO vtpartner.admintbl
+                (username, password, email, branch_id, reg_date, epoch, 
+                 admin_role, mobile_no, admin_name)
+                VALUES (%s, %s, %s, %s, CURRENT_DATE, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP),
+                        %s, %s, %s)
+                RETURNING admin_id
+            """
+            
+            admin_params = [
+                data["email"],  # Using email as username
+                data["password"],
+                data["email"],
+                data["branch_id"],
+                data["admin_role"],
+                data["mobile_no"],
+                data["admin_name"]
+            ]
+
+            result = insert_query(admin_query, admin_params)
+            
+            if result and len(result) > 0:
+                admin_id = result[0][0]
+                
+                # Insert into admin_branch_access
+                access_query = """
+                    INSERT INTO vtpartner.admin_branch_access
+                    (admin_id, branch_id, can_read, can_write, can_delete)
+                    VALUES (%s, %s, %s, %s, %s)
+                """
+                
+                access_params = [
+                    admin_id,
+                    data["branch_id"],
+                    data.get("can_read", True),
+                    data.get("can_write", False),
+                    data.get("can_delete", False)
+                ]
+
+                insert_query(access_query, access_params)
+                
+                return JsonResponse({
+                    "message": "Admin added successfully",
+                    "admin_id": admin_id
+                }, status=200)
+            
+            return JsonResponse({"message": "Failed to add admin"}, status=400)
+
+        except Exception as err:
+            print("Error adding admin:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def update_admin(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            required_fields = {
+                "admin_id": data.get("admin_id"),
+                "admin_name": data.get("admin_name"),
+                "email": data.get("email"),
+                "mobile_no": data.get("mobile_no"),
+                "admin_role": data.get("admin_role")
+            }
+
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+
+            # Update admin details
+            admin_query = """
+                UPDATE vtpartner.admintbl
+                SET admin_name = %s,
+                    email = %s,
+                    username = %s,
+                    mobile_no = %s,
+                    admin_role = %s,
+                    epoch = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)
+                WHERE admin_id = %s
+            """
+            
+            admin_params = [
+                data["admin_name"],
+                data["email"],
+                data["email"],  # Update username to match email
+                data["mobile_no"],
+                data["admin_role"],
+                data["admin_id"]
+            ]
+
+            update_query(admin_query, admin_params)
+
+            # Update permissions
+            access_query = """
+                UPDATE vtpartner.admin_branch_access
+                SET can_read = %s,
+                    can_write = %s,
+                    can_delete = %s
+                WHERE admin_id = %s AND branch_id = %s
+            """
+            
+            access_params = [
+                data.get("can_read", True),
+                data.get("can_write", False),
+                data.get("can_delete", False),
+                data["admin_id"],
+                data["branch_id"]
+            ]
+
+            update_query(access_query, access_params)
+            
+            return JsonResponse({"message": "Admin updated successfully"}, status=200)
+
+        except Exception as err:
+            print("Error updating admin:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def delete_admin(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            admin_id = data.get("admin_id")
+            
+            if not admin_id:
+                return JsonResponse({"message": "Admin ID is required"}, status=400)
+
+            # First delete from admin_branch_access
+            access_query = """
+                DELETE FROM vtpartner.admin_branch_access
+                WHERE admin_id = %s
+            """
+            delete_query(access_query, [admin_id])
+
+            # Then delete from admintbl
+            admin_query = """
+                DELETE FROM vtpartner.admintbl
+                WHERE admin_id = %s
+            """
+            delete_query(admin_query, [admin_id])
+            
+            return JsonResponse({"message": "Admin deleted successfully"}, status=200)
+
+        except Exception as err:
+            print("Error deleting admin:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)

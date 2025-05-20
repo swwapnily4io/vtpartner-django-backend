@@ -401,6 +401,11 @@ urlpatterns = [
     path('add_branch', views.add_branch, name='add_branch'),
     path('update_branch', views.update_branch, name='update_branch'),
     
+    path('get_branch_admins', views.get_branch_admins, name='get_branch_admins'),
+    path('add_branch_admin', views.add_branch_admin, name='add_branch_admin'),
+    path('update_admin', views.update_admin, name='update_admin'),
+    path('delete_admin', views.delete_admin, name='delete_admin'),
+    
     
     
     
