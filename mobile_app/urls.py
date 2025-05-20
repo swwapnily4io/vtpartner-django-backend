@@ -455,4 +455,6 @@ urlpatterns = [
     path('edit_cab_drop_location', views.edit_cab_drop_location, name='edit_cab_drop_location'),
     
     path('edit_goods_drop_location', views.edit_goods_drop_location, name='edit_goods_drop_location'),
+    
+    path('get_category_cancel_reasons', views.get_category_cancel_reasons, name='get_category_cancel_reasons'),
 ]

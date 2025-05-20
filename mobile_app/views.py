@@ -23060,3 +23060,43 @@ def edit_goods_drop_location(request):
             "message": "Internal Server Error",
             "success": False
         }, status=500)
+        
+@csrf_exempt
+def get_category_cancel_reasons(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            category_id = data.get("category_id")
+
+            if not category_id:
+                return JsonResponse({
+                    "message": "category_id is required"
+                }, status=400)
+
+            query = """
+                SELECT reason_id, reason
+                FROM vtpartner.cancel_reasons_tbl
+                WHERE category_id = %s
+                ORDER BY reason_id
+            """
+            
+            result = select_query(query, [category_id])
+            if not result:
+                return JsonResponse({"message": "No cancel reasons found for this category id"}, status=404)
+            reasons = [{
+                "reason_id": row[0],
+                "reason": row[1]
+            } for row in result]
+            
+            return JsonResponse({
+                "reasons": reasons,
+                "total_count": len(reasons)
+            }, status=200)
+            
+        except Exception as err:
+            print("Error fetching category cancel reasons:", err)
+            return JsonResponse({
+                "message": "Internal Server Error"
+            }, status=500)
+    
+    return JsonResponse({"message": "Method not allowed"}, status=405)
