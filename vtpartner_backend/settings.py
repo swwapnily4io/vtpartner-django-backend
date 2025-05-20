@@ -49,8 +49,7 @@ ALLOWED_HOSTS = [
     'https://100.24.44.74/']
 
 
-print("Host header:", os.environ.get("HTTP_HOST"))
-print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
+
 
 # Application definition
 
