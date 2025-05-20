@@ -662,13 +662,13 @@ def all_branches(request):
                 creation_time, 
                 branch_status 
             FROM 
-                vtpartner.branchtbl, vtpartner.admintbl 
+                vtpartner.branchtbl, vtpartner.admin_branch_access 
             WHERE 
-                admintbl.branch_id = branchtbl.branch_id 
+                admin_branch_access.branch_id = branchtbl.branch_id 
                 AND admin_id = %s
             """
             params = [admin_id]
-            result = select_query(query, params)  # Assuming select_query is defined elsewhere
+            result = select_query(query, params)  
 
             if result == []:
                 return JsonResponse({"message": "No Data Found"}, status=404)
@@ -18016,3 +18016,153 @@ def edit_control_setting(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_city_branches(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            city_id = data.get("city_id")
+            
+            if not city_id:
+                return JsonResponse({"message": "City ID is required"}, status=400)
+
+            query = """
+                SELECT branch_id, branch_name, location, city_id, reg_date, 
+                       creation_time, branch_status
+                FROM vtpartner.branchtbl 
+                WHERE city_id = %s
+                ORDER BY branch_id DESC
+            """
+            
+            result = select_query(query, [city_id])
+            branches = [
+                {
+                    "branch_id": row[0],
+                    "branch_name": row[1],
+                    "location": row[2], 
+                    "city_id": row[3],
+                    "reg_date": row[4],
+                    "creation_time": row[5],
+                    "branch_status": row[6]
+                }
+                for row in result
+            ]
+            
+            return JsonResponse({"branches": branches}, status=200)
+
+        except Exception as err:
+            print("Error fetching branches:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt 
+def add_branch(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            required_fields = {
+                "branch_name": data.get("branch_name"),
+                "location": data.get("location"),
+                "city_id": data.get("city_id")
+            }
+
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+
+            query = """
+                INSERT INTO vtpartner.branchtbl
+                (branch_name, location, city_id, reg_date, creation_time, branch_status)
+                VALUES (%s, %s, %s, CURRENT_DATE, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), 'Active')
+                RETURNING branch_id
+            """
+            
+            params = [
+                data["branch_name"],
+                data["location"], 
+                data["city_id"]
+            ]
+
+            result = insert_query(query, params)
+            
+            if result and len(result) > 0:
+                branch_id = result[0][0]
+                
+                # Add super admin access to this branch
+                add_super_admin_to_branch(branch_id)
+                
+                return JsonResponse({
+                    "message": "Branch added successfully",
+                    "branch_id": branch_id
+                }, status=200)
+            
+            return JsonResponse({"message": "Failed to add branch"}, status=400)
+
+        except Exception as err:
+            print("Error adding branch:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def update_branch(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            required_fields = {
+                "branch_id": data.get("branch_id"),
+                "branch_name": data.get("branch_name"),
+                "location": data.get("location"),
+                "branch_status": data.get("branch_status")
+            }
+
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+
+            query = """
+                UPDATE vtpartner.branchtbl
+                SET branch_name = %s, 
+                    location = %s,
+                    branch_status = %s,
+                    creation_time = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)
+                WHERE branch_id = %s
+            """
+            
+            params = [
+                data["branch_name"],
+                data["location"],
+                data["branch_status"],
+                data["branch_id"]
+            ]
+
+            row_count = update_query(query, params)
+            return JsonResponse({"message": f"{row_count} branch updated successfully"}, status=200)
+
+        except Exception as err:
+            print("Error updating branch:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+def add_super_admin_to_branch(branch_id):
+    """Helper function to add super admin access to a new branch"""
+    try:
+        query = """
+            SELECT admin_id FROM vtpartner.admintbl 
+            WHERE admin_role = 'Super Admin'
+        """
+        super_admins = select_query(query)
+        
+        for admin in super_admins:
+            access_query = """
+                INSERT INTO vtpartner.admin_branch_access
+                (admin_id, branch_id, can_read, can_write, can_delete)
+                VALUES (%s, %s, true, true, true)
+            """
+            insert_query(access_query, [admin[0], branch_id])
+            
+    except Exception as err:
+        print("Error adding super admin access:", err)
