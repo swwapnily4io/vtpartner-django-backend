@@ -17890,3 +17890,129 @@ def update_cancel_reason(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
     
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_all_control_settings(request):
+    if request.method == "POST":
+        try:
+            query = """
+                SELECT control_id, controller_name, values, last_updated_time, admin_id
+                FROM vtpartner.control_settings_tbl
+                ORDER BY control_id DESC
+            """
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No settings found"}, status=404)
+
+            settings = [
+                {
+                    "control_id": row[0],
+                    "controller_name": row[1],
+                    "values": row[2],
+                    "last_updated_time": row[3],
+                    "admin_id": row[4]
+                }
+                for row in result
+            ]
+
+            return JsonResponse({"control_settings": settings}, status=200)
+
+        except Exception as err:
+            print("Error fetching control settings:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def add_control_setting(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            
+            required_fields = {
+                "controller_name": data.get("controller_name"),
+                "values": data.get("values"),
+                "admin_id": data.get("admin_id")
+            }
+            
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+
+            # Check for duplicate controller name
+            check_query = """
+                SELECT COUNT(*) FROM vtpartner.control_settings_tbl
+                WHERE controller_name = %s
+            """
+            result = select_query(check_query, [data["controller_name"]])
+            if result[0][0] > 0:
+                return JsonResponse({"message": "Controller name already exists"}, status=409)
+
+            query = """
+                INSERT INTO vtpartner.control_settings_tbl
+                (controller_name, values, admin_id)
+                VALUES (%s, %s, %s)
+            """
+            params = [
+                data["controller_name"],
+                data["values"],
+                data["admin_id"]
+            ]
+            
+            row_count = insert_query(query, params)
+            return JsonResponse({"message": f"{row_count} setting added successfully"}, status=200)
+
+        except Exception as err:
+            print("Error adding control setting:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def edit_control_setting(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            
+            required_fields = {
+                "control_id": data.get("control_id"),
+                "controller_name": data.get("controller_name"),
+                "values": data.get("values"),
+                "admin_id": data.get("admin_id")
+            }
+            
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+
+            # Check for duplicate controller name excluding current record
+            check_query = """
+                SELECT COUNT(*) FROM vtpartner.control_settings_tbl
+                WHERE controller_name = %s AND control_id != %s
+            """
+            result = select_query(check_query, [data["controller_name"], data["control_id"]])
+            if result[0][0] > 0:
+                return JsonResponse({"message": "Controller name already exists"}, status=409)
+
+            query = """
+                UPDATE vtpartner.control_settings_tbl
+                SET controller_name = %s, values = %s, admin_id = %s,
+                    last_updated_time = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)
+                WHERE control_id = %s
+            """
+            params = [
+                data["controller_name"],
+                data["values"],
+                data["admin_id"],
+                data["control_id"]
+            ]
+            
+            row_count = update_query(query, params)
+            return JsonResponse({"message": f"{row_count} setting updated successfully"}, status=200)
+
+        except Exception as err:
+            print("Error updating control setting:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)

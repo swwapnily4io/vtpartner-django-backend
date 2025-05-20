@@ -392,6 +392,10 @@ urlpatterns = [
     path('add_cancel_reason', views.add_cancel_reason, name='add_cancel_reason'),
     path('update_cancel_reason', views.update_cancel_reason, name='update_cancel_reason'),
     
+    path('get_all_control_settings', views.get_all_control_settings, name='get_all_control_settings'),
+    path('add_control_setting', views.add_control_setting, name='add_control_setting'),
+    path('edit_control_setting', views.edit_control_setting, name='edit_control_setting'),
+    
     
     
     
