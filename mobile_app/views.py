@@ -2965,7 +2965,7 @@ def all_vehicles_with_price_details(request):
                 vcwp.minimum_time,
                 vcwp.outstation_distance,
                 v.penalty_charge,
-                v.minimum_waiting_time,
+                v.minimum_waiting_time
                 FROM
                 vtpartner.vehiclestbl v
                 JOIN
