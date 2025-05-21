@@ -2963,7 +2963,9 @@ def all_vehicles_with_price_details(request):
                 vcwp.starting_price_per_km,
                 vcwp.base_fare,
                 vcwp.minimum_time,
-                vcwp.outstation_distance
+                vcwp.outstation_distance,
+                v.penalty_charge,
+                v.minimum_waiting_time,
                 FROM
                 vtpartner.vehiclestbl v
                 JOIN
