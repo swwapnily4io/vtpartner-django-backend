@@ -18546,23 +18546,28 @@ def get_service_plan_upgrades(request):
             service_id = data.get("service_id")
             sub_cat_id = data.get("sub_cat_id")
             
-            if not service_id or not sub_cat_id:
+            if not sub_cat_id:
                 return JsonResponse({
-                    "message": "Service ID and Sub Category ID are required"
+                    "message": "Sub Category ID is required"
                 }, status=400)
 
+            # Modified query with LEFT JOIN for other_servicestbl
             query = """
                 SELECT spu.plan_upgrade_id, spu.service_id, spu.sub_cat_id, 
                        spu.upgrade_name, spu.price, spu.creation_time,
-                       os.service_name, sc.sub_cat_name
+                       COALESCE(os.service_name, 'NA') as service_name, 
+                       sc.sub_cat_name
                 FROM vtpartner.service_plan_upgrades spu
-                JOIN vtpartner.other_servicestbl os ON spu.service_id = os.service_id
+                LEFT JOIN vtpartner.other_servicestbl os ON spu.service_id = os.service_id
                 JOIN vtpartner.sub_categorytbl sc ON spu.sub_cat_id = sc.sub_cat_id
-                WHERE spu.service_id = %s AND spu.sub_cat_id = %s
+                WHERE spu.sub_cat_id = %s
+                AND (spu.service_id = %s OR (%s = -1 AND spu.service_id = -1))
                 ORDER BY spu.upgrade_name
             """
             
-            result = select_query(query, [service_id, sub_cat_id])
+            result = select_query(query, [sub_cat_id, service_id, service_id])
+            if not result:
+                return JsonResponse({"message": "No upgrades plans found"}, status=404)
             upgrades = [
                 {
                     "plan_upgrade_id": row[0],
@@ -18584,7 +18589,6 @@ def get_service_plan_upgrades(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
-
 @csrf_exempt
 def add_service_plan_upgrade(request):
     if request.method == "POST":
