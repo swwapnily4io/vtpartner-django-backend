@@ -18383,3 +18383,157 @@ def delete_admin(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_vehicle_upgrade_prices(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            vehicle_id = data.get("vehicle_id")
+            
+            if not vehicle_id:
+                return JsonResponse({"message": "Vehicle ID is required"}, status=400)
+
+            query = """
+                SELECT upgrade_price_id, vehicle_id, upgrade_name, price, 
+                       creation_time
+                FROM vtpartner.vehicle_upgrade_prices
+                WHERE vehicle_id = %s
+                ORDER BY upgrade_name
+            """
+            
+            result = select_query(query, [vehicle_id])
+            upgrade_prices = [
+                {
+                    "upgrade_price_id": row[0],
+                    "vehicle_id": row[1],
+                    "upgrade_name": row[2],
+                    "price": float(row[3]),
+                    "creation_time": row[4]
+                }
+                for row in result
+            ]
+            
+            return JsonResponse({"upgrade_prices": upgrade_prices}, status=200)
+
+        except Exception as e:
+            print("Error fetching upgrade prices:", str(e))
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def add_vehicle_upgrade_price(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            required_fields = {
+                "vehicle_id": data.get("vehicle_id"),
+                "upgrade_name": data.get("upgrade_name"),
+                "price": data.get("price")
+            }
+
+            # Validate required fields
+            missing_fields = [k for k, v in required_fields.items() if not v]
+            if missing_fields:
+                return JsonResponse({
+                    "message": f"Missing required fields: {', '.join(missing_fields)}"
+                }, status=400)
+
+            query = """
+                INSERT INTO vtpartner.vehicle_upgrade_prices
+                (vehicle_id, upgrade_name, price)
+                VALUES (%s, %s, %s)
+                RETURNING upgrade_price_id
+            """
+            
+            params = [
+                data["vehicle_id"],
+                data["upgrade_name"],
+                data["price"]
+            ]
+
+            result = insert_query(query, params)
+            
+            if result and len(result) > 0:
+                return JsonResponse({
+                    "message": "Upgrade price added successfully",
+                    "upgrade_price_id": result[0][0]
+                }, status=200)
+            
+            return JsonResponse({"message": "Failed to add upgrade price"}, status=400)
+
+        except Exception as e:
+            print("Error adding upgrade price:", str(e))
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def update_vehicle_upgrade_price(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            required_fields = {
+                "upgrade_price_id": data.get("upgrade_price_id"),
+                "vehicle_id": data.get("vehicle_id"),
+                "upgrade_name": data.get("upgrade_name"),
+                "price": data.get("price")
+            }
+
+            missing_fields = [k for k, v in required_fields.items() if not v]
+            if missing_fields:
+                return JsonResponse({
+                    "message": f"Missing required fields: {', '.join(missing_fields)}"
+                }, status=400)
+
+            query = """
+                UPDATE vtpartner.vehicle_upgrade_prices
+                SET upgrade_name = %s,
+                    price = %s,
+                    creation_time = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)
+                WHERE upgrade_price_id = %s AND vehicle_id = %s
+            """
+            
+            params = [
+                data["upgrade_name"],
+                data["price"],
+                data["upgrade_price_id"],
+                data["vehicle_id"]
+            ]
+
+            update_query(query, params)
+            return JsonResponse({"message": "Upgrade price updated successfully"}, status=200)
+
+        except Exception as e:
+            print("Error updating upgrade price:", str(e))
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def delete_vehicle_upgrade_price(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            upgrade_price_id = data.get("upgrade_price_id")
+            vehicle_id = data.get("vehicle_id")
+            
+            if not upgrade_price_id or not vehicle_id:
+                return JsonResponse({
+                    "message": "Upgrade price ID and vehicle ID are required"
+                }, status=400)
+
+            query = """
+                DELETE FROM vtpartner.vehicle_upgrade_prices
+                WHERE upgrade_price_id = %s AND vehicle_id = %s
+            """
+            
+            delete_query(query, [upgrade_price_id, vehicle_id])
+            return JsonResponse({"message": "Upgrade price deleted successfully"}, status=200)
+
+        except Exception as e:
+            print("Error deleting upgrade price:", str(e))
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)

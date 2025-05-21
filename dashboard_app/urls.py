@@ -406,6 +406,11 @@ urlpatterns = [
     path('update_admin', views.update_admin, name='update_admin'),
     path('delete_admin', views.delete_admin, name='delete_admin'),
     
+     path('get_vehicle_upgrade_prices', views.get_vehicle_upgrade_prices, name='get_vehicle_upgrade_prices'),
+    path('add_vehicle_upgrade_price', views.add_vehicle_upgrade_price, name='add_vehicle_upgrade_price'),
+    path('update_vehicle_upgrade_price', views.update_vehicle_upgrade_price, name='update_vehicle_upgrade_price'),
+    path('delete_vehicle_upgrade_price', views.delete_vehicle_upgrade_price, name='delete_vehicle_upgrade_price'),
+    
     
     
     
