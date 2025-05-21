@@ -42,6 +42,8 @@ urlpatterns = [
     path('all_vehicles',views.all_vehicles,name='all_vehicles'),
     #All Vehicles with category id , price
     path('all_vehicles_with_price_details',views.all_vehicles_with_price_details,name='all_vehicles_with_price_details'),
+    # Vehicles with category id , price upgraded
+    path('get_vehicle_upgrade_prices',views.get_vehicle_upgrade_prices,name='get_vehicle_upgrade_prices'),
     #Allowed PinCodes
     path('allowed_pin_code',views.allowed_pin_code,name='allowed_pin_code'),
     #Calculate Distance between 2 place IDs
