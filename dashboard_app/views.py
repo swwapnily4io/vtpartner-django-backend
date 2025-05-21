@@ -18589,6 +18589,7 @@ def get_service_plan_upgrades(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 @csrf_exempt
 def add_service_plan_upgrade(request):
     if request.method == "POST":
@@ -18700,11 +18701,10 @@ def delete_service_plan_upgrade(request):
             query = """
                 DELETE FROM vtpartner.service_plan_upgrades
                 WHERE plan_upgrade_id = %s 
-                AND service_id = %s 
-                AND sub_cat_id = %s
+                
             """
             
-            delete_query(query, [plan_upgrade_id, service_id, sub_cat_id])
+            delete_query(query, [plan_upgrade_id])
             return JsonResponse({"message": "Service plan upgrade deleted successfully"}, status=200)
 
         except Exception as e:
