@@ -3001,6 +3001,7 @@ def all_vehicles_with_price_details(request):
                     "base_fare": row[9],
                     "minimum_time": row[10],
                     "outstation_distance": row[11],
+                    "minimum_waiting_time": row[12],
                     
                 }
                 for row in result
