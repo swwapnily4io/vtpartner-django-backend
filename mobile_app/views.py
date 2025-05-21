@@ -8384,6 +8384,7 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token_old(
         coupon_id = data.get("coupon_id")
         coupon_amount = data.get("coupon_amount")
         before_coupon_amount = data.get("before_coupon_amount")
+        hike_price = data.get("hike_price")
 
         # List of required fields
         required_fields = {
@@ -8444,12 +8445,12 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token_old(
                     distance, time, total_price, base_price, booking_timing, booking_date, 
                     otp, gst_amount, igst_amount, 
                     payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
-                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,goods_vehicle_id
+                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,goods_vehicle_id,hike_price
                 ) 
                 VALUES (
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
-                    %s, %s,%s, %s,%s, %s,%s, %s,%s,%s,%s,%s,%s
+                    %s, %s,%s, %s,%s, %s,%s, %s,%s,%s,%s,%s,%s,%s
                 ) 
                 RETURNING booking_id;
             """
@@ -8458,7 +8459,7 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token_old(
                 customer_id, '-1', pickup_lat, pickup_lng, destination_lat, destination_lng, 
                 distance, time, total_price, base_price, otp, 
                 gst_amount, igst_amount, payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
-                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,vehicle_id
+                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,vehicle_id,hike_price
             ]
 
             # Assuming insert_query is a function that runs the query
@@ -14268,6 +14269,7 @@ def generate_new_cab_drivers_booking_id_get_nearby_drivers_with_fcm_token(reques
         before_coupon_amount = data.get("before_coupon_amount")
         is_scheduled = data.get("is_scheduled", False)
         scheduled_time = data.get("scheduled_time")
+        hike_price = data.get("hike_price")
         # List of required fields
         required_fields = {
             "city_id":city_id,
@@ -14355,12 +14357,12 @@ def generate_new_cab_drivers_booking_id_get_nearby_drivers_with_fcm_token(reques
                     distance, time, total_price, base_price, booking_timing, booking_date, 
                     otp, gst_amount, igst_amount, 
                     payment_method, city_id,pickup_address,drop_address,
-                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time
+                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time,hike_price
                 ) 
                 VALUES (
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
-                    %s, %s,%s, %s,%s, %s,%s, %s,%s,%s
+                    %s, %s,%s, %s,%s, %s,%s, %s,%s,%s,%s
                 ) 
                 RETURNING booking_id;
             """
@@ -14369,7 +14371,7 @@ def generate_new_cab_drivers_booking_id_get_nearby_drivers_with_fcm_token(reques
                 customer_id, '-1', pickup_lat, pickup_lng, destination_lat, destination_lng, 
                 distance, time, total_price, base_price, otp, 
                 gst_amount, igst_amount, payment_method, city_id,pickup_address,drop_address,
-                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time
+                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time,hike_price
             ]
 
             # Assuming insert_query is a function that runs the query
@@ -17341,6 +17343,7 @@ def generate_new_other_driver_booking_id_get_nearby_agents_with_fcm_token(reques
         before_coupon_amount = data.get("before_coupon_amount")
         is_scheduled = data.get("is_scheduled", False)
         scheduled_time = data.get("scheduled_time")
+        hike_price = data.get("hike_price")
 
         # List of required fields
         required_fields = {       
@@ -17422,12 +17425,12 @@ def generate_new_other_driver_booking_id_get_nearby_agents_with_fcm_token(reques
                     distance, time, total_price, base_price, booking_timing, booking_date, 
                     otp, gst_amount, igst_amount, 
                     payment_method, city_id,pickup_address,drop_address,sub_cat_id,service_id,
-                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time
+                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time,hike_price
                 ) 
                 VALUES (
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
-                    %s, %s,%s, %s,%s,%s,%s,%s,%s,%s,%s,%s
+                    %s, %s,%s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s
                 ) 
                 RETURNING booking_id;
             """
@@ -17436,7 +17439,7 @@ def generate_new_other_driver_booking_id_get_nearby_agents_with_fcm_token(reques
                 customer_id, '-1', pickup_lat, pickup_lng, destination_lat, destination_lng, 
                 distance, time, total_price, base_price, otp, 
                 gst_amount, igst_amount, payment_method, city_id,pickup_address,drop_address,sub_cat_id,service_id,
-                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time
+                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time,hike_price
             ]
 
             # Assuming insert_query is a function that runs the query
@@ -19773,6 +19776,7 @@ def generate_new_jcb_crane_booking_id_get_nearby_agents_with_fcm_token(request):
         before_coupon_amount = data.get("before_coupon_amount")
         is_scheduled = data.get("is_scheduled", False)
         scheduled_time = data.get("scheduled_time")
+        hike_price = data.get("hike_price")
 
         # List of required fields
         required_fields = {
@@ -19850,12 +19854,12 @@ def generate_new_jcb_crane_booking_id_get_nearby_agents_with_fcm_token(request):
                     customer_id, driver_id, pickup_lat, pickup_lng, total_price, base_price, booking_timing, booking_date, 
                     otp, gst_amount, igst_amount, 
                     payment_method, city_id,pickup_address,sub_cat_id,service_id,time,coupon_applied,coupon_id,coupon_amount,before_coupon_amount
-                    ,is_scheduled, scheduled_time
+                    ,is_scheduled, scheduled_time,hike_price
                 ) 
                 VALUES (
                     %s, %s, %s, %s, %s, %s, 
                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
-                    %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
+                    %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
                 ) 
                 RETURNING booking_id;
             """
@@ -19863,7 +19867,7 @@ def generate_new_jcb_crane_booking_id_get_nearby_agents_with_fcm_token(request):
             insert_values = [
                 customer_id, '-1', pickup_lat, pickup_lng, total_price, base_price, otp, 
                 gst_amount, igst_amount, payment_method, city_id,pickup_address,sub_cat_id,service_id,service_hour,coupon_applied,coupon_id,coupon_amount,before_coupon_amount
-                ,is_scheduled, scheduled_time
+                ,is_scheduled, scheduled_time,hike_price
             ]
 
             # Assuming insert_query is a function that runs the query
@@ -21986,6 +21990,7 @@ def generate_new_handyman_booking_id_get_nearby_agents_with_fcm_token(request):
         before_coupon_amount = data.get("before_coupon_amount")
         is_scheduled = data.get("is_scheduled", False)
         scheduled_time = data.get("scheduled_time")
+        hike_price = data.get("hike_price")
 
         # List of required fields
         required_fields = {
@@ -22062,12 +22067,12 @@ def generate_new_handyman_booking_id_get_nearby_agents_with_fcm_token(request):
                     customer_id, driver_id, pickup_lat, pickup_lng, total_price, base_price, booking_timing, booking_date, 
                     otp, gst_amount, igst_amount, 
                     payment_method, city_id,pickup_address,sub_cat_id,service_id,time,
-                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time
+                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time,hike_price
                 ) 
                 VALUES (
                     %s, %s, %s, %s, %s, %s, 
                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
-                    %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
+                    %s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
                 ) 
                 RETURNING booking_id;
             """
@@ -22075,7 +22080,7 @@ def generate_new_handyman_booking_id_get_nearby_agents_with_fcm_token(request):
             insert_values = [
                 customer_id, '-1', pickup_lat, pickup_lng,  total_price, base_price, otp, 
                 gst_amount, igst_amount, payment_method, city_id,pickup_address,sub_cat_id,service_id,service_hour,
-                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time
+                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time,hike_price
             ]
 
             # Assuming insert_query is a function that runs the query
