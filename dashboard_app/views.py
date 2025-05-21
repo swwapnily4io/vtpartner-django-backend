@@ -3316,6 +3316,7 @@ def edit_sub_category(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
+            print("Data received for edit_sub_category:", data)
             category_id = data.get('category_id')
             sub_cat_id = data.get('sub_cat_id')
             sub_cat_name = data.get('sub_cat_name')
