@@ -9213,7 +9213,7 @@ def booking_details_for_ride_acceptance(request):
                 b.before_coupon_amount, b.is_scheduled, b.scheduled_time, b.drop_locations, 
                 b.drop_contacts, b.multiple_drops, b.body_type, b.retry_count, b.last_retry_time, 
                 b.error_message, b.booking_timezone, b.goods_vehicle_id, b.vehicle_price_type, 
-                b.vehicle_radius_km, c.customer_name, c.authtoken AS customers_auth_token
+                b.vehicle_radius_km, c.customer_name, c.authtoken AS customers_auth_token,hike_price
                 FROM vtpartner.bookings_tbl b
                 LEFT JOIN vtpartner.customers_tbl c ON c.customer_id = b.customer_id
                 WHERE b.booking_id = %s
@@ -9278,7 +9278,8 @@ def booking_details_for_ride_acceptance(request):
                     "vehicle_price_type": row[49],
                     "vehicle_radius_km": row[50],
                     "customer_name": row[51],
-                    "customers_auth_token": row[52]
+                    "customers_auth_token": row[52],
+                    "hike_price": row[53],
                 }
                 for row in result
             ]
