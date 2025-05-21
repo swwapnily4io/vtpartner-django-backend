@@ -6030,9 +6030,9 @@ def all_estimations(request):
                     "sub_cat_id": row[17],
                     "sub_cat_name": row[18],
                     "sub_category_image": row[19],
-                    "service_id": row[20],
-                    "service_name": row[21],
-                    "service_image": row[22]
+                    "service_id": row[20]or -1,
+                    "service_name": row[21] or "NA",
+                    "service_image": row[22] or "NA"
                 })
 
             return JsonResponse({"all_estimations_details": mapped_results}, status=200)
