@@ -9756,6 +9756,8 @@ def generate_order_id_for_booking_id_goods_driver(request):
         server_token = data.get("server_token")
         customer_id = data.get("customer_id")
         total_amount = data.get("total_amount")
+        penalty_amount = data.get("penalty_amount")
+        penalty_amount = float(penalty_amount)
         
 
         # List of required fields
@@ -9861,7 +9863,8 @@ def generate_order_id_for_booking_id_goods_driver(request):
                         booking_timezone,
                         goods_vehicle_id,
                         vehicle_price_type,
-                        vehicle_radius_km
+                        vehicle_radius_km,
+                        hike_price
                     )
                     SELECT 
                         customer_id, 
@@ -9909,7 +9912,8 @@ def generate_order_id_for_booking_id_goods_driver(request):
                         booking_timezone,
                         goods_vehicle_id,
                         vehicle_price_type,
-                        vehicle_radius_km
+                        vehicle_radius_km,
+                        hike_price
                     FROM vtpartner.bookings_tbl
                     WHERE booking_id = %s
                     RETURNING order_id;
@@ -9969,11 +9973,12 @@ def generate_order_id_for_booking_id_goods_driver(request):
                                 row_count = update_query(query3, values3)
                                 
                                 query_update = """
-                                update vtpartner.orders_tbl set payment_method=%s,payment_id=%s where order_id=%s
+                                update vtpartner.orders_tbl set payment_method=%s,payment_id=%s,penalty_amount=%s where order_id=%s
                                 """
                                 values_update = [
                                         payment_method,
                                         payment_id,
+                                        penalty_amount,
                                         order_id
                                     ]
 
@@ -9981,6 +9986,8 @@ def generate_order_id_for_booking_id_goods_driver(request):
                                 row_count = update_query(query_update, values_update)
                                 
                                 #Adding the amount to driver earnings table
+                                if penalty_amount > 0:
+                                    total_amount = float(total_amount) + float(penalty_amount)
                                 try:
                                     query4 = """
                                     insert into vtpartner.goods_driver_earningstbl(driver_id,amount,order_id,payment_id,payment_mode) values (%s,%s,%s,%s,%s)
@@ -13448,6 +13455,8 @@ def generate_order_id_for_booking_id_cab_driver(request):
         server_token = data.get("server_token")
         customer_id = data.get("customer_id")
         total_amount = data.get("total_amount")
+        penalty_amount = data.get("penalty_amount")
+        penalty_amount = float(penalty_amount)
         
 
         # List of required fields
@@ -13537,7 +13546,8 @@ def generate_order_id_for_booking_id_cab_driver(request):
                         coupon_amount,
                         before_coupon_amount,
                         is_scheduled,
-                        scheduled_time
+                        scheduled_time,
+                        hike_price
                     )
                     SELECT 
                         customer_id, 
@@ -13569,7 +13579,8 @@ def generate_order_id_for_booking_id_cab_driver(request):
                         coupon_amount,
                         before_coupon_amount,
                         is_scheduled,
-                        scheduled_time
+                        scheduled_time,
+                        hike_price
                     FROM vtpartner.cab_bookings_tbl
                     WHERE booking_id = %s
                     RETURNING order_id;
@@ -13606,11 +13617,12 @@ def generate_order_id_for_booking_id_cab_driver(request):
                                 row_count = update_query(query3, values3)
                                 
                                 query_update = """
-                                update vtpartner.cab_orders_tbl set payment_method=%s,payment_id=%s where order_id=%s
+                                update vtpartner.cab_orders_tbl set payment_method=%s,payment_id=%s,penalty_amount=%s where order_id=%s
                                 """
                                 values_update = [
                                         payment_method,
                                         payment_id,
+                                        penalty_amount,
                                         order_id
                                     ]
 
@@ -13618,6 +13630,8 @@ def generate_order_id_for_booking_id_cab_driver(request):
                                 row_count = update_query(query_update, values_update)
                                 
                                 #Adding the amount to driver earnings table
+                                if penalty_amount > 0:
+                                    total_amount = float(total_amount) + float(penalty_amount)
                                 try:
                                     query4 = """
                                     insert into vtpartner.cab_driver_earningstbl(driver_id,amount,order_id,payment_id,payment_mode) values (%s,%s,%s,%s,%s)
@@ -16289,7 +16303,8 @@ def generate_order_id_for_booking_id_other_driver(request):
                         sub_cat_id,
                         is_scheduled,
                         scheduled_time,
-                        penalty_amount
+                        penalty_amount,
+                        hike_price
                         
                     )
                     SELECT 
@@ -16321,7 +16336,8 @@ def generate_order_id_for_booking_id_other_driver(request):
                         sub_cat_id,
                         is_scheduled,
                         scheduled_time,
-                        penalty_amount
+                        penalty_amount,
+                        hike_price
                         
                     FROM vtpartner.other_driver_bookings_tbl
                     WHERE booking_id = %s
@@ -16358,11 +16374,12 @@ def generate_order_id_for_booking_id_other_driver(request):
                                 row_count = update_query(query3, values3)
                                 
                                 query_update = """
-                                update vtpartner.other_driver_orders_tbl set payment_method=%s,payment_id=%s where order_id=%s
+                                update vtpartner.other_driver_orders_tbl set payment_method=%s,payment_id=%s,penalty_amount=%s where order_id=%s
                                 """
                                 values_update = [
                                         payment_method,
                                         payment_id,
+                                        penalty_amount,
                                         order_id
                                     ]
 
@@ -18954,7 +18971,8 @@ def generate_order_id_for_booking_id_jcb_crane_driver(request):
                         time,
                         is_scheduled,
                         scheduled_time,
-                        penalty_amount
+                        penalty_amount,
+                        hike_price
                     )
                     SELECT 
                         customer_id, 
@@ -18981,7 +18999,8 @@ def generate_order_id_for_booking_id_jcb_crane_driver(request):
                         time,
                         is_scheduled,
                         scheduled_time,
-                        penalty_amount
+                        penalty_amount,
+                        hike_price
                     FROM vtpartner.jcb_crane_bookings_tbl
                     WHERE booking_id = %s
                     RETURNING order_id;
@@ -19017,11 +19036,12 @@ def generate_order_id_for_booking_id_jcb_crane_driver(request):
                                 row_count = update_query(query3, values3)
                                 
                                 query_update = """
-                                update vtpartner.jcb_crane_orders_tbl set payment_method=%s,payment_id=%s where order_id=%s
+                                update vtpartner.jcb_crane_orders_tbl set payment_method=%s,payment_id=%s,penalty_amount=%s where order_id=%s
                                 """
                                 values_update = [
                                         payment_method,
                                         payment_id,
+                                        penalty_amount,
                                         order_id
                                     ]
 
@@ -21224,7 +21244,8 @@ def generate_order_id_for_booking_id_handyman(request):
                         service_id,
                         is_scheduled,
                         scheduled_time,
-                        penalty_amount
+                        penalty_amount,
+                        hike_price
                     )
                     SELECT 
                         customer_id, 
@@ -21251,7 +21272,8 @@ def generate_order_id_for_booking_id_handyman(request):
                         service_id,
                         is_scheduled,
                         scheduled_time,
-                        penalty_amount
+                        penalty_amount,
+                        hike_price
                     FROM vtpartner.handyman_bookings_tbl
                     WHERE booking_id = %s
                     RETURNING order_id;
@@ -21287,12 +21309,13 @@ def generate_order_id_for_booking_id_handyman(request):
                                 row_count = update_query(query3, values3)
                                 
                                 query_update = """
-                                update vtpartner.handyman_orders_tbl set payment_method=%s,payment_id=%s where order_id=%s
+                                update vtpartner.handyman_orders_tbl set payment_method=%s,payment_id=%s,penalty_amount=%s where order_id=%s
                                 """
                                 values_update = [
                                         payment_method,
                                         payment_id,
-                                        order_id
+                                        penalty_amount,
+                                        order_id,
                                     ]
 
                                 # Execute the query
