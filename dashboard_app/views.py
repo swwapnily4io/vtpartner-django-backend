@@ -18537,3 +18537,174 @@ def delete_vehicle_upgrade_price(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_service_plan_upgrades(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            service_id = data.get("service_id")
+            sub_cat_id = data.get("sub_cat_id")
+            
+            if not service_id or not sub_cat_id:
+                return JsonResponse({
+                    "message": "Service ID and Sub Category ID are required"
+                }, status=400)
+
+            query = """
+                SELECT spu.plan_upgrade_id, spu.service_id, spu.sub_cat_id, 
+                       spu.upgrade_name, spu.price, spu.creation_time,
+                       os.service_name, sc.sub_cat_name
+                FROM vtpartner.service_plan_upgrades spu
+                JOIN vtpartner.other_servicestbl os ON spu.service_id = os.service_id
+                JOIN vtpartner.sub_categorytbl sc ON spu.sub_cat_id = sc.sub_cat_id
+                WHERE spu.service_id = %s AND spu.sub_cat_id = %s
+                ORDER BY spu.upgrade_name
+            """
+            
+            result = select_query(query, [service_id, sub_cat_id])
+            upgrades = [
+                {
+                    "plan_upgrade_id": row[0],
+                    "service_id": row[1],
+                    "sub_cat_id": row[2],
+                    "upgrade_name": row[3],
+                    "price": float(row[4]),
+                    "creation_time": row[5],
+                    "service_name": row[6],
+                    "sub_cat_name": row[7]
+                }
+                for row in result
+            ]
+            
+            return JsonResponse({"upgrades": upgrades}, status=200)
+
+        except Exception as e:
+            print("Error fetching service plan upgrades:", str(e))
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def add_service_plan_upgrade(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            required_fields = {
+                "service_id": data.get("service_id"),
+                "sub_cat_id": data.get("sub_cat_id"),
+                "upgrade_name": data.get("upgrade_name"),
+                "price": data.get("price")
+            }
+
+            missing_fields = [k for k, v in required_fields.items() if not v]
+            if missing_fields:
+                return JsonResponse({
+                    "message": f"Missing required fields: {', '.join(missing_fields)}"
+                }, status=400)
+
+            query = """
+                INSERT INTO vtpartner.service_plan_upgrades
+                (service_id, sub_cat_id, upgrade_name, price)
+                VALUES (%s, %s, %s, %s)
+                RETURNING plan_upgrade_id
+            """
+            
+            params = [
+                data["service_id"],
+                data["sub_cat_id"],
+                data["upgrade_name"],
+                data["price"]
+            ]
+
+            result = insert_query(query, params)
+            
+            if result and len(result) > 0:
+                return JsonResponse({
+                    "message": "Service plan upgrade added successfully",
+                    "plan_upgrade_id": result[0][0]
+                }, status=200)
+            
+            return JsonResponse({"message": "Failed to add service plan upgrade"}, status=400)
+
+        except Exception as e:
+            print("Error adding service plan upgrade:", str(e))
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def update_service_plan_upgrade(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            required_fields = {
+                "plan_upgrade_id": data.get("plan_upgrade_id"),
+                "service_id": data.get("service_id"),
+                "sub_cat_id": data.get("sub_cat_id"),
+                "upgrade_name": data.get("upgrade_name"),
+                "price": data.get("price")
+            }
+
+            missing_fields = [k for k, v in required_fields.items() if not v]
+            if missing_fields:
+                return JsonResponse({
+                    "message": f"Missing required fields: {', '.join(missing_fields)}"
+                }, status=400)
+
+            query = """
+                UPDATE vtpartner.service_plan_upgrades
+                SET upgrade_name = %s,
+                    price = %s,
+                    creation_time = date_part('epoch'::text, CURRENT_TIMESTAMP)
+                WHERE plan_upgrade_id = %s 
+                AND service_id = %s 
+                AND sub_cat_id = %s
+            """
+            
+            params = [
+                data["upgrade_name"],
+                data["price"],
+                data["plan_upgrade_id"],
+                data["service_id"],
+                data["sub_cat_id"]
+            ]
+
+            update_query(query, params)
+            return JsonResponse({"message": "Service plan upgrade updated successfully"}, status=200)
+
+        except Exception as e:
+            print("Error updating service plan upgrade:", str(e))
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def delete_service_plan_upgrade(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            plan_upgrade_id = data.get("plan_upgrade_id")
+            service_id = data.get("service_id")
+            sub_cat_id = data.get("sub_cat_id")
+            
+            if not all([plan_upgrade_id, service_id, sub_cat_id]):
+                return JsonResponse({
+                    "message": "Plan upgrade ID, Service ID and Sub Category ID are required"
+                }, status=400)
+
+            query = """
+                DELETE FROM vtpartner.service_plan_upgrades
+                WHERE plan_upgrade_id = %s 
+                AND service_id = %s 
+                AND sub_cat_id = %s
+            """
+            
+            delete_query(query, [plan_upgrade_id, service_id, sub_cat_id])
+            return JsonResponse({"message": "Service plan upgrade deleted successfully"}, status=200)
+
+        except Exception as e:
+            print("Error deleting service plan upgrade:", str(e))
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
