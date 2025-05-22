@@ -459,4 +459,6 @@ urlpatterns = [
     path('edit_goods_drop_location', views.edit_goods_drop_location, name='edit_goods_drop_location'),
     
     path('get_category_cancel_reasons', views.get_category_cancel_reasons, name='get_category_cancel_reasons'),
+    
+    path('update_goods_booking_penalty_amount', views.update_goods_booking_penalty_amount, name='update_goods_booking_penalty_amount'),
 ]
