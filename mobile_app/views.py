@@ -13166,7 +13166,7 @@ def cab_booking_details_for_ride_acceptance(request):
             
         try:
             query = """
-                select booking_id,cab_bookings_tbl.customer_id,cab_bookings_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,cab_bookings_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,payment_method,cab_bookings_tbl.city_id,cancelled_reason,cancel_time,order_id,customer_name,customers_tbl.authtoken,pickup_address,drop_address from vtpartner.cab_bookings_tbl,vtpartner.customers_tbl where customers_tbl.customer_id=cab_bookings_tbl.customer_id and booking_id=%s
+                select booking_id,cab_bookings_tbl.customer_id,cab_bookings_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,cab_bookings_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,payment_method,cab_bookings_tbl.city_id,cancelled_reason,cancel_time,order_id,customer_name,customers_tbl.authtoken,pickup_address,drop_address,hike_price from vtpartner.cab_bookings_tbl,vtpartner.customers_tbl where customers_tbl.customer_id=cab_bookings_tbl.customer_id and booking_id=%s
             """
             result = select_query(query,[booking_id])  # Assuming select_query is defined elsewhere
 
@@ -13203,6 +13203,7 @@ def cab_booking_details_for_ride_acceptance(request):
                     "customers_auth_token": row[24],
                     "pickup_address": row[25],
                     "drop_address": row[26],
+                    "hike_price": row[27],
                     
                 }
                 for row in result
