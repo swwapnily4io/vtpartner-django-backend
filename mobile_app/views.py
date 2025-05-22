@@ -13500,7 +13500,7 @@ def generate_order_id_for_booking_id_cab_driver(request):
         server_token = data.get("server_token")
         customer_id = data.get("customer_id")
         total_amount = data.get("total_amount")
-        penalty_amount = data.get("penalty_amount")
+        penalty_amount = data.get("penalty_amount",0)
         penalty_amount = float(penalty_amount)
         
 
