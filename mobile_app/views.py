@@ -493,7 +493,7 @@ def find_nearby_goods_drivers(booking):
      pickup_address, drop_address, booking_completed, payment_id, pickup_time, drop_time, coupon_applied,
      coupon_id, coupon_amount, before_coupon_amount, is_scheduled, scheduled_time, drop_locations,
      drop_contacts, multiple_drops, body_type, retry_count, last_retry_time, error_message,
-     booking_timezone, goods_vehicle_id, vehicle_price_type, vehicle_radius_km,booking_type_locations) = booking
+     booking_timezone, goods_vehicle_id, vehicle_price_type, vehicle_radius_km,booking_type_locations,hike_price,penalty_amount) = booking
     
 
     # Parse JSON fields
@@ -624,7 +624,7 @@ def find_nearby_cab_drivers(booking):
      driver_arrival_time, otp, gst_amount, igst_amount, payment_method, city_id, cancelled_reason,
      cancel_time, order_id, pickup_address, drop_address, booking_completed, payment_id, pickup_time,
      drop_time, coupon_applied, coupon_id, coupon_amount, before_coupon_amount, retry_count,
-     last_retry_time, error_message, booking_timezone, is_scheduled, scheduled_time, cab_vehicle_id) = booking
+     last_retry_time, error_message, booking_timezone, is_scheduled, scheduled_time, cab_vehicle_id,hike_price,penalty_amount) = booking
     
 
     query = """
@@ -739,7 +739,7 @@ def find_nearby_other_drivers(booking):
      cancel_time, order_id, pickup_address, drop_address, booking_completed, payment_id, pickup_time,
      drop_time, sub_cat_id, service_id, coupon_applied, coupon_id, coupon_amount, before_coupon_amount,
      retry_count, last_retry_time, error_message, booking_timezone, is_scheduled, scheduled_time,
-     penalty_amount) = booking
+     penalty_amount,hike_price) = booking
     
 
     query = """
@@ -857,7 +857,7 @@ def find_nearby_jcb_crane_agents(booking):
      cancel_time, order_id, pickup_address, drop_address, booking_completed, payment_id, pickup_time,
      drop_time, sub_cat_id, service_id, coupon_applied, coupon_id, coupon_amount, before_coupon_amount,
      retry_count, last_retry_time, error_message, booking_timezone, is_scheduled, scheduled_time,
-     penalty_amount) = booking
+     penalty_amount,hike_price) = booking
     query = """
             SELECT                                       
             main.active_id,
@@ -961,7 +961,7 @@ def find_nearby_handyman_agents(booking):
      cancel_time, order_id, pickup_address, drop_address, booking_completed, payment_id, pickup_time,
      drop_time, sub_cat_id, service_id, coupon_applied, coupon_id, coupon_amount, before_coupon_amount,
      retry_count, last_retry_time, error_message, booking_timezone, is_scheduled, scheduled_time,
-     penalty_amount) = booking
+     penalty_amount,hike_price) = booking
     
 
     query = """
