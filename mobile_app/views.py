@@ -9567,6 +9567,7 @@ def update_booking_status_driver(request):
         customer_id = data.get("customer_id")
         total_payment = data.get("total_payment")
         current_drop_index = data.get("current_drop_index", 0)  # Added for multiple drops
+        penalty_amount = data.get("penalty_amount", 0)
 
         # List of required fields
         required_fields = {
@@ -9717,8 +9718,44 @@ def update_booking_status_driver(request):
                         """
                         update_query(update_pickup_epoch_query, [booking_id])
                     elif booking_status == "Make Payment":
-                        body = f"Please do the payment against Booking ID {booking_id}. Total Amount=Rs.{total_payment}/-"
-                        title = "Make Payment"
+                        # Format amounts for better readability
+                        total_amount = float(total_payment)
+                        penalty = float(penalty_amount)
+                        base_amount = total_amount - penalty
+                        
+                        # Create a detailed payment message
+                        if penalty > 0:
+                            body = (
+                                f"Payment Details for Booking #{booking_id}:\n"
+                                f"Base Fare: ₹{base_amount:.2f}\n"
+                                f"Penalty Charges: ₹{penalty:.2f}\n"
+                                f"Total Amount: ₹{total_amount:.2f}"
+                            )
+                        else:
+                            body = f"Please make payment of ₹{total_amount:.2f} for Booking #{booking_id}"
+                        
+                        title = "Payment Required"
+                        
+                        # Add payment details to data_map for the notification
+                        data_map = {
+                            'intent': 'goods_booking_live_track',
+                            'booking_id': str(booking_id),
+                            'base_amount': str(base_amount),
+                            'penalty_amount': str(penalty),
+                            'total_amount': str(total_amount)
+                        }
+                        
+                        # Update booking with penalty amount
+                        if penalty > 0:
+                            update_penalty_query = """
+                                UPDATE vtpartner.bookings_tbl 
+                                SET penalty_amount = %s
+                                WHERE booking_id = %s
+                            """
+                            update_query(update_penalty_query, [penalty, booking_id])
+                    # elif booking_status == "Make Payment":
+                    #     body = f"Please do the payment against Booking ID {booking_id}. Total Amount=Rs.{total_payment}/-"
+                    #     title = "Make Payment"
                     elif booking_status == "End Trip":
                         body = "Your package has been delivered successfully"
                         title = "Package Delivered"
