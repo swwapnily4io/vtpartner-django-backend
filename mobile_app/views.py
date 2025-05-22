@@ -3904,7 +3904,7 @@ def booking_details_live_track(request):
                 b.is_scheduled, b.scheduled_time, b.drop_locations, b.drop_contacts, 
                 b.multiple_drops, b.body_type, b.retry_count, b.last_retry_time, 
                 b.error_message, b.booking_timezone, b.goods_vehicle_id, 
-                b.vehicle_price_type, b.vehicle_radius_km
+                b.vehicle_price_type, b.vehicle_radius_km,v.minimum_waiting_time,v.penalty_charge,v.vehicle_map_image,b.hike_price
                 FROM vtpartner.bookings_tbl b
                 JOIN vtpartner.goods_driverstbl d ON d.goods_driver_id = b.driver_id
                 JOIN vtpartner.customers_tbl c ON c.customer_id = b.customer_id
@@ -3986,7 +3986,11 @@ def booking_details_live_track(request):
                     "booking_timezone": row[59],
                     "goods_vehicle_id": row[60],
                     "vehicle_price_type": row[61],
-                    "vehicle_radius_km": row[62]
+                    "vehicle_radius_km": row[62],
+                    "minimum_waiting_time": row[63],
+                    "penalty_charge": row[64],
+                    "vehicle_map_image": row[65],
+                    "hike_price": row[66],
                 }
                 booking_details.append(booking_dict)
 
@@ -14559,7 +14563,7 @@ def cab_booking_details_live_track(request):
             
         try:
             query = """
-                select booking_id,cab_bookings_tbl.customer_id,cab_bookings_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,cab_bookings_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,payment_method,cab_bookings_tbl.city_id,cancelled_reason,cancel_time,order_id,driver_first_name,cab_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,cab_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,cab_driverstbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount from vtpartner.vehiclestbl,vtpartner.cab_bookings_tbl,vtpartner.cab_driverstbl,vtpartner.customers_tbl where cab_driverstbl.cab_driver_id=cab_bookings_tbl.driver_id and customers_tbl.customer_id=cab_bookings_tbl.customer_id and booking_id=%s and booking_status!='End Trip' and vehiclestbl.vehicle_id=cab_driverstbl.vehicle_id
+                select booking_id,cab_bookings_tbl.customer_id,cab_bookings_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,cab_bookings_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,payment_method,cab_bookings_tbl.city_id,cancelled_reason,cancel_time,order_id,driver_first_name,cab_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,cab_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,cab_driverstbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,cab_bookings_tbl.hike_price from vtpartner.vehiclestbl,vtpartner.cab_bookings_tbl,vtpartner.cab_driverstbl,vtpartner.customers_tbl where cab_driverstbl.cab_driver_id=cab_bookings_tbl.driver_id and customers_tbl.customer_id=cab_bookings_tbl.customer_id and booking_id=%s and booking_status!='End Trip' and vehiclestbl.vehicle_id=cab_driverstbl.vehicle_id
             """
             result = select_query(query,[booking_id])  # Assuming select_query is defined elsewhere
 
@@ -14609,7 +14613,8 @@ def cab_booking_details_live_track(request):
                     "coupon_applied":row[37],
                     "coupon_id":row[38],
                     "coupon_amount":row[39],
-                    "before_coupon_amount":row[40]
+                    "before_coupon_amount":row[40],
+                    "hike_price":row[41],
                     
                 }
                 for row in result
@@ -14679,7 +14684,7 @@ def jcb_crane_driver_booking_details_live_track(request):
                 jcb_crane_driverstbl.mobile_no AS driver_mobile_no,
                 sub_cat_name,
                 service_name,
-                jcb_crane_driverstbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount,penalty_charges_amount
+                jcb_crane_driverstbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount,penalty_charges_amount,jcb_crane_bookings_tbl.hike_price
             FROM 
                 vtpartner.jcb_crane_bookings_tbl
             LEFT JOIN 
@@ -14738,7 +14743,8 @@ def jcb_crane_driver_booking_details_live_track(request):
                     "coupon_amount":row[33],
                     "before_coupon_amount":row[34],
                     "penalty_amount":row[35],
-                    "penalty_charges_amount":row[36]
+                    "penalty_charges_amount":row[36],
+                    "hike_price":row[37],
                     
 
                     
@@ -14810,7 +14816,7 @@ def handyman_agent_booking_details_live_track(request):
                 handymans_tbl.mobile_no AS driver_mobile_no,
                 sub_cat_name,
                 service_name,
-                handymans_tbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount,penalty_charges_amount
+                handymans_tbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount,penalty_charges_amount,handyman_bookings_tbl.hike_price
             FROM 
                 vtpartner.handyman_bookings_tbl
             LEFT JOIN 
@@ -14869,7 +14875,8 @@ def handyman_agent_booking_details_live_track(request):
                     "coupon_amount":row[33],
                     "before_coupon_amount":row[34],
                     "penalty_amount":row[35],
-                    "penalty_charges_amount":row[36]
+                    "penalty_charges_amount":row[36],
+                    "hike_price":row[37],
                 }
                 for row in result
             ]
@@ -17248,7 +17255,7 @@ def other_driver_booking_details_live_track(request):
                 sub_cat_name,
                 service_name,
                 other_driverstbl.profile_pic,
-                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount,penalty_charges_amount
+                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount,penalty_charges_amount,other_driver_bookings_tbl.hike_price
             FROM 
                 vtpartner.other_driver_bookings_tbl
             LEFT JOIN 
@@ -17310,7 +17317,8 @@ def other_driver_booking_details_live_track(request):
                     "coupon_amount":row[36],
                     "before_coupon_amount":row[37],
                     "penalty_amount":row[38],
-                    "penalty_charges_amount":row[39]
+                    "penalty_charges_amount":row[39],
+                    "hike_price":row[40],
 
                     
                 }
