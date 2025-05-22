@@ -23226,7 +23226,7 @@ def update_goods_booking_penalty_amount(request):
             data = json.loads(request.body)
             booking_id = data.get('booking_id')
             penalty_amount = data.get('penalty_amount')
-            server_token = data.get('server_token')  # For authentication if needed
+            server_token = data.get('server_token')
             
             # Validate required fields
             if not booking_id or penalty_amount is None:
@@ -23242,33 +23242,38 @@ def update_goods_booking_penalty_amount(request):
                     "message": "Penalty amount cannot be negative"
                 }, status=400)
 
-            # Update query
-            query = """
+            # First update the penalty amount
+            update_query_str = """
                 UPDATE vtpartner.bookings_tbl 
                 SET penalty_amount = %s
                 WHERE booking_id = %s
-                RETURNING booking_id, penalty_amount;
             """
-            
             values = (penalty_amount, booking_id)
-            
-            # Execute update query
-            result = update_query(query, values)
-            
-            if result and len(result) > 0:
-                return JsonResponse({
-                    "success": True,
-                    "message": "Penalty amount updated successfully",
-                    "data": {
-                        "booking_id": result[0][0],
-                        "penalty_amount": result[0][1]
-                    }
-                }, status=200)
-            else:
-                return JsonResponse({
-                    "success": False,
-                    "message": "Booking not found"
-                }, status=404)
+            rows_affected = update_query(update_query_str, values)
+
+            if rows_affected > 0:
+                # Now fetch the updated record
+                select_query_str = """
+                    SELECT booking_id, penalty_amount 
+                    FROM vtpartner.bookings_tbl 
+                    WHERE booking_id = %s
+                """
+                result = select_query(select_query_str, [booking_id])
+                
+                if result and len(result) > 0:
+                    return JsonResponse({
+                        "success": True,
+                        "message": "Penalty amount updated successfully",
+                        "data": {
+                            "booking_id": result[0][0],
+                            "penalty_amount": result[0][1]
+                        }
+                    }, status=200)
+                
+            return JsonResponse({
+                "success": False,
+                "message": "Booking not found"
+            }, status=404)
 
         except ValueError as ve:
             return JsonResponse({
