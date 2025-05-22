@@ -3904,7 +3904,7 @@ def booking_details_live_track(request):
                 b.is_scheduled, b.scheduled_time, b.drop_locations, b.drop_contacts, 
                 b.multiple_drops, b.body_type, b.retry_count, b.last_retry_time, 
                 b.error_message, b.booking_timezone, b.goods_vehicle_id, 
-                b.vehicle_price_type, b.vehicle_radius_km,v.minimum_waiting_time,v.penalty_charge,v.vehicle_map_image,b.hike_price
+                b.vehicle_price_type, b.vehicle_radius_km,v.minimum_waiting_time,v.penalty_charge,v.vehicle_map_image,b.hike_price,b.penalty_amount
                 FROM vtpartner.bookings_tbl b
                 JOIN vtpartner.goods_driverstbl d ON d.goods_driver_id = b.driver_id
                 JOIN vtpartner.customers_tbl c ON c.customer_id = b.customer_id
@@ -3991,6 +3991,7 @@ def booking_details_live_track(request):
                     "penalty_charge": row[64],
                     "vehicle_map_image": row[65],
                     "hike_price": row[66],
+                    "penalty_amount": row[67],
                 }
                 booking_details.append(booking_dict)
 
