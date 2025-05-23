@@ -3051,6 +3051,43 @@ def get_vehicle_upgrade_prices(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+@csrf_exempt
+def get_service_upgrade_prices(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            sub_cat_id = data.get("sub_cat_id")
+            service_id = data.get("service_id")
+
+            query = """
+                SELECT plan_upgrade_id, upgrade_name, price 
+                FROM vtpartner.service_plan_upgrades 
+                WHERE sub_cat_id = %s AND service_id = %s 
+                ORDER BY price ASC
+            """
+            
+            result = select_query(query, [sub_cat_id, service_id])
+
+            if not result:
+                return JsonResponse({"message": "No upgrade plans found"}, status=404)
+
+            upgrades = [
+                {
+                    "plan_upgrade_id": row[0],
+                    "upgrade_name": row[1],
+                    "price": float(row[2])
+                }
+                for row in result
+            ]
+
+            return JsonResponse({"upgrade_prices": upgrades}, status=200)
+
+        except Exception as e:
+            print("Error fetching service upgrade prices:", e)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
 # @csrf_exempt
 # def allowed_pin_code(request):
 #     if request.method == "POST":
