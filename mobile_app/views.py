@@ -2169,10 +2169,10 @@ def get_peak_hour_prices(request):
             city_id = data.get('city_id')
             category_id = data.get('category_id',1)
             
-            customer_id = data.get('customer_id')
-            authToken = data.get('auth')
-            if not is_valid_customer_fcm_token(customer_id, authToken):
-                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+            # customer_id = data.get('customer_id')
+            # authToken = data.get('auth')
+            # if not is_valid_customer_fcm_token(customer_id, authToken):
+            #     return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
             query = """
                 SELECT p.*, c.city_name, c.bg_image
