@@ -2165,11 +2165,12 @@ def get_peak_hour_prices(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            customer_id = data.get('customer_id')
-            authToken = data.get('auth')
+            
             city_id = data.get('city_id')
             category_id = data.get('category_id',1)
             
+            customer_id = data.get('customer_id')
+            authToken = data.get('auth')
             if not is_valid_customer_fcm_token(customer_id, authToken):
                 return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
@@ -2327,6 +2328,10 @@ def customer_registration(request):
         purpose = data.get("purpose")
         email = data.get("email")
         pincode = data.get("pincode")
+        authToken = data.get('auth')
+        
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+            return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
         
@@ -12085,7 +12090,14 @@ def get_faqs_by_category(request):
 @csrf_exempt
 def get_all_banners(request):
     if request.method == "POST":
+        
         try:
+            data = json.loads(request.body)
+            customer_id = data.get('customer_id')
+            authToken = data.get('auth')
+            if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+            
             query = """
                 SELECT banner_id, banner_title, banner_description, banner_image, 
                        banner_type, start_date, end_date, status, time_created_at
