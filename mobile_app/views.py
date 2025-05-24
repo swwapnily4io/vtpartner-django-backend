@@ -1081,6 +1081,7 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(run_all_scheduled_booking_processors, 'interval', minutes=1)
 scheduler.start()
 
+#To check and validate api with fcm token for customers
 def is_valid_customer_fcm_token(customer_id, fcm_token):
     try:
         with connection.cursor() as cursor:
@@ -1098,6 +1099,102 @@ def is_valid_customer_fcm_token(customer_id, fcm_token):
     except Exception as e:
         print(f"Error checking token for customer_id={customer_id}: {e}")
         return False
+    
+#To check and validate api with fcm token for goods drivers
+def is_valid_goods_driver_fcm_token(driver_id, fcm_token):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT authtoken FROM vtpartner.goods_driverstbl WHERE goods_driver_id = %s",
+                [driver_id]
+            )
+            result = cursor.fetchone()
+            print(f"driver_id={driver_id}, fcm_token={fcm_token}")
+            if result:
+                stored_token = result[0]
+                print(f"Stored token: {stored_token}, Provided token: {fcm_token}")
+                return stored_token == fcm_token
+            return False
+    except Exception as e:
+        print(f"Error checking token for driver_id={driver_id}: {e}")
+        return False
+
+#To check and validate api with fcm token for Cab drivers
+def is_valid_cab_driver_fcm_token(driver_id, fcm_token):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT authtoken FROM vtpartner.cab_driverstbl WHERE cab_driver_id = %s",
+                [driver_id]
+            )
+            result = cursor.fetchone()
+            print(f"driver_id={driver_id}, fcm_token={fcm_token}")
+            if result:
+                stored_token = result[0]
+                print(f"Stored token: {stored_token}, Provided token: {fcm_token}")
+                return stored_token == fcm_token
+            return False
+    except Exception as e:
+        print(f"Error checking token for driver_id={driver_id}: {e}")
+        return False
+    
+#To check and validate api with fcm token for jcb/crane drivers
+def is_valid_jcb_crane_driver_fcm_token(driver_id, fcm_token):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT authtoken FROM vtpartner.jcb_crane_driverstbl WHERE jcb_crane_driver_id = %s",
+                [driver_id]
+            )
+            result = cursor.fetchone()
+            print(f"driver_id={driver_id}, fcm_token={fcm_token}")
+            if result:
+                stored_token = result[0]
+                print(f"Stored token: {stored_token}, Provided token: {fcm_token}")
+                return stored_token == fcm_token
+            return False
+    except Exception as e:
+        print(f"Error checking token for driver_id={driver_id}: {e}")
+    
+#To check and validate api with fcm token for only driver
+def is_valid_only_driver_fcm_token(driver_id, fcm_token):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT authtoken FROM vtpartner.jcb_crane_driverstbl WHERE jcb_crane_driver_id = %s",
+                [driver_id]
+            )
+            result = cursor.fetchone()
+            print(f"driver_id={driver_id}, fcm_token={fcm_token}")
+            if result:
+                stored_token = result[0]
+                print(f"Stored token: {stored_token}, Provided token: {fcm_token}")
+                return stored_token == fcm_token
+            return False
+    except Exception as e:
+        print(f"Error checking token for driver_id={driver_id}: {e}")
+        return False
+    
+#To check and validate api with fcm token for handyman agent
+def is_valid_handyman_agent_fcm_token(agent_id, fcm_token):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT authtoken FROM vtpartner.handymans_tbl WHERE handyman_id = %s",
+                [agent_id]
+            )
+            result = cursor.fetchone()
+            print(f"driver_id={agent_id}, fcm_token={fcm_token}")
+            if result:
+                stored_token = result[0]
+                print(f"Stored token: {stored_token}, Provided token: {fcm_token}")
+                return stored_token == fcm_token
+            return False
+    except Exception as e:
+        print(f"Error checking token for driver_id={agent_id}: {e}")
+        return False
+    
+
 
 def get_agent_app_firebase_access_token_internal():
     print("agent_app_token_fetched")
