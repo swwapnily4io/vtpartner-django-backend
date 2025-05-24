@@ -2169,10 +2169,10 @@ def get_peak_hour_prices(request):
             city_id = data.get('city_id')
             category_id = data.get('category_id',1)
             
-            # customer_id = data.get('customer_id')
-            # authToken = data.get('auth')
-            # if not is_valid_customer_fcm_token(customer_id, authToken):
-            #     return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+            customer_id = data.get('customer_id')
+            authToken = data.get('auth')
+            if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
             query = """
                 SELECT p.*, c.city_name, c.bg_image
@@ -2391,6 +2391,10 @@ def all_coupons(request):
         try:
             data = json.loads(request.body)
             category_id = data.get('category_id')
+            customer_id = data.get('customer_id')
+            authToken = data.get('auth')
+            if not is_valid_customer_fcm_token(customer_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
             # List of required fields
             required_fields = {
@@ -2455,6 +2459,9 @@ def customer_wallet_details(request):
     if request.method == "POST":
         data = json.loads(request.body)
         customer_id = data.get("customer_id")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         # List of required fields
         required_fields = {
@@ -2570,6 +2577,9 @@ def update_wallet_balance(request):
             amount = data.get("amount")
             razorpay_payment_id = data.get("razorpay_payment_id")
             payment_mode = data.get("payment_mode")
+            authToken = data.get('auth')
+            if not is_valid_customer_fcm_token(customer_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
             # Check for missing fields
             required_fields = {
@@ -2794,6 +2804,12 @@ def all_saved_addresses(request):
 def all_services(request):
     if request.method == "POST":
         try:
+            data = json.loads(request.body)
+            customer_id = data.get('customer_id')
+            authToken = data.get('auth')
+            if not is_valid_customer_fcm_token(customer_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+                
             query = """
                 SELECT 
                     category_id, 
@@ -2943,6 +2959,10 @@ def all_vehicles_with_price_details(request):
             category_id = body.get("category_id")
             price_type_id = body.get("price_type_id")
             city_id = body.get("city_id")
+            customer_id = body.get('customer_id')
+            authToken = body.get('auth')
+            if not is_valid_customer_fcm_token(customer_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
             # List of required fields
             required_fields = {
                 "category_id": category_id,
@@ -3030,6 +3050,10 @@ def get_vehicle_upgrade_prices(request):
         try:
             data = json.loads(request.body)
             vehicle_id = data.get("vehicle_id")
+            customer_id = data.get('customer_id')
+            authToken = data.get('auth')
+            if not is_valid_customer_fcm_token(customer_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
             query = """
                 SELECT upgrade_price_id, upgrade_name, price 
@@ -3067,6 +3091,10 @@ def get_service_upgrade_prices(request):
             data = json.loads(request.body)
             sub_cat_id = data.get("sub_cat_id")
             service_id = data.get("service_id")
+            customer_id = data.get('customer_id')
+            authToken = data.get('auth')
+            if not is_valid_customer_fcm_token(customer_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
             query = """
                 SELECT plan_upgrade_id, upgrade_name, price 
@@ -3150,6 +3178,10 @@ def allowed_pin_code(request):
     if request.method == "POST":
         data = json.loads(request.body)
         pincode = data.get("pincode")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
         # List of required fields
         required_fields = {
@@ -3916,6 +3948,10 @@ def booking_details_live_track(request):
     if request.method == "POST":
         data = json.loads(request.body)
         booking_id = data.get("booking_id")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         # List of required fields
         required_fields = {
@@ -4239,6 +4275,10 @@ def goods_order_details(request):
     if request.method == "POST":
         data = json.loads(request.body)
         order_id = data.get("order_id")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -4390,6 +4430,10 @@ def cab_order_details(request):
     if request.method == "POST":
         data = json.loads(request.body)
         order_id = data.get("order_id")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -4480,6 +4524,10 @@ def other_driver_order_details(request):
     if request.method == "POST":
         data = json.loads(request.body)
         order_id = data.get("order_id")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -4628,6 +4676,10 @@ def handyman_order_details(request):
     if request.method == "POST":
         data = json.loads(request.body)
         order_id = data.get("order_id")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -4777,6 +4829,11 @@ def jcb_crane_order_details(request):
     if request.method == "POST":
         data = json.loads(request.body)
         order_id = data.get("order_id")
+        
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -4932,6 +4989,9 @@ def cancel_booking(request):
         customer_server_token = data.get("customer_server_token")
         pickup_address = data.get("pickup_address")
         cancel_reason = data.get("cancel_reason")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -5037,6 +5097,9 @@ def cancel_cab_booking(request):
         customer_server_token = data.get("customer_server_token")
         pickup_address = data.get("pickup_address")
         cancel_reason = data.get("cancel_reason")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -5139,6 +5202,9 @@ def cancel_other_driver_booking(request):
         customer_server_token = data.get("customer_server_token")
         pickup_address = data.get("pickup_address")
         cancel_reason = data.get("cancel_reason")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -5244,6 +5310,10 @@ def cancel_jcb_crane_driver_booking(request):
         cancel_reason = data.get("cancel_reason")
         
         
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+        
 
         # List of required fields
         required_fields = {
@@ -5345,6 +5415,9 @@ def cancel_handyman_agent_booking(request):
         pickup_address = data.get("pickup_address")
         cancel_reason = data.get("cancel_reason")
         
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
 
         # List of required fields
@@ -5442,6 +5515,10 @@ def save_order_ratings(request):
         ratings = data.get("ratings")
         ratings_description = data.get("ratings_description")
         order_id = data.get("order_id")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -5481,6 +5558,10 @@ def save_cab_order_ratings(request):
         ratings = data.get("ratings")
         ratings_description = data.get("ratings_description")
         order_id = data.get("order_id")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -5521,6 +5602,10 @@ def save_jcb_crane_order_ratings(request):
         ratings_description = data.get("ratings_description")
         order_id = data.get("order_id")
         
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
 
         # List of required fields
@@ -5559,6 +5644,10 @@ def save_other_driver_order_ratings(request):
         ratings = data.get("ratings")
         ratings_description = data.get("ratings_description")
         order_id = data.get("order_id")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -5599,6 +5688,11 @@ def save_handyman_order_ratings(request):
         ratings_description = data.get("ratings_description")
         order_id = data.get("order_id")
         
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+        
         
 
         # List of required fields
@@ -5635,6 +5729,9 @@ def customers_all_bookings(request):
     if request.method == "POST":
         data = json.loads(request.body)
         customer_id = data.get("customer_id")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -5721,6 +5818,9 @@ def customers_all_cab_bookings(request):
     if request.method == "POST":
         data = json.loads(request.body)
         customer_id = data.get("customer_id")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -5803,6 +5903,9 @@ def customers_all_jcb_crane_bookings(request):
     if request.method == "POST":
         data = json.loads(request.body)
         customer_id = data.get("customer_id")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -5939,6 +6042,9 @@ def customers_all_other_driver_bookings(request):
     if request.method == "POST":
         data = json.loads(request.body)
         customer_id = data.get("customer_id")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -6074,6 +6180,9 @@ def customers_all_handyman_bookings(request):
     if request.method == "POST":
         data = json.loads(request.body)
         customer_id = data.get("customer_id")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -6210,6 +6319,9 @@ def get_scheduled_bookings(request):
     if request.method == "POST":
         data = json.loads(request.body)
         customer_id = data.get("customer_id")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
         required_fields = {
             "customer_id": customer_id,
@@ -6456,6 +6568,9 @@ def customers_all_orders(request):
     if request.method == "POST":
         data = json.loads(request.body)
         customer_id = data.get("customer_id")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -6541,6 +6656,9 @@ def customers_all_cab_orders(request):
     if request.method == "POST":
         data = json.loads(request.body)
         customer_id = data.get("customer_id")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -6621,6 +6739,9 @@ def customers_all_jcb_crane_orders(request):
     if request.method == "POST":
         data = json.loads(request.body)
         customer_id = data.get("customer_id")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -6753,6 +6874,9 @@ def customers_all_other_driver_orders(request):
     if request.method == "POST":
         data = json.loads(request.body)
         customer_id = data.get("customer_id")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -7019,6 +7143,10 @@ def goods_driver_current_location(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -7069,6 +7197,10 @@ def cab_driver_current_location(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -7118,6 +7250,10 @@ def other_driver_current_location(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -7168,6 +7304,11 @@ def jcb_crane_driver_current_location(request):
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
         
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+        
         
 
         # List of required fields
@@ -7216,6 +7357,10 @@ def handyman_agent_current_location(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -7267,6 +7412,10 @@ def get_all_sub_categories(request):
         
         data = json.loads(request.body)
         cat_id = data.get("cat_id")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
          # List of required fields
         required_fields = {
@@ -8396,219 +8545,219 @@ ORDER BY distance;
     return JsonResponse({"message": "Method not allowed"}, status=405)
     
 
-@csrf_exempt
-def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token_old(request):
-    if request.method == "POST":
-        data = json.loads(request.body)
-        print("data==>",data)
-        # lat = data.get("lat")
-        # lng = data.get("lng")
-        # city_id = data.get("city_id")
-        price_type = data.get("price_type", 1)
-        radius_km = data.get("radius_km", 5)  # Radius in kilometers
-        vehicle_id = data.get("vehicle_id")  # Vehicle ID
-        # Read the individual fields from the JSON data
-        customer_id = data.get("customer_id")
-        pickup_lat = data.get("pickup_lat")
-        pickup_lng = data.get("pickup_lng")
-        destination_lat = data.get("destination_lat")
-        destination_lng = data.get("destination_lng")
-        distance = data.get("distance")
-        time = data.get("time")
-        total_price = data.get("total_price")
-        base_price = data.get("base_price")
-        otp = random.randint(1000, 9999)  # Generate a random 4-digit OTP
-        gst_amount = data.get("gst_amount")
-        igst_amount = data.get("igst_amount")
-        goods_type_id = data.get("goods_type_id")
-        payment_method = data.get("payment_method")
-        city_id = data.get("city_id")
-        sender_name = data.get("sender_name")
-        sender_number = data.get("sender_number")
-        receiver_name = data.get("receiver_name")
-        receiver_number = data.get("receiver_number")
-        pickup_address = data.get("pickup_address")
-        drop_address = data.get("drop_address")
-        server_access_token = data.get("server_access_token")
+# @csrf_exempt
+# def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token_old(request):
+#     if request.method == "POST":
+#         data = json.loads(request.body)
+#         print("data==>",data)
+#         # lat = data.get("lat")
+#         # lng = data.get("lng")
+#         # city_id = data.get("city_id")
+#         price_type = data.get("price_type", 1)
+#         radius_km = data.get("radius_km", 5)  # Radius in kilometers
+#         vehicle_id = data.get("vehicle_id")  # Vehicle ID
+#         # Read the individual fields from the JSON data
+#         customer_id = data.get("customer_id")
+#         pickup_lat = data.get("pickup_lat")
+#         pickup_lng = data.get("pickup_lng")
+#         destination_lat = data.get("destination_lat")
+#         destination_lng = data.get("destination_lng")
+#         distance = data.get("distance")
+#         time = data.get("time")
+#         total_price = data.get("total_price")
+#         base_price = data.get("base_price")
+#         otp = random.randint(1000, 9999)  # Generate a random 4-digit OTP
+#         gst_amount = data.get("gst_amount")
+#         igst_amount = data.get("igst_amount")
+#         goods_type_id = data.get("goods_type_id")
+#         payment_method = data.get("payment_method")
+#         city_id = data.get("city_id")
+#         sender_name = data.get("sender_name")
+#         sender_number = data.get("sender_number")
+#         receiver_name = data.get("receiver_name")
+#         receiver_number = data.get("receiver_number")
+#         pickup_address = data.get("pickup_address")
+#         drop_address = data.get("drop_address")
+#         server_access_token = data.get("server_access_token")
         
-        coupon_applied = data.get("coupon_applied")
-        coupon_id = data.get("coupon_id")
-        coupon_amount = data.get("coupon_amount")
-        before_coupon_amount = data.get("before_coupon_amount")
-        hike_price = data.get("hike_price")
+#         coupon_applied = data.get("coupon_applied")
+#         coupon_id = data.get("coupon_id")
+#         coupon_amount = data.get("coupon_amount")
+#         before_coupon_amount = data.get("before_coupon_amount")
+#         hike_price = data.get("hike_price")
 
-        # List of required fields
-        required_fields = {
-            "city_id":city_id,
-            "price_type":price_type,
-            "radius_km":radius_km,
-            "vehicle_id":vehicle_id,
-            "customer_id":customer_id,
-            "pickup_lat":pickup_lat,
-            "pickup_lng":pickup_lng,
-            "destination_lat":destination_lat,
-            "destination_lng":destination_lng,
-            "distance":distance,
-            "time":time,
-            "total_price":total_price,
-            "base_price":base_price,
-            "otp":str(otp),
-            "gst_amount":gst_amount,
-            "igst_amount":igst_amount,
-            "goods_type_id":goods_type_id,
-            "payment_method":payment_method,
-            "city_id":city_id,
-            "sender_name":sender_name,
-            "sender_number":sender_number,
-            "receiver_name":receiver_name,
-            "receiver_number":receiver_number,
-            "pickup_address":pickup_address,
-            "drop_address":drop_address,
-            "server_access_token":server_access_token,
+#         # List of required fields
+#         required_fields = {
+#             "city_id":city_id,
+#             "price_type":price_type,
+#             "radius_km":radius_km,
+#             "vehicle_id":vehicle_id,
+#             "customer_id":customer_id,
+#             "pickup_lat":pickup_lat,
+#             "pickup_lng":pickup_lng,
+#             "destination_lat":destination_lat,
+#             "destination_lng":destination_lng,
+#             "distance":distance,
+#             "time":time,
+#             "total_price":total_price,
+#             "base_price":base_price,
+#             "otp":str(otp),
+#             "gst_amount":gst_amount,
+#             "igst_amount":igst_amount,
+#             "goods_type_id":goods_type_id,
+#             "payment_method":payment_method,
+#             "city_id":city_id,
+#             "sender_name":sender_name,
+#             "sender_number":sender_number,
+#             "receiver_name":receiver_name,
+#             "receiver_number":receiver_number,
+#             "pickup_address":pickup_address,
+#             "drop_address":drop_address,
+#             "server_access_token":server_access_token,
             
-        }
+#         }
 
-        # Check for missing fields
-        missing_fields = check_missing_fields(required_fields)
+#         # Check for missing fields
+#         missing_fields = check_missing_fields(required_fields)
         
-        if missing_fields:
-            return JsonResponse(
-                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
-                status=400
-            )
-        
-        
-
-        
-        
+#         if missing_fields:
+#             return JsonResponse(
+#                 {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+#                 status=400
+#             )
         
         
 
-        if pickup_lat is None or pickup_lng is None:
-            return JsonResponse({"message": "Latitude and Longitude are required"}, status=400)
+        
+        
+        
+        
 
-        try:
+#         if pickup_lat is None or pickup_lng is None:
+#             return JsonResponse({"message": "Latitude and Longitude are required"}, status=400)
+
+#         try:
             
-            # Insert record in the booking table
-            query_insert = """
-                INSERT INTO vtpartner.bookings_tbl (
-                    customer_id, driver_id, pickup_lat, pickup_lng, destination_lat, destination_lng, 
-                    distance, time, total_price, base_price, booking_timing, booking_date, 
-                    otp, gst_amount, igst_amount, 
-                    payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
-                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,goods_vehicle_id,hike_price
-                ) 
-                VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                    EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
-                    %s, %s,%s, %s,%s, %s,%s, %s,%s,%s,%s,%s,%s,%s
-                ) 
-                RETURNING booking_id;
-            """
+#             # Insert record in the booking table
+#             query_insert = """
+#                 INSERT INTO vtpartner.bookings_tbl (
+#                     customer_id, driver_id, pickup_lat, pickup_lng, destination_lat, destination_lng, 
+#                     distance, time, total_price, base_price, booking_timing, booking_date, 
+#                     otp, gst_amount, igst_amount, 
+#                     payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
+#                     coupon_applied,coupon_id,coupon_amount,before_coupon_amount,goods_vehicle_id,hike_price
+#                 ) 
+#                 VALUES (
+#                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+#                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
+#                     %s, %s,%s, %s,%s, %s,%s, %s,%s,%s,%s,%s,%s,%s
+#                 ) 
+#                 RETURNING booking_id;
+#             """
 
-            insert_values = [
-                customer_id, '-1', pickup_lat, pickup_lng, destination_lat, destination_lng, 
-                distance, time, total_price, base_price, otp, 
-                gst_amount, igst_amount, payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
-                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,vehicle_id,hike_price
-            ]
+#             insert_values = [
+#                 customer_id, '-1', pickup_lat, pickup_lng, destination_lat, destination_lng, 
+#                 distance, time, total_price, base_price, otp, 
+#                 gst_amount, igst_amount, payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
+#                 coupon_applied,coupon_id,coupon_amount,before_coupon_amount,vehicle_id,hike_price
+#             ]
 
-            # Assuming insert_query is a function that runs the query
-            new_result = insert_query(query_insert, insert_values)
+#             # Assuming insert_query is a function that runs the query
+#             new_result = insert_query(query_insert, insert_values)
             
-            if new_result:
-                booking_id = new_result[0][0]  # Extracting booking_id from the result
-                response_value = [{"booking_id": booking_id}]
+#             if new_result:
+#                 booking_id = new_result[0][0]  # Extracting booking_id from the result
+#                 response_value = [{"booking_id": booking_id}]
                 
-                #send notification to all goods driver
-                fcm_data = {
-                    'intent':'driver',
-                    'booking_id':str(booking_id)
-                }
-                query = """
-                    SELECT 
-                    main.active_id, 
-                    main.goods_driver_id, 
-                    main.current_lat, 
-                    main.current_lng, 
-                    main.entry_time, 
-                    main.current_status, 
-                    goods_driverstbl.driver_first_name,
-                    goods_driverstbl.profile_pic, 
-                    vehiclestbl.image AS vehicle_image, 
-                    vehiclestbl.vehicle_name,
-                    vehiclestbl.weight,
-                    vehicle_city_wise_price_tbl.starting_price_per_km,
-                    vehicle_city_wise_price_tbl.base_fare,
-                    vehiclestbl.vehicle_id,
-                    vehiclestbl.size_image,
-                    goods_driverstbl.authtoken,
-                    (6371 * acos(
-                        cos(radians(%s)) * cos(radians(main.current_lat)) *
-                        cos(radians(main.current_lng) - radians(%s)) +
-                        sin(radians(%s)) * sin(radians(main.current_lat))
-                    )) AS distance
-                FROM vtpartner.active_goods_drivertbl AS main
-                INNER JOIN (
-                    SELECT goods_driver_id, MAX(entry_time) AS max_entry_time
-                    FROM vtpartner.active_goods_drivertbl
-                    GROUP BY goods_driver_id
-                ) AS latest ON main.goods_driver_id = latest.goods_driver_id
-                            AND main.entry_time = latest.max_entry_time
-                JOIN vtpartner.goods_driverstbl ON main.goods_driver_id = goods_driverstbl.goods_driver_id
-                JOIN vtpartner.vehiclestbl ON goods_driverstbl.vehicle_id = vehiclestbl.vehicle_id
-                JOIN vtpartner.vehicle_city_wise_price_tbl ON vehiclestbl.vehicle_id = vehicle_city_wise_price_tbl.vehicle_id
-                AND vehicle_city_wise_price_tbl.city_id = %s  AND vehicle_city_wise_price_tbl.price_type_id=%s
-                WHERE main.current_status = 1
-                AND (6371 * acos(
-                        cos(radians(%s)) * cos(radians(main.current_lat)) *
-                        cos(radians(main.current_lng) - radians(%s)) +
-                        sin(radians(%s)) * sin(radians(main.current_lat))
-                    )) <= %s
-                AND goods_driverstbl.category_id = vehiclestbl.category_id
-                AND goods_driverstbl.category_id = '1' AND  goods_driverstbl.vehicle_id=%s
-                ORDER BY distance;
+#                 #send notification to all goods driver
+#                 fcm_data = {
+#                     'intent':'driver',
+#                     'booking_id':str(booking_id)
+#                 }
+#                 query = """
+#                     SELECT 
+#                     main.active_id, 
+#                     main.goods_driver_id, 
+#                     main.current_lat, 
+#                     main.current_lng, 
+#                     main.entry_time, 
+#                     main.current_status, 
+#                     goods_driverstbl.driver_first_name,
+#                     goods_driverstbl.profile_pic, 
+#                     vehiclestbl.image AS vehicle_image, 
+#                     vehiclestbl.vehicle_name,
+#                     vehiclestbl.weight,
+#                     vehicle_city_wise_price_tbl.starting_price_per_km,
+#                     vehicle_city_wise_price_tbl.base_fare,
+#                     vehiclestbl.vehicle_id,
+#                     vehiclestbl.size_image,
+#                     goods_driverstbl.authtoken,
+#                     (6371 * acos(
+#                         cos(radians(%s)) * cos(radians(main.current_lat)) *
+#                         cos(radians(main.current_lng) - radians(%s)) +
+#                         sin(radians(%s)) * sin(radians(main.current_lat))
+#                     )) AS distance
+#                 FROM vtpartner.active_goods_drivertbl AS main
+#                 INNER JOIN (
+#                     SELECT goods_driver_id, MAX(entry_time) AS max_entry_time
+#                     FROM vtpartner.active_goods_drivertbl
+#                     GROUP BY goods_driver_id
+#                 ) AS latest ON main.goods_driver_id = latest.goods_driver_id
+#                             AND main.entry_time = latest.max_entry_time
+#                 JOIN vtpartner.goods_driverstbl ON main.goods_driver_id = goods_driverstbl.goods_driver_id
+#                 JOIN vtpartner.vehiclestbl ON goods_driverstbl.vehicle_id = vehiclestbl.vehicle_id
+#                 JOIN vtpartner.vehicle_city_wise_price_tbl ON vehiclestbl.vehicle_id = vehicle_city_wise_price_tbl.vehicle_id
+#                 AND vehicle_city_wise_price_tbl.city_id = %s  AND vehicle_city_wise_price_tbl.price_type_id=%s
+#                 WHERE main.current_status = 1
+#                 AND (6371 * acos(
+#                         cos(radians(%s)) * cos(radians(main.current_lat)) *
+#                         cos(radians(main.current_lng) - radians(%s)) +
+#                         sin(radians(%s)) * sin(radians(main.current_lat))
+#                     )) <= %s
+#                 AND goods_driverstbl.category_id = vehiclestbl.category_id
+#                 AND goods_driverstbl.category_id = '1' AND  goods_driverstbl.vehicle_id=%s
+#                 ORDER BY distance;
 
-                """
-                values = [pickup_lat, pickup_lng, pickup_lat,city_id,price_type, pickup_lat, pickup_lng, pickup_lat, radius_km,vehicle_id]
+#                 """
+#                 values = [pickup_lat, pickup_lng, pickup_lat,city_id,price_type, pickup_lat, pickup_lng, pickup_lat, radius_km,vehicle_id]
 
-                # Execute the query
-                nearby_drivers = select_query(query, values)
+#                 # Execute the query
+#                 nearby_drivers = select_query(query, values)
                 
 
                
-                for driver in nearby_drivers:
-                    try:
-                        driver_auth_token = get_goods_driver_auth_token2(driver[1])  # driver[1] assumed to be goods_driver_id
-                        print(f"driver_auth_token ->{driver[1]} {driver_auth_token}")
+#                 for driver in nearby_drivers:
+#                     try:
+#                         driver_auth_token = get_goods_driver_auth_token2(driver[1])  # driver[1] assumed to be goods_driver_id
+#                         print(f"driver_auth_token ->{driver[1]} {driver_auth_token}")
                         
-                        if driver_auth_token:
-                            # print("beforeToken::",server_access_token)
-                            # server_access_token = get_agent_app_firebase_access_token()
-                            # print('------------------------')
-                            # print("AfterToken::",server_access_token)
-                            sendFMCMsg(
-                                driver_auth_token,
-                                f"You have a new Ride Request for \nPickup Location: {pickup_address}. \nDrop Location: {drop_address}",
-                                "New Goods Ride Request",
-                                fcm_data,
-                                server_access_token,
-                                "Agent"
-                            )
-                            print(f"Notification sent to driver ID {driver[1]}")
-                        else:
-                            print(f"Skipped notification for driver ID {driver[1]} due to missing auth token")
-                    except Exception as err:
-                        print(f"Error sending notification to driver ID {driver[1]}: {err}")
+#                         if driver_auth_token:
+#                             # print("beforeToken::",server_access_token)
+#                             # server_access_token = get_agent_app_firebase_access_token()
+#                             # print('------------------------')
+#                             # print("AfterToken::",server_access_token)
+#                             sendFMCMsg(
+#                                 driver_auth_token,
+#                                 f"You have a new Ride Request for \nPickup Location: {pickup_address}. \nDrop Location: {drop_address}",
+#                                 "New Goods Ride Request",
+#                                 fcm_data,
+#                                 server_access_token,
+#                                 "Agent"
+#                             )
+#                             print(f"Notification sent to driver ID {driver[1]}")
+#                         else:
+#                             print(f"Skipped notification for driver ID {driver[1]} due to missing auth token")
+#                     except Exception as err:
+#                         print(f"Error sending notification to driver ID {driver[1]}: {err}")
 
 
-                return JsonResponse({"result": response_value}, status=200)
+#                 return JsonResponse({"result": response_value}, status=200)
 
-        except Exception as err:
-            print("Error executing query:", err)
-            return JsonResponse({"message": "An error occurred"}, status=500)
+#         except Exception as err:
+#             print("Error executing query:", err)
+#             return JsonResponse({"message": "An error occurred"}, status=500)
 
-    return JsonResponse({"message": "Method not allowed"}, status=405)
+#     return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt
 def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(request):
@@ -8658,6 +8807,9 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
         body_type = data.get("body_type", "Any")
         booking_type_locations = data.get("booking_type_locations", 0)
         hike_price = data.get("hike_price")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
         # List of required fields
         required_fields = {
@@ -8908,6 +9060,9 @@ def get_customer_details(request):
         try:
             data = json.loads(request.body)
             customer_id = data.get('customer_id')
+            authToken = data.get('auth')
+            if not is_valid_customer_fcm_token(customer_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
             if not customer_id:
                 return JsonResponse({"message": "Customer ID is required"}, status=400)
@@ -8956,6 +9111,9 @@ def update_customer_details(request):
         try:
             data = json.loads(request.body)
             customer_id = data.get('customer_id')
+            authToken = data.get('auth')
+            if not is_valid_customer_fcm_token(customer_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
             
             if not customer_id:
                 return JsonResponse({"message": "Customer ID is required"}, status=400)
@@ -9026,6 +9184,11 @@ def distance(request):
 def get_all_goods_types(request):
     if request.method == "POST":        
         try:
+            data = json.loads(request.body)
+            customer_id = data.get('customer_id')
+            authToken = data.get('auth')
+            if not is_valid_customer_fcm_token(customer_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
             query = """
             select goods_type_id,goods_type_name from vtpartner.goods_type_tbl
             """
@@ -9058,6 +9221,10 @@ def get_all_guide_lines(request):
     if request.method == "POST":   
         data = json.loads(request.body)
         category_id = data.get("category_id",1)
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -12092,11 +12259,11 @@ def get_all_banners(request):
     if request.method == "POST":
         
         try:
-            # data = json.loads(request.body)
-            # customer_id = data.get('customer_id')
-            # authToken = data.get('auth')
-            # if not is_valid_customer_fcm_token(customer_id, authToken):
-            #     return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+            data = json.loads(request.body)
+            customer_id = data.get('customer_id')
+            authToken = data.get('auth')
+            if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
             
             query = """
                 SELECT banner_id, banner_title, banner_description, banner_image, 
@@ -14382,6 +14549,9 @@ def generate_new_cab_drivers_booking_id_get_nearby_drivers_with_fcm_token(reques
         is_scheduled = data.get("is_scheduled", False)
         scheduled_time = data.get("scheduled_time")
         hike_price = data.get("hike_price")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         # List of required fields
         required_fields = {
             "city_id":city_id,
@@ -14634,6 +14804,10 @@ def cab_booking_details_live_track(request):
     if request.method == "POST":
         data = json.loads(request.body)
         booking_id = data.get("booking_id")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -14726,6 +14900,11 @@ def jcb_crane_driver_booking_details_live_track(request):
     if request.method == "POST":
         data = json.loads(request.body)
         booking_id = data.get("booking_id")
+        
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -14859,6 +15038,11 @@ def handyman_agent_booking_details_live_track(request):
     if request.method == "POST":
         data = json.loads(request.body)
         booking_id = data.get("booking_id")
+        
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -17299,6 +17483,10 @@ def other_driver_booking_details_live_track(request):
     if request.method == "POST":
         data = json.loads(request.body)
         booking_id = data.get("booking_id")
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -17468,6 +17656,9 @@ def generate_new_other_driver_booking_id_get_nearby_agents_with_fcm_token(reques
         is_scheduled = data.get("is_scheduled", False)
         scheduled_time = data.get("scheduled_time")
         hike_price = data.get("hike_price")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
         # List of required fields
         required_fields = {       
@@ -19905,6 +20096,9 @@ def generate_new_jcb_crane_booking_id_get_nearby_agents_with_fcm_token(request):
         is_scheduled = data.get("is_scheduled", False)
         scheduled_time = data.get("scheduled_time")
         hike_price = data.get("hike_price")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
         # List of required fields
         required_fields = {
@@ -22122,6 +22316,9 @@ def generate_new_handyman_booking_id_get_nearby_agents_with_fcm_token(request):
         is_scheduled = data.get("is_scheduled", False)
         scheduled_time = data.get("scheduled_time")
         hike_price = data.get("hike_price")
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
         # List of required fields
         required_fields = {
@@ -22727,6 +22924,10 @@ def edit_handyman_agent_drop_location(request):
         driver_id = data["driver_id"]
         booking_id = data["booking_id"]
         drop_address = data["drop_address"]
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         required_fields = {
             "booking_id": data.get("booking_id"),
@@ -22827,6 +23028,10 @@ def edit_jcb_crane_driver_drop_location(request):
         driver_id = data["driver_id"]
         booking_id = data["booking_id"]
         drop_address = data["drop_address"]
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         required_fields = {
             "booking_id": data.get("booking_id"),
@@ -22923,6 +23128,10 @@ def edit_other_driver_drop_location(request):
     
     try:
         data = json.loads(request.body)
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         driver_id = data["driver_id"]
         booking_id = data["booking_id"]
@@ -23023,6 +23232,11 @@ def edit_cab_drop_location(request):
     try:
         data = json.loads(request.body)
         
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+        
         driver_id = data["driver_id"]
         booking_id = data["booking_id"]
         drop_address = data["drop_address"]
@@ -23121,6 +23335,10 @@ def edit_goods_drop_location(request):
     
     try:
         data = json.loads(request.body)
+        customer_id = data.get('customer_id')
+        authToken = data.get('auth')
+        if not is_valid_customer_fcm_token(customer_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         driver_id = data["driver_id"]
         booking_id = data["booking_id"]
@@ -23242,6 +23460,10 @@ def get_category_cancel_reasons(request):
         try:
             data = json.loads(request.body)
             category_id = data.get("category_id")
+            customer_id = data.get('customer_id')
+            authToken = data.get('auth')
+            if not is_valid_customer_fcm_token(customer_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
             if not category_id:
                 return JsonResponse({
