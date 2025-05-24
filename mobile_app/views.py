@@ -12092,11 +12092,11 @@ def get_all_banners(request):
     if request.method == "POST":
         
         try:
-            data = json.loads(request.body)
-            customer_id = data.get('customer_id')
-            authToken = data.get('auth')
-            if not is_valid_customer_fcm_token(customer_id, authToken):
-                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+            # data = json.loads(request.body)
+            # customer_id = data.get('customer_id')
+            # authToken = data.get('auth')
+            # if not is_valid_customer_fcm_token(customer_id, authToken):
+            #     return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
             
             query = """
                 SELECT banner_id, banner_title, banner_description, banner_image, 
