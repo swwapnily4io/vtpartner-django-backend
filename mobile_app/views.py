@@ -2166,7 +2166,7 @@ def get_peak_hour_prices(request):
         try:
             data = json.loads(request.body)
             customer_id = data.get('customer_id')
-            authToken = data.get('authToken')
+            authToken = data.get('auth')
             city_id = data.get('city_id')
             category_id = data.get('category_id',1)
             
