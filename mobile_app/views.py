@@ -1991,14 +1991,14 @@ def send_otp(request):
             otp = random.randint(100000, 999999)
 
             # OTP message template
-            otp_message = f"VTPartner Your OTP is {otp}. Please use this code to complete your verification. Do not share this OTP with anyone."
+            otp_message = f"KAPS Your OTP is {otp}. Please use this code to complete your verification. Do not share this OTP with anyone."
             # otp_message = f"<#> Your VT Partner App verification code is {otp}. Please use this code to complete your verification. Do not share this OTP with anyone. Thank you."
 
             # SMS API endpoint and parameters
             sms_api_url = "http://smsozone.com/api/mt/SendSMS"
             sms_params = {
                 "APIKey": "qkUTqWb5NU66z5StCDcrIA",
-                "senderid": "VTPART",
+                "senderid": "KAPSVT",
                 "channel": "Trans",
                 "DCS": 0,
                 "flashsms": 0,
