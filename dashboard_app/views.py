@@ -11584,7 +11584,7 @@ def get_handyman_recharge_history(request):
                 SELECT 
                     rh.recharge_history_id,
                     rh.recharge_plan_id,
-                    rh.handyman_id,
+                    rh.driver_id,
                     rh.plan_expiry_time,
                     rh.recharge_time,
                     rh.recharge_date,
@@ -11597,7 +11597,7 @@ def get_handyman_recharge_history(request):
                 FROM vtpartner.handyman_recharge_history_tbl rh
                 LEFT JOIN vtpartner.goods_driver_recharge_plans_tbl rp 
                 ON rh.recharge_plan_id = rp.recharge_plan_id
-                WHERE rh.handyman_id = %s
+                WHERE rh.driver_id = %s
                 ORDER BY rh.recharge_time DESC
             """
             
