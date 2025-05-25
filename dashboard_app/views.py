@@ -11656,7 +11656,7 @@ def get_handyman_wallet_balance(request):
                     h.name,
                     h.mobile_no
                 FROM vtpartner.handyman_wallet w
-                JOIN vtpartner.handymantbl h ON w.handyman_id = h.handyman_id
+                JOIN vtpartner.handymans_tbl h ON w.handyman_id = h.handyman_id
                 WHERE w.handyman_id = %s
             """
             
