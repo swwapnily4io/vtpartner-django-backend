@@ -3839,6 +3839,11 @@ def update_goods_driver_body_type(request):
         data = json.loads(request.body)
         goods_driver_id = data.get("goods_driver_id")
         body_type = data.get("body_type")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         # List of required fields
         required_fields = {
@@ -3893,6 +3898,11 @@ def update_goods_driver_location_preference(request):
         data = json.loads(request.body)
         goods_driver_id = data.get("goods_driver_id")
         location_preference = data.get("location_preference")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         # List of required fields
         required_fields = {
@@ -4045,10 +4055,10 @@ def booking_details_live_track(request):
     if request.method == "POST":
         data = json.loads(request.body)
         booking_id = data.get("booking_id")
-        customer_id = data.get('customer_id')
-        authToken = data.get('auth')
-        if not is_valid_customer_fcm_token(customer_id, authToken):
-                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+        # customer_id = data.get('customer_id')
+        # authToken = data.get('auth')
+        # if not is_valid_customer_fcm_token(customer_id, authToken):
+        #         return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         # List of required fields
         required_fields = {
@@ -4223,6 +4233,11 @@ def get_cab_driver_current_booking_detail(request):
     if request.method == "POST":
         data = json.loads(request.body)
         cab_driver_id = data.get("cab_driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {"cab_driver_id": cab_driver_id}
@@ -4260,6 +4275,11 @@ def get_other_driver_current_booking_detail(request):
     if request.method == "POST":
         data = json.loads(request.body)
         other_driver_id = data.get("other_driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_only_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {"other_driver_id": other_driver_id}
@@ -4298,6 +4318,11 @@ def get_jcb_crane_driver_current_booking_detail(request):
     if request.method == "POST":
         data = json.loads(request.body)
         jcb_crane_driver_id = data.get("jcb_crane_driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {"jcb_crane_driver_id": jcb_crane_driver_id}
@@ -4335,6 +4360,10 @@ def get_handyman_current_booking_detail(request):
     if request.method == "POST":
         data = json.loads(request.body)
         handyman_id = data.get("handyman_id")
+        handyman_agent_id = data.get('handyman_agent_id')
+        authToken = data.get('auth')
+        if not is_valid_handyman_agent_fcm_token(handyman_agent_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
         # List of required fields
         required_fields = {"handyman_id": handyman_id}
@@ -7622,6 +7651,10 @@ def get_goods_driver_details(request):
         try:
             data = json.loads(request.body)
             driver_id = data.get('driver_id')
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+            if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
             if not driver_id:
                 return JsonResponse({"message": "Driver ID is required"}, status=400)
@@ -7723,6 +7756,10 @@ def update_goods_driver_details(request):
         try:
             data = json.loads(request.body)
             driver_id = data.get('driver_id')
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+            if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
             
             if not driver_id:
                 return JsonResponse({"message": "Driver ID is required"}, status=400)
@@ -8232,6 +8269,11 @@ def goods_driver_online_status(request):
     if request.method == "POST":
         data = json.loads(request.body)
         goods_driver_id = data.get("goods_driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
          # List of required fields
         required_fields = {
@@ -8293,6 +8335,11 @@ def goods_driver_update_online_status(request):
         recent_online_pic = data.get("recent_online_pic")
         lat = data.get("lat")
         lng = data.get("lng")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -8383,6 +8430,11 @@ def add_goods_driver_to_active_drivers_table(request):
         goods_driver_id = data.get("goods_driver_id")
         current_lat = data.get("current_lat")
         current_lng = data.get("current_lng")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
          # List of required fields
         required_fields = {
@@ -8439,6 +8491,11 @@ def delete_goods_driver_to_active_drivers_table(request):
     if request.method == "POST":
         data = json.loads(request.body)
         goods_driver_id = data.get("goods_driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
 
          # List of required fields
@@ -9500,6 +9557,11 @@ def booking_details_for_ride_acceptance(request):
     if request.method == "POST":
         data = json.loads(request.body)
         booking_id = data.get("booking_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         # List of required fields
         required_fields = {
@@ -9637,6 +9699,11 @@ def goods_driver_booking_accepted(request):
         driver_id = data.get("driver_id")
         server_token = data.get("server_token")
         customer_id = data.get("customer_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         
 
@@ -10430,6 +10497,11 @@ def get_goods_driver_new_recharge_plans_list(request):
         data = json.loads(request.body)
         category_id = data.get("category_id")
         vehicle_id = data.get("vehicle_id")
+        # driver_unique_id = data.get('driver_unique_id')
+        # authToken = data.get('auth')
+        # if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+        #         return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
 
         # List of required fields
@@ -10538,6 +10610,11 @@ def get_goods_driver_new_recharge_plan_history_list(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
 
         # List of required fields
@@ -10593,7 +10670,11 @@ def get_cab_driver_new_recharge_plan_history_list(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
-        
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -10648,6 +10729,11 @@ def get_jcb_crane_driver_new_recharge_plan_history_list(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         # List of required fields
         required_fields = {
@@ -10713,6 +10799,11 @@ def get_other_driver_new_recharge_plan_history_list(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_only_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         required_fields = {
             "driver_id": driver_id,
@@ -11102,6 +11193,11 @@ def new_goods_driver_new_recharge_plan(request):
             razorpay_payment_id = data.get("razorpay_payment_id")
             amount = data.get("amount")
             expiry_time = data.get("expiry_time")
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+            if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
             
             # List of required fields
             required_fields = {
@@ -11221,6 +11317,11 @@ def new_cab_driver_new_recharge_plan(request):
             razorpay_payment_id = data.get("razorpay_payment_id")
             amount = data.get("amount")
             expiry_time = data.get("expiry_time")
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+            if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
             
             # List of required fields
             required_fields = {
@@ -11341,6 +11442,11 @@ def jcb_crane_driver_new_recharge_plan(request):
             razorpay_payment_id = data.get("razorpay_payment_id")
             amount = data.get("amount")
             expiry_time = data.get("expiry_time")
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+            if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
             
             required_fields = {
                 "driver_id": driver_id,
@@ -11453,6 +11559,11 @@ def other_driver_new_recharge_plan(request):
             razorpay_payment_id = data.get("razorpay_payment_id")
             amount = data.get("amount")
             expiry_time = data.get("expiry_time")
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+            if not is_valid_only_driver_fcm_token(driver_unique_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
             
             required_fields = {
                 "driver_id": driver_id,
@@ -11565,6 +11676,10 @@ def handyman_new_recharge_plan(request):
             razorpay_payment_id = data.get("razorpay_payment_id")
             amount = data.get("amount")
             expiry_time = data.get("expiry_time")
+            handyman_agent_id = data.get('handyman_agent_id')
+            authToken = data.get('auth')
+            if not is_valid_handyman_agent_fcm_token(handyman_agent_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
             
             required_fields = {
                 "driver_id": driver_id,
@@ -11801,6 +11916,11 @@ def goods_driver_all_orders(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         
 
@@ -11888,6 +12008,11 @@ def goods_driver_whole_year_earnings(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         
 
@@ -11961,6 +12086,11 @@ def goods_driver_todays_earnings(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -12021,6 +12151,11 @@ def goods_driver_current_new_recharge_details(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -12076,6 +12211,11 @@ def cab_driver_current_new_recharge_details(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -12131,6 +12271,11 @@ def jcb_crane_current_new_recharge_details(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -12196,6 +12341,11 @@ def other_driver_current_new_recharge_details(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_only_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -12251,6 +12401,10 @@ def handyman_current_new_recharge_details(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        handyman_agent_id = data.get('handyman_agent_id')
+        authToken = data.get('auth')
+        if not is_valid_handyman_agent_fcm_token(handyman_agent_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
         # List of required fields
         required_fields = {
@@ -12317,6 +12471,11 @@ def get_faqs_by_category(request):
         try:
             data = json.loads(request.body)
             category_id = data.get('category_id')
+            # driver_unique_id = data.get('driver_unique_id')
+            # authToken = data.get('auth')
+            # if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+            #         return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
             if category_id is None:
                 return JsonResponse({"message": "Category ID is required"}, status=400)
@@ -12401,6 +12560,11 @@ def get_cab_driver_details(request):
         try:
             data = json.loads(request.body)
             driver_id = data.get('driver_id')
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+            if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
             if not driver_id:
                 return JsonResponse({"message": "Driver ID is required"}, status=400)
@@ -12502,6 +12666,11 @@ def update_cab_driver_details(request):
         try:
             data = json.loads(request.body)
             driver_id = data.get('driver_id')
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+            if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
             
             if not driver_id:
                 return JsonResponse({"message": "Driver ID is required"}, status=400)
@@ -13012,6 +13181,11 @@ def cab_driver_online_status(request):
     if request.method == "POST":
         data = json.loads(request.body)
         cab_driver_id = data.get("cab_driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
          # List of required fields
         required_fields = {
@@ -13071,6 +13245,11 @@ def cab_driver_update_online_status(request):
         recent_online_pic = data.get("recent_online_pic")
         lat = data.get("lat")
         lng = data.get("lng")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -13161,6 +13340,11 @@ def add_cab_driver_to_active_drivers_table(request):
         cab_driver_id = data.get("cab_driver_id")
         current_lat = data.get("current_lat")
         current_lng = data.get("current_lng")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
          # List of required fields
         required_fields = {
@@ -13217,7 +13401,11 @@ def delete_cab_driver_to_active_drivers_table(request):
     if request.method == "POST":
         data = json.loads(request.body)
         cab_driver_id = data.get("cab_driver_id")
-        
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
          # List of required fields
         required_fields = {
@@ -13505,6 +13693,11 @@ def cab_booking_details_for_ride_acceptance(request):
     if request.method == "POST":
         data = json.loads(request.body)
         booking_id = data.get("booking_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         
 
@@ -13585,6 +13778,11 @@ def cab_driver_booking_accepted(request):
         driver_id = data.get("driver_id")
         server_token = data.get("server_token")
         customer_id = data.get("customer_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         
 
@@ -13703,6 +13901,11 @@ def update_booking_status_cab_driver(request):
         server_token = data.get("server_token")
         customer_id = data.get("customer_id")
         total_payment = data.get("total_payment")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -13819,6 +14022,11 @@ def generate_order_id_for_booking_id_cab_driver(request):
         total_amount = data.get("total_amount")
         penalty_amount = data.get("penalty_amount",0)
         penalty_amount = float(penalty_amount)
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
 
         # List of required fields
@@ -14400,6 +14608,11 @@ def cab_driver_all_orders(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         
 
@@ -14482,6 +14695,11 @@ def cab_driver_whole_year_earnings(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         
 
@@ -14901,10 +15119,10 @@ def cab_booking_details_live_track(request):
     if request.method == "POST":
         data = json.loads(request.body)
         booking_id = data.get("booking_id")
-        customer_id = data.get('customer_id')
-        authToken = data.get('auth')
-        if not is_valid_customer_fcm_token(customer_id, authToken):
-                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+        # customer_id = data.get('customer_id')
+        # authToken = data.get('auth')
+        # if not is_valid_customer_fcm_token(customer_id, authToken):
+        #         return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -14998,10 +15216,10 @@ def jcb_crane_driver_booking_details_live_track(request):
         data = json.loads(request.body)
         booking_id = data.get("booking_id")
         
-        customer_id = data.get('customer_id')
-        authToken = data.get('auth')
-        if not is_valid_customer_fcm_token(customer_id, authToken):
-                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+        # customer_id = data.get('customer_id')
+        # authToken = data.get('auth')
+        # if not is_valid_customer_fcm_token(customer_id, authToken):
+        #         return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -15136,10 +15354,10 @@ def handyman_agent_booking_details_live_track(request):
         data = json.loads(request.body)
         booking_id = data.get("booking_id")
         
-        customer_id = data.get('customer_id')
-        authToken = data.get('auth')
-        if not is_valid_customer_fcm_token(customer_id, authToken):
-                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+        # customer_id = data.get('customer_id')
+        # authToken = data.get('auth')
+        # if not is_valid_customer_fcm_token(customer_id, authToken):
+        #         return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -15660,6 +15878,11 @@ def other_driver_online_status(request):
     if request.method == "POST":
         data = json.loads(request.body)
         other_driver_id = data.get("other_driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_only_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -15736,6 +15959,11 @@ def other_driver_update_online_status(request):
         recent_online_pic = data.get("recent_online_pic")
         lat = data.get("lat")
         lng = data.get("lng")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_only_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -15826,6 +16054,11 @@ def add_other_driver_to_active_drivers_table(request):
         other_driver_id = data.get("other_driver_id")
         current_lat = data.get("current_lat")
         current_lng = data.get("current_lng")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_only_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
          # List of required fields
         required_fields = {
@@ -16144,6 +16377,11 @@ def jcb_crane_booking_details_for_ride_acceptance(request):
     if request.method == "POST":
         data = json.loads(request.body)
         booking_id = data.get("booking_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         
 
@@ -16248,6 +16486,10 @@ def handyman_agent_booking_details_for_ride_acceptance(request):
     if request.method == "POST":
         data = json.loads(request.body)
         booking_id = data.get("booking_id")
+        handyman_agent_id = data.get('handyman_agent_id')
+        authToken = data.get('auth')
+        if not is_valid_handyman_agent_fcm_token(handyman_agent_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -16474,6 +16716,11 @@ def update_booking_status_other_driver(request):
         total_payment = data.get("total_payment")
         penalty_amount = data.get("penalty_amount")
         penalty_amount = float(penalty_amount)
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_only_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
 
         # List of required fields
@@ -16602,6 +16849,11 @@ def generate_order_id_for_booking_id_other_driver(request):
         total_amount = data.get("total_amount")
         penalty_amount = data.get("penalty_amount")
         penalty_amount = float(penalty_amount)
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_only_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
 
         # List of required fields
@@ -17171,6 +17423,11 @@ def other_driver_all_orders(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_only_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         
 
@@ -17446,7 +17703,11 @@ def other_driver_whole_year_earnings(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
-        
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_only_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
 
         # List of required fields
@@ -17519,6 +17780,11 @@ def other_driver_todays_earnings(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_only_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -17580,10 +17846,10 @@ def other_driver_booking_details_live_track(request):
     if request.method == "POST":
         data = json.loads(request.body)
         booking_id = data.get("booking_id")
-        customer_id = data.get('customer_id')
-        authToken = data.get('auth')
-        if not is_valid_customer_fcm_token(customer_id, authToken):
-                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+        # customer_id = data.get('customer_id')
+        # authToken = data.get('auth')
+        # if not is_valid_customer_fcm_token(customer_id, authToken):
+        #         return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -18441,6 +18707,11 @@ def jcb_crane_driver_online_status(request):
     if request.method == "POST":
         data = json.loads(request.body)
         jcb_crane_driver_id = data.get("jcb_crane_driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -18518,6 +18789,11 @@ def jcb_crane_driver_update_online_status(request):
         recent_online_pic = data.get("recent_online_pic")
         lat = data.get("lat")
         lng = data.get("lng")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -18608,6 +18884,11 @@ def add_jcb_crane_driver_to_active_drivers_table(request):
         jcb_crane_driver_id = data.get("jcb_crane_driver_id")
         current_lat = data.get("current_lat")
         current_lng = data.get("current_lng")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
          # List of required fields
         required_fields = {
@@ -18664,6 +18945,11 @@ def delete_jcb_crane_driver_to_active_drivers_table(request):
     if request.method == "POST":
         data = json.loads(request.body)
         jcb_crane_driver_id = data.get("jcb_crane_driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
 
          # List of required fields
@@ -19034,6 +19320,11 @@ def jcb_crane_driver_booking_accepted(request):
         driver_id = data.get("driver_id")
         server_token = data.get("server_token")
         customer_id = data.get("customer_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         
 
@@ -19155,6 +19446,11 @@ def update_booking_status_jcb_crane_driver(request):
         total_payment = data.get("total_payment")
         penalty_amount = data.get("penalty_amount")
         penalty_amount = float(penalty_amount)
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -19282,6 +19578,11 @@ def generate_order_id_for_booking_id_jcb_crane_driver(request):
         total_amount = data.get("total_amount")
         penalty_amount = data.get("penalty_amount")
         penalty_amount = float(penalty_amount)
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         
 
@@ -19855,6 +20156,11 @@ def jcb_crane_driver_all_orders(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         
 
@@ -20035,6 +20341,11 @@ def jcb_crane_driver_whole_year_earnings(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         
 
@@ -20108,6 +20419,11 @@ def jcb_crane_driver_todays_earnings(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
         # List of required fields
         required_fields = {
@@ -20791,6 +21107,10 @@ def handyman_online_status(request):
     if request.method == "POST":
         data = json.loads(request.body)
         handyman_id = data.get("handyman_id")
+        handyman_agent_id = data.get('handyman_agent_id')
+        authToken = data.get('auth')
+        if not is_valid_handyman_agent_fcm_token(handyman_agent_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
         # List of required fields
         required_fields = {
@@ -20957,6 +21277,10 @@ def add_handyman_to_active_drivers_table(request):
         handyman_id = data.get("handyman_id")
         current_lat = data.get("current_lat")
         current_lng = data.get("current_lng")
+        handyman_agent_id = data.get('handyman_agent_id')
+        authToken = data.get('auth')
+        if not is_valid_handyman_agent_fcm_token(handyman_agent_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
          # List of required fields
         required_fields = {
@@ -21013,6 +21337,10 @@ def delete_handyman_to_active_drivers_table(request):
     if request.method == "POST":
         data = json.loads(request.body)
         handyman_id = data.get("handyman_id")
+        handyman_agent_id = data.get('handyman_agent_id')
+        authToken = data.get('auth')
+        if not is_valid_handyman_agent_fcm_token(handyman_agent_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
 
          # List of required fields
@@ -21428,6 +21756,10 @@ def update_booking_status_handyman(request):
         total_payment = data.get("total_payment")
         penalty_amount = data.get("penalty_amount")
         penalty_amount = float(penalty_amount)
+        handyman_agent_id = data.get('handyman_agent_id')
+        authToken = data.get('auth')
+        if not is_valid_handyman_agent_fcm_token(handyman_agent_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
 
         # List of required fields
@@ -21558,6 +21890,10 @@ def generate_order_id_for_booking_id_handyman(request):
         service_name = data.get("service_name")
         penalty_amount = data.get("penalty_amount")
         penalty_amount = float(penalty_amount)
+        handyman_agent_id = data.get('handyman_agent_id')
+        authToken = data.get('auth')
+        if not is_valid_handyman_agent_fcm_token(handyman_agent_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
 
         # List of required fields
@@ -22127,6 +22463,11 @@ def handyman_all_orders(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        handyman_agent_id = data.get('handyman_agent_id')
+        authToken = data.get('auth')
+        if not is_valid_handyman_agent_fcm_token(handyman_agent_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
         
         # List of required fields
         required_fields = {
@@ -22256,6 +22597,10 @@ def handyman_whole_year_earnings(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        handyman_agent_id = data.get('handyman_agent_id')
+        authToken = data.get('auth')
+        if not is_valid_handyman_agent_fcm_token(handyman_agent_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
@@ -22329,6 +22674,10 @@ def handyman_todays_earnings(request):
     if request.method == "POST":
         data = json.loads(request.body)
         driver_id = data.get("driver_id")
+        handyman_agent_id = data.get('handyman_agent_id')
+        authToken = data.get('auth')
+        if not is_valid_handyman_agent_fcm_token(handyman_agent_id, authToken):
+                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
         # List of required fields
         required_fields = {
@@ -22621,6 +22970,11 @@ def get_other_driver_details(request):
         try:
             data = json.loads(request.body)
             driver_id = data.get('driver_id')
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+            if not is_valid_only_driver_fcm_token(driver_unique_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
             if not driver_id:
                 return JsonResponse({"message": "Driver ID is required"}, status=400)
@@ -22711,6 +23065,11 @@ def update_other_driver_details(request):
         try:
             data = json.loads(request.body)
             driver_id = data.get('driver_id')
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+            if not is_valid_only_driver_fcm_token(driver_unique_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
             
             if not driver_id:
                 return JsonResponse({"message": "Driver ID is required"}, status=400)
@@ -22755,6 +23114,11 @@ def get_jcb_crane_driver_details(request):
         try:
             data = json.loads(request.body)
             driver_id = data.get('driver_id')
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+            if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
 
             if not driver_id:
                 return JsonResponse({"message": "Driver ID is required"}, status=400)
@@ -22843,6 +23207,11 @@ def update_jcb_crane_driver_details(request):
         try:
             data = json.loads(request.body)
             driver_id = data.get('driver_id')
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+            if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
             
             if not driver_id:
                 return JsonResponse({"message": "Driver ID is required"}, status=400)
@@ -22886,6 +23255,10 @@ def get_handyman_details(request):
         try:
             data = json.loads(request.body)
             handyman_id = data.get('handyman_id')
+            handyman_agent_id = data.get('handyman_agent_id')
+            authToken = data.get('auth')
+            if not is_valid_handyman_agent_fcm_token(handyman_agent_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
             if not handyman_id:
                 return JsonResponse({"message": "Handyman ID is required"}, status=400)
@@ -22973,6 +23346,10 @@ def update_handyman_details(request):
         try:
             data = json.loads(request.body)
             handyman_id = data.get('handyman_id')
+            handyman_agent_id = data.get('handyman_agent_id')
+            authToken = data.get('auth')
+            if not is_valid_handyman_agent_fcm_token(handyman_agent_id, authToken):
+                    return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
             
             if not handyman_id:
                 return JsonResponse({"message": "Handyman ID is required"}, status=400)
