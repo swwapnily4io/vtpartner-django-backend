@@ -7135,7 +7135,7 @@ ORDER BY
 def customers_all_handyman_orders(request):
     if request.method == "POST":
         data = json.loads(request.body)
-        customer_id = data.get("customer_id")
+        
         customer_id = data.get('customer_id')
         authToken = data.get('auth')
         if not is_valid_customer_fcm_token(customer_id, authToken):
