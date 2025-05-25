@@ -11184,7 +11184,7 @@ def get_jcb_crane_driver_wallet_balance(request):
                     w.driver_id,
                     w.current_balance,
                     w.last_updated,
-                    d.driver_first_name,
+                    d.driver_name,
                     d.mobile_no
                 FROM vtpartner.jcb_crane_driver_wallet w
                 JOIN vtpartner.jcb_crane_driverstbl d ON w.driver_id = d.jcb_crane_driver_id
@@ -11652,7 +11652,7 @@ def get_handyman_wallet_balance(request):
                     w.handyman_id,
                     w.current_balance,
                     w.last_updated,
-                    h.handyman_first_name,
+                    h.name,
                     h.mobile_no
                 FROM vtpartner.handyman_wallet w
                 JOIN vtpartner.handymantbl h ON w.handyman_id = h.handyman_id
