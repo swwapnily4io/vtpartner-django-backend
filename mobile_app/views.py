@@ -1355,7 +1355,203 @@ def get_customer_api_auth_token(request):
             print("Error in get_customer_auth_token:", err)
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_goods_driver_api_auth_token(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            goods_driver_id = data.get("goods_driver_id")
+
+            # Validate required fields
+            required_fields = {
+                "goods_driver_id": goods_driver_id,
+            }
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+
+            # Query to get authToken
+            query = "SELECT authtoken FROM vtpartner.goods_driverstbl WHERE goods_driver_id = %s"
+            result = select_query(query, [goods_driver_id])
+
+            if not result:
+                return JsonResponse({"message": "Goods driver not found"}, status=404)
+
+            auth_token = result[0][0]
+
+            return JsonResponse({
+                "message": "Success",
+                "goods_driver_id": goods_driver_id,
+                "authToken": auth_token
+            }, status=200)
+
+        except Exception as err:
+            print("Error in get_goods_driver_auth_token:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
     return JsonResponse({"message": "Method not allowed"}, status=405)       
+
+@csrf_exempt
+def get_cab_driver_api_auth_token(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            cab_driver_id = data.get("cab_driver_id")
+
+            # Validate required fields
+            required_fields = {
+                "cab_driver_id": cab_driver_id,
+            }
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+
+            # Query to get authToken
+            query = "SELECT authtoken FROM vtpartner.cab_driverstbl WHERE cab_driver_id = %s"
+            result = select_query(query, [cab_driver_id])
+
+            if not result:
+                return JsonResponse({"message": "Cab_driver not found"}, status=404)
+
+            auth_token = result[0][0]
+
+            return JsonResponse({
+                "message": "Success",
+                "cab_driver_id": cab_driver_id,
+                "authToken": auth_token
+            }, status=200)
+
+        except Exception as err:
+            print("Error in get_cab_driver_auth_token:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)   
+
+@csrf_exempt
+def get_jcb_crane_driver_api_auth_token(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            jcb_crane_driver_id = data.get("jcb_crane_driver_id")
+
+            # Validate required fields
+            required_fields = {
+                "jcb_crane_driver_id": jcb_crane_driver_id,
+            }
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+
+            # Query to get authToken
+            query = "SELECT authtoken FROM vtpartner.jcb_crane_driverstbl WHERE jcb_crane_driver_id = %s"
+            result = select_query(query, [jcb_crane_driver_id])
+
+            if not result:
+                return JsonResponse({"message": "Jcb_crane_driver not found"}, status=404)
+
+            auth_token = result[0][0]
+
+            return JsonResponse({
+                "message": "Success",
+                "jcb_crane_driver_id": jcb_crane_driver_id,
+                "authToken": auth_token
+            }, status=200)
+
+        except Exception as err:
+            print("Error in get_jcb_crane_auth_token:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)   
+
+
+@csrf_exempt
+def get_only_driver_api_auth_token(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            other_driver_id = data.get("other_driver_id")
+
+            # Validate required fields
+            required_fields = {
+                "other_driver_id": other_driver_id,
+            }
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+
+            # Query to get authToken
+            query = "SELECT authtoken FROM vtpartner.other_driverstbl WHERE other_driver_id = %s"
+            result = select_query(query, [other_driver_id])
+
+            if not result:
+                return JsonResponse({"message": "Driver not found"}, status=404)
+
+            auth_token = result[0][0]
+
+            return JsonResponse({
+                "message": "Success",
+                "driver_id": other_driver_id,
+                "authToken": auth_token
+            }, status=200)
+
+        except Exception as err:
+            print("Error in get_only_driver_auth_token:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)   
+
+@csrf_exempt
+def get_handyman_agent_api_auth_token(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            handyman_id = data.get("handyman_id")
+
+            # Validate required fields
+            required_fields = {
+                "handyman_id": handyman_id,
+            }
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+
+            # Query to get authToken
+            query = "SELECT authtoken FROM vtpartner.handymans_tbl WHERE handyman_id = %s"
+            result = select_query(query, [handyman_id])
+
+            if not result:
+                return JsonResponse({"message": "Handyman not found"}, status=404)
+
+            auth_token = result[0][0]
+
+            return JsonResponse({
+                "message": "Success",
+                "handyman_id": handyman_id,
+                "authToken": auth_token
+            }, status=200)
+
+        except Exception as err:
+            print("Error in get_handyman_id_auth_token:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405) 
         
 @csrf_exempt
 def get_agent_app_firebase_access_token(request):
