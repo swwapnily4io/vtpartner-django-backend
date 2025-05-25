@@ -24151,7 +24151,7 @@ def jcb_crane_driver_wallet_details(request):
                         "status": transaction[3],
                         "transaction_time": transaction[4],
                         "transaction_date": str(transaction[5]),
-                        "reference_id": transaction[6],
+                        "razorpay_payment_id": transaction[6],
                         "payment_mode": transaction[7],
                         "remarks": transaction[8]
                     })
