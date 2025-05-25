@@ -24086,8 +24086,7 @@ def jcb_crane_driver_wallet_details(request):
                         w.current_balance,
                         w.last_updated,
                         d.driver_name,
-                        d.mobile_no,
-                        d.email
+                        d.mobile_no
                     FROM vtpartner.jcb_crane_driver_wallet w
                     JOIN vtpartner.jcb_crane_driverstbl d 
                     ON w.driver_id = d.jcb_crane_driver_id
@@ -24140,7 +24139,6 @@ def jcb_crane_driver_wallet_details(request):
                     "last_updated": wallet_result[3],
                     "driver_name": wallet_result[4],
                     "mobile_no": wallet_result[5],
-                    "email": wallet_result[6]
                 }
 
                 # Format transaction history
