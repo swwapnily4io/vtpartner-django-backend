@@ -24044,3 +24044,769 @@ def update_goods_booking_penalty_amount(request):
         "success": False,
         "message": "Method not allowed"
     }, status=405)
+    
+@csrf_exempt
+def jcb_crane_driver_wallet_details(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            print('json body::', data)
+            
+            driver_id = data.get("driver_id")
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+
+            # Validate auth token
+            if not is_valid_jcb_crane_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({
+                    "message": "Invalid or expired token. Please login again.",
+                    "status": "unauthorized"
+                }, status=401)
+
+            # Required fields validation
+            required_fields = {
+                "driver_id": driver_id
+            }
+            
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+
+            try:
+                cursor = connection.cursor()
+                
+                # Get wallet details
+                wallet_query = """
+                    SELECT 
+                        w.wallet_id,
+                        w.driver_id,
+                        w.current_balance,
+                        w.last_updated,
+                        d.driver_name,
+                        d.mobile_no,
+                        d.email
+                    FROM vtpartner.jcb_crane_driver_wallet w
+                    JOIN vtpartner.jcb_crane_driverstbl d 
+                    ON w.driver_id = d.jcb_crane_driver_id
+                    WHERE w.driver_id = %s
+                """
+                
+                cursor.execute(wallet_query, [driver_id])
+                wallet_result = cursor.fetchone()
+
+                # Get transaction history
+                transactions_query = """
+                    SELECT 
+                        transaction_id,
+                        transaction_type,
+                        amount,
+                        status,
+                        transaction_time,
+                        transaction_date,
+                        reference_id,
+                        payment_mode,
+                        remarks
+                    FROM vtpartner.jcb_crane_driver_wallet_transactions
+                    WHERE driver_id = %s
+                    ORDER BY transaction_time DESC
+                """
+                
+                cursor.execute(transactions_query, [driver_id])
+                transaction_results = cursor.fetchall()
+
+                if not wallet_result:
+                    # Create wallet if it doesn't exist
+                    create_wallet_query = """
+                        INSERT INTO vtpartner.jcb_crane_driver_wallet 
+                        (driver_id, current_balance, last_updated)
+                        VALUES (%s, 0, extract(epoch from CURRENT_TIMESTAMP))
+                        RETURNING wallet_id, driver_id, current_balance, last_updated
+                    """
+                    cursor.execute(create_wallet_query, [driver_id])
+                    connection.commit()
+                    
+                    # Fetch the newly created wallet
+                    cursor.execute(wallet_query, [driver_id])
+                    wallet_result = cursor.fetchone()
+
+                # Format wallet details
+                wallet_details = {
+                    "wallet_id": wallet_result[0],
+                    "driver_id": wallet_result[1],
+                    "current_balance": float(wallet_result[2]),
+                    "last_updated": wallet_result[3],
+                    "driver_name": wallet_result[4],
+                    "mobile_no": wallet_result[5],
+                    "email": wallet_result[6]
+                }
+
+                # Format transaction history
+                transaction_history = []
+                for transaction in transaction_results:
+                    transaction_history.append({
+                        "transaction_id": transaction[0],
+                        "transaction_type": transaction[1],
+                        "amount": float(transaction[2]),
+                        "status": transaction[3],
+                        "transaction_time": transaction[4],
+                        "transaction_date": str(transaction[5]),
+                        "reference_id": transaction[6],
+                        "payment_mode": transaction[7],
+                        "remarks": transaction[8]
+                    })
+
+                return JsonResponse({
+                    "status": "success",
+                    "results": {
+                        "wallet_details": wallet_details,
+                        "transaction_history": transaction_history
+                    }
+                }, status=200)
+
+            except Exception as err:
+                print("Database error:", err)
+                return JsonResponse({
+                    "message": "Error fetching wallet details"
+                }, status=500)
+            finally:
+                cursor.close()
+
+        except json.JSONDecodeError:
+            return JsonResponse({
+                "message": "Invalid JSON data"
+            }, status=400)
+        except Exception as err:
+            print("Unexpected error:", err)
+            return JsonResponse({
+                "message": "An unexpected error occurred"
+            }, status=500)
+
+    return JsonResponse({
+        "message": "Method not allowed"
+    }, status=405)
+
+@csrf_exempt
+def goods_driver_wallet_details(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            print('json body::', data)
+            
+            driver_id = data.get("driver_id")
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+
+            # Validate auth token
+            if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({
+                    "message": "Invalid or expired token. Please login again.",
+                    "status": "unauthorized"
+                }, status=401)
+
+            # Required fields validation
+            required_fields = {
+                "driver_id": driver_id
+            }
+            
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+
+            try:
+                cursor = connection.cursor()
+                
+                # Get wallet details
+                wallet_query = """
+                    SELECT 
+                        w.wallet_id,
+                        w.driver_id,
+                        w.current_balance,
+                        w.last_updated,
+                        d.driver_first_name,
+                        d.driver_last_name,
+                        d.mobile_no,
+                        d.bank_name,
+                        d.ifsc_code,
+                        d.account_number,
+                        d.account_name
+                    FROM vtpartner.goods_driver_wallet w
+                    JOIN vtpartner.goods_driverstbl d 
+                    ON w.driver_id = d.goods_driver_id
+                    WHERE w.driver_id = %s
+                """
+                
+                cursor.execute(wallet_query, [driver_id])
+                wallet_result = cursor.fetchone()
+
+                # Get transaction history
+                transactions_query = """
+                    SELECT 
+                        transaction_id,
+                        transaction_type,
+                        amount,
+                        status,
+                        transaction_time,
+                        transaction_date,
+                        reference_id,
+                        payment_mode,
+                        remarks
+                    FROM vtpartner.goods_driver_wallet_transactions
+                    WHERE driver_id = %s
+                    ORDER BY transaction_time DESC
+                """
+                
+                cursor.execute(transactions_query, [driver_id])
+                transaction_results = cursor.fetchall()
+
+                if not wallet_result:
+                    # Create wallet if it doesn't exist
+                    create_wallet_query = """
+                        INSERT INTO vtpartner.goods_driver_wallet 
+                        (driver_id, current_balance, last_updated)
+                        VALUES (%s, 0, extract(epoch from CURRENT_TIMESTAMP))
+                        RETURNING wallet_id, driver_id, current_balance, last_updated
+                    """
+                    cursor.execute(create_wallet_query, [driver_id])
+                    connection.commit()
+                    
+                    # Fetch the newly created wallet
+                    cursor.execute(wallet_query, [driver_id])
+                    wallet_result = cursor.fetchone()
+
+                # Format wallet details
+                wallet_details = {
+                    "wallet_id": wallet_result[0],
+                    "driver_id": wallet_result[1],
+                    "current_balance": float(wallet_result[2]),
+                    "last_updated": wallet_result[3],
+                    "driver_name": f"{wallet_result[4]} {wallet_result[5]}".strip(),
+                    "mobile_no": wallet_result[6],
+                    "bank_details": {
+                        "bank_name": wallet_result[7],
+                        "ifsc_code": wallet_result[8],
+                        "account_number": wallet_result[9],
+                        "account_name": wallet_result[10]
+                    }
+                }
+
+                # Format transaction history
+                transaction_history = []
+                for transaction in transaction_results:
+                    transaction_history.append({
+                        "transaction_id": transaction[0],
+                        "transaction_type": transaction[1],
+                        "amount": float(transaction[2]),
+                        "status": transaction[3],
+                        "transaction_time": transaction[4],
+                        "transaction_date": str(transaction[5]),
+                        "reference_id": transaction[6],
+                        "payment_mode": transaction[7],
+                        "remarks": transaction[8]
+                    })
+
+                return JsonResponse({
+                    "status": "success",
+                    "results": {
+                        "wallet_details": wallet_details,
+                        "transaction_history": transaction_history
+                    }
+                }, status=200)
+
+            except Exception as err:
+                print("Database error:", err)
+                return JsonResponse({
+                    "message": "Error fetching wallet details"
+                }, status=500)
+            finally:
+                cursor.close()
+
+        except json.JSONDecodeError:
+            return JsonResponse({
+                "message": "Invalid JSON data"
+            }, status=400)
+        except Exception as err:
+            print("Unexpected error:", err)
+            return JsonResponse({
+                "message": "An unexpected error occurred"
+            }, status=500)
+
+    return JsonResponse({
+        "message": "Method not allowed"
+    }, status=405)
+
+@csrf_exempt
+def cab_driver_wallet_details(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            print('json body::', data)
+            
+            driver_id = data.get("driver_id")
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+
+            # Validate auth token
+            if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({
+                    "message": "Invalid or expired token. Please login again.",
+                    "status": "unauthorized"
+                }, status=401)
+
+            # Required fields validation
+            required_fields = {
+                "driver_id": driver_id
+            }
+            
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+
+            try:
+                cursor = connection.cursor()
+                
+                # Get wallet details with driver info
+                wallet_query = """
+                    SELECT 
+                        w.wallet_id,
+                        w.driver_id,
+                        w.current_balance,
+                        w.last_updated,
+                        d.driver_first_name,
+                        d.driver_last_name,
+                        d.mobile_no,
+                        d.bank_name,
+                        d.ifsc_code,
+                        d.account_number,
+                        d.account_name
+                    FROM vtpartner.cab_driver_wallet w
+                    JOIN vtpartner.cab_driverstbl d 
+                    ON w.driver_id = d.cab_driver_id
+                    WHERE w.driver_id = %s
+                """
+                
+                cursor.execute(wallet_query, [driver_id])
+                wallet_result = cursor.fetchone()
+
+                # Get transaction history
+                transactions_query = """
+                    SELECT 
+                        transaction_id,
+                        transaction_type,
+                        amount,
+                        status,
+                        transaction_time,
+                        transaction_date,
+                        reference_id,
+                        payment_mode,
+                        remarks
+                    FROM vtpartner.cab_driver_wallet_transactions
+                    WHERE driver_id = %s
+                    ORDER BY transaction_time DESC
+                """
+                
+                cursor.execute(transactions_query, [driver_id])
+                transaction_results = cursor.fetchall()
+
+                if not wallet_result:
+                    # Create wallet if it doesn't exist
+                    create_wallet_query = """
+                        INSERT INTO vtpartner.cab_driver_wallet 
+                        (driver_id, current_balance, last_updated)
+                        VALUES (%s, 0, extract(epoch from CURRENT_TIMESTAMP))
+                        RETURNING wallet_id, driver_id, current_balance, last_updated
+                    """
+                    cursor.execute(create_wallet_query, [driver_id])
+                    connection.commit()
+                    
+                    # Fetch the newly created wallet
+                    cursor.execute(wallet_query, [driver_id])
+                    wallet_result = cursor.fetchone()
+
+                # Format wallet details
+                wallet_details = {
+                    "wallet_id": wallet_result[0],
+                    "driver_id": wallet_result[1],
+                    "current_balance": float(wallet_result[2]),
+                    "last_updated": wallet_result[3],
+                    "driver_name": f"{wallet_result[4]} {wallet_result[5]}".strip(),
+                    "mobile_no": wallet_result[6],
+                    "bank_details": {
+                        "bank_name": wallet_result[7],
+                        "ifsc_code": wallet_result[8],
+                        "account_number": wallet_result[9],
+                        "account_name": wallet_result[10]
+                    }
+                }
+
+                # Format transaction history
+                transaction_history = []
+                for transaction in transaction_results:
+                    transaction_history.append({
+                        "transaction_id": transaction[0],
+                        "transaction_type": transaction[1],
+                        "amount": float(transaction[2]),
+                        "status": transaction[3],
+                        "transaction_time": transaction[4],
+                        "transaction_date": str(transaction[5]),
+                        "reference_id": transaction[6],
+                        "payment_mode": transaction[7],
+                        "remarks": transaction[8]
+                    })
+
+                return JsonResponse({
+                    "status": "success",
+                    "results": {
+                        "wallet_details": wallet_details,
+                        "transaction_history": transaction_history
+                    }
+                }, status=200)
+
+            except Exception as err:
+                print("Database error:", err)
+                return JsonResponse({
+                    "message": "Error fetching wallet details"
+                }, status=500)
+            finally:
+                cursor.close()
+
+        except json.JSONDecodeError:
+            return JsonResponse({
+                "message": "Invalid JSON data"
+            }, status=400)
+        except Exception as err:
+            print("Unexpected error:", err)
+            return JsonResponse({
+                "message": "An unexpected error occurred"
+            }, status=500)
+
+    return JsonResponse({
+        "message": "Method not allowed"
+    }, status=405)
+    
+@csrf_exempt
+def other_driver_wallet_details(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            print('json body::', data)
+            
+            driver_id = data.get("driver_id")
+            driver_unique_id = data.get('driver_unique_id')
+            authToken = data.get('auth')
+
+            # Validate auth token
+            if not is_valid_only_driver_fcm_token(driver_unique_id, authToken):
+                return JsonResponse({
+                    "message": "Invalid or expired token. Please login again.",
+                    "status": "unauthorized"
+                }, status=401)
+
+            # Required fields validation
+            required_fields = {
+                "driver_id": driver_id
+            }
+            
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+
+            try:
+                cursor = connection.cursor()
+                
+                # Get wallet details with driver info
+                wallet_query = """
+                    SELECT 
+                        w.wallet_id,
+                        w.driver_id,
+                        w.current_balance,
+                        w.last_updated,
+                        d.driver_first_name,
+                        d.driver_last_name,
+                        d.mobile_no,
+                        d.category_id,
+                        d.sub_cat_id,
+                        d.service_id,
+                        d.bank_name,
+                        d.ifsc_code,
+                        d.account_number,
+                        d.account_name
+                    FROM vtpartner.other_driver_wallet w
+                    JOIN vtpartner.other_driverstbl d 
+                    ON w.driver_id = d.other_driver_id
+                    WHERE w.driver_id = %s
+                """
+                
+                cursor.execute(wallet_query, [driver_id])
+                wallet_result = cursor.fetchone()
+
+                # Get transaction history
+                transactions_query = """
+                    SELECT 
+                        transaction_id,
+                        transaction_type,
+                        amount,
+                        status,
+                        transaction_time,
+                        transaction_date,
+                        reference_id,
+                        payment_mode,
+                        remarks
+                    FROM vtpartner.other_driver_wallet_transactions
+                    WHERE driver_id = %s
+                    ORDER BY transaction_time DESC
+                """
+                
+                cursor.execute(transactions_query, [driver_id])
+                transaction_results = cursor.fetchall()
+
+                if not wallet_result:
+                    # Create wallet if it doesn't exist
+                    create_wallet_query = """
+                        INSERT INTO vtpartner.other_driver_wallet 
+                        (driver_id, current_balance, last_updated)
+                        VALUES (%s, 0, extract(epoch from CURRENT_TIMESTAMP))
+                        RETURNING wallet_id, driver_id, current_balance, last_updated
+                    """
+                    cursor.execute(create_wallet_query, [driver_id])
+                    connection.commit()
+                    
+                    # Fetch the newly created wallet
+                    cursor.execute(wallet_query, [driver_id])
+                    wallet_result = cursor.fetchone()
+
+                # Format wallet details
+                wallet_details = {
+                    "wallet_id": wallet_result[0],
+                    "driver_id": wallet_result[1],
+                    "current_balance": float(wallet_result[2]),
+                    "last_updated": wallet_result[3],
+                    "driver_name": f"{wallet_result[4]} {wallet_result[5]}".strip(),
+                    "mobile_no": wallet_result[6],
+                    "service_details": {
+                        "category_id": wallet_result[7],
+                        "sub_category_id": wallet_result[8],
+                        "service_id": wallet_result[9]
+                    },
+                    "bank_details": {
+                        "bank_name": wallet_result[10],
+                        "ifsc_code": wallet_result[11],
+                        "account_number": wallet_result[12],
+                        "account_name": wallet_result[13]
+                    }
+                }
+
+                # Format transaction history
+                transaction_history = []
+                for transaction in transaction_results:
+                    transaction_history.append({
+                        "transaction_id": transaction[0],
+                        "transaction_type": transaction[1],
+                        "amount": float(transaction[2]),
+                        "status": transaction[3],
+                        "transaction_time": transaction[4],
+                        "transaction_date": str(transaction[5]),
+                        "reference_id": transaction[6],
+                        "payment_mode": transaction[7],
+                        "remarks": transaction[8]
+                    })
+
+                return JsonResponse({
+                    "status": "success",
+                    "results": {
+                        "wallet_details": wallet_details,
+                        "transaction_history": transaction_history
+                    }
+                }, status=200)
+
+            except Exception as err:
+                print("Database error:", err)
+                return JsonResponse({
+                    "message": "Error fetching wallet details"
+                }, status=500)
+            finally:
+                cursor.close()
+
+        except json.JSONDecodeError:
+            return JsonResponse({
+                "message": "Invalid JSON data"
+            }, status=400)
+        except Exception as err:
+            print("Unexpected error:", err)
+            return JsonResponse({
+                "message": "An unexpected error occurred"
+            }, status=500)
+
+    return JsonResponse({
+        "message": "Method not allowed"
+    }, status=405)
+    
+@csrf_exempt
+def handyman_wallet_details(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            print('json body::', data)
+            
+            handyman_id = data.get("handyman_id")
+            handyman_unique_id = data.get('handyman_unique_id')
+            authToken = data.get('auth')
+
+            # Validate auth token
+            if not is_valid_handyman_agent_fcm_token(handyman_unique_id, authToken):
+                return JsonResponse({
+                    "message": "Invalid or expired token. Please login again.",
+                    "status": "unauthorized"
+                }, status=401)
+
+            # Required fields validation
+            required_fields = {
+                "handyman_id": handyman_id
+            }
+            
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+
+            try:
+                cursor = connection.cursor()
+                
+                # Get wallet details with handyman info
+                wallet_query = """
+                    SELECT 
+                        w.wallet_id,
+                        w.handyman_id,
+                        w.current_balance,
+                        w.last_updated,
+                        h.name,
+                        h.mobile_no,
+                        h.category_id,
+                        h.sub_cat_id,
+                        h.service_id,
+                        h.bank_name,
+                        h.ifsc_code,
+                        h.account_number,
+                        h.account_name
+                    FROM vtpartner.handyman_wallet w
+                    JOIN vtpartner.handymans_tbl h 
+                    ON w.handyman_id = h.handyman_id
+                    WHERE w.handyman_id = %s
+                """
+                
+                cursor.execute(wallet_query, [handyman_id])
+                wallet_result = cursor.fetchone()
+
+                # Get transaction history
+                transactions_query = """
+                    SELECT 
+                        transaction_id,
+                        transaction_type,
+                        amount,
+                        status,
+                        transaction_time,
+                        transaction_date,
+                        reference_id,
+                        payment_mode,
+                        remarks
+                    FROM vtpartner.handyman_wallet_transactions
+                    WHERE driver_id = %s
+                    ORDER BY transaction_time DESC
+                """
+                
+                cursor.execute(transactions_query, [handyman_id])
+                transaction_results = cursor.fetchall()
+
+                if not wallet_result:
+                    # Create wallet if it doesn't exist
+                    create_wallet_query = """
+                        INSERT INTO vtpartner.handyman_wallet 
+                        (handyman_id, current_balance, last_updated)
+                        VALUES (%s, 0, extract(epoch from CURRENT_TIMESTAMP))
+                        RETURNING wallet_id, handyman_id, current_balance, last_updated
+                    """
+                    cursor.execute(create_wallet_query, [handyman_id])
+                    connection.commit()
+                    
+                    # Fetch the newly created wallet
+                    cursor.execute(wallet_query, [handyman_id])
+                    wallet_result = cursor.fetchone()
+
+                # Format wallet details
+                wallet_details = {
+                    "wallet_id": wallet_result[0],
+                    "handyman_id": wallet_result[1],
+                    "current_balance": float(wallet_result[2]),
+                    "last_updated": wallet_result[3],
+                    "handyman_name": wallet_result[4],
+                    "mobile_no": wallet_result[5],
+                    "service_details": {
+                        "category_id": wallet_result[6],
+                        "sub_category_id": wallet_result[7],
+                        "service_id": wallet_result[8]
+                    },
+                    "bank_details": {
+                        "bank_name": wallet_result[9],
+                        "ifsc_code": wallet_result[10],
+                        "account_number": wallet_result[11],
+                        "account_name": wallet_result[12]
+                    }
+                }
+
+                # Format transaction history
+                transaction_history = []
+                for transaction in transaction_results:
+                    transaction_history.append({
+                        "transaction_id": transaction[0],
+                        "transaction_type": transaction[1],
+                        "amount": float(transaction[2]),
+                        "status": transaction[3],
+                        "transaction_time": transaction[4],
+                        "transaction_date": str(transaction[5]),
+                        "reference_id": transaction[6],
+                        "payment_mode": transaction[7],
+                        "remarks": transaction[8]
+                    })
+
+                return JsonResponse({
+                    "status": "success",
+                    "results": {
+                        "wallet_details": wallet_details,
+                        "transaction_history": transaction_history
+                    }
+                }, status=200)
+
+            except Exception as err:
+                print("Database error:", err)
+                return JsonResponse({
+                    "message": "Error fetching wallet details"
+                }, status=500)
+            finally:
+                cursor.close()
+
+        except json.JSONDecodeError:
+            return JsonResponse({
+                "message": "Invalid JSON data"
+            }, status=400)
+        except Exception as err:
+            print("Unexpected error:", err)
+            return JsonResponse({
+                "message": "An unexpected error occurred"
+            }, status=500)
+
+    return JsonResponse({
+        "message": "Method not allowed"
+    }, status=405)

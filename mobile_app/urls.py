@@ -463,4 +463,14 @@ urlpatterns = [
     path('get_category_cancel_reasons', views.get_category_cancel_reasons, name='get_category_cancel_reasons'),
     
     path('update_goods_booking_penalty_amount', views.update_goods_booking_penalty_amount, name='update_goods_booking_penalty_amount'),
+    
+    path('goods_driver_wallet_details', views.goods_driver_wallet_details, name='goods_driver_wallet_details'),
+    
+    path('cab_driver_wallet_details', views.cab_driver_wallet_details, name='cab_driver_wallet_details'),
+    
+    path('other_driver_wallet_details', views.other_driver_wallet_details, name='other_driver_wallet_details'),
+    
+    path('jcb_crane_driver_wallet_details', views.jcb_crane_driver_wallet_details, name='jcb_crane_driver_wallet_details'),
+    
+    path('handyman_wallet_details', views.handyman_wallet_details, name='handyman_wallet_details'),
 ]
