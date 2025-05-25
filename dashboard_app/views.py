@@ -10750,6 +10750,7 @@ def get_driver_wallet_balance(request):
             return JsonResponse({
                 "message": "Internal Server Error"
             }, status=500)
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt
 def get_wallet_transactions(request):
@@ -11706,7 +11707,7 @@ def get_handyman_wallet_transactions(request):
                     payment_mode,
                     remarks
                 FROM vtpartner.handyman_wallet_transactions
-                WHERE handyman_id = %s
+                WHERE driver_id = %s
                 ORDER BY transaction_time DESC
             """
             
@@ -11765,7 +11766,7 @@ def add_handyman_wallet_transaction(request):
             # Add transaction
             transaction_query = """
                 INSERT INTO vtpartner.handyman_wallet_transactions
-                (wallet_id, handyman_id, transaction_type, amount, status, payment_mode, reference_id, remarks)
+                (wallet_id, driver_id, transaction_type, amount, status, payment_mode, reference_id, remarks)
                 VALUES (%s, %s, %s, %s, 'COMPLETED', %s, %s, %s)
             """
             insert_query(transaction_query, [
