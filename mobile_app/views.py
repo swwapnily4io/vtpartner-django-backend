@@ -9905,7 +9905,7 @@ def goods_driver_booking_accepted(request):
         customer_id = data.get("customer_id")
         driver_unique_id = data.get('driver_unique_id')
         authToken = data.get('auth')
-        if not is_valid_cab_driver_fcm_token(driver_unique_id, authToken):
+        if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
                 return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
         
