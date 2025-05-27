@@ -2621,10 +2621,10 @@ def customer_registration(request):
         purpose = data.get("purpose")
         email = data.get("email")
         pincode = data.get("pincode")
-        authToken = data.get('auth')
+        # authToken = data.get('auth')
         
-        if not is_valid_customer_fcm_token(customer_id, authToken):
-            return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+        # if not is_valid_customer_fcm_token(customer_id, authToken):
+        #     return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
         
