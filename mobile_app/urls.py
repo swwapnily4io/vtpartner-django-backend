@@ -484,4 +484,6 @@ urlpatterns = [
     path('jcb_crane_driver_wallet_details', views.jcb_crane_driver_wallet_details, name='jcb_crane_driver_wallet_details'),
     
     path('handyman_wallet_details', views.handyman_wallet_details, name='handyman_wallet_details'),
+    
+    path('get_control_settings', views.get_control_settings, name='get_control_settings'),
 ]

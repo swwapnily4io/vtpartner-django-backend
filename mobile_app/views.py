@@ -25012,3 +25012,63 @@ def handyman_wallet_details(request):
     return JsonResponse({
         "message": "Method not allowed"
     }, status=405)
+    
+@csrf_exempt
+def get_control_settings(request):
+    if request.method == "POST":
+        try:
+            # Query to get all control settings
+            query = """
+                SELECT 
+                    control_id,
+                    controller_name,
+                    values,
+                    last_updated_time,
+                    admin_id
+                FROM vtpartner.control_settings_tbl
+            """
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No control settings found"}, status=404)
+
+            # Create a settings dictionary
+            settings = {}
+            
+            for row in result:
+                control_id = row[0]
+                controller_name = row[1]
+                value = row[2]
+                last_updated = row[3]
+                admin_id = row[4]
+
+                # Convert controller name to a key format
+                key = controller_name.lower().replace(' ', '_')
+                
+                settings[key] = {
+                    'control_id': control_id,
+                    'value': value,
+                    'last_updated': last_updated,
+                    'admin_id': admin_id
+                }
+
+            return JsonResponse({
+                "message": "Success",
+                "settings": {
+                    "booking_timeout": settings.get('booking_timeout', {}).get('value'),
+                    "multiple_drops": settings.get('multiple_drops', {}).get('value'),
+                    "agent_recharge_expiry_show": settings.get('agent_recharge_expiry_show', {}).get('value'),
+                    "hike_price_show": settings.get('hike_price_show', {}).get('value'),
+                    "agent_cancel_button_show": settings.get('agent_cancel_button_show', {}).get('value'),
+                },
+                "last_updated": {
+                    setting: data.get('last_updated')
+                    for setting, data in settings.items()
+                }
+            }, status=200)
+
+        except Exception as err:
+            print("Error in get_control_settings:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
