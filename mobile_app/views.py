@@ -10611,8 +10611,8 @@ def generate_order_id_for_booking_id_goods_driver(request):
                                 row_count = update_query(query_update, values_update)
                                 
                                 #Adding the amount to driver earnings table
-                                if penalty_amount > 0:
-                                    total_amount = float(total_amount) + float(penalty_amount)
+                                # if penalty_amount > 0:
+                                #     total_amount = float(total_amount) + float(penalty_amount)
                                 try:
                                     query4 = """
                                     insert into vtpartner.goods_driver_earningstbl(driver_id,amount,order_id,payment_id,payment_mode) values (%s,%s,%s,%s,%s)
@@ -14404,8 +14404,8 @@ def generate_order_id_for_booking_id_cab_driver(request):
                                 row_count = update_query(query_update, values_update)
                                 
                                 #Adding the amount to driver earnings table
-                                if penalty_amount > 0:
-                                    total_amount = float(total_amount) + float(penalty_amount)
+                                # if penalty_amount > 0:
+                                #     total_amount = float(total_amount) + float(penalty_amount)
                                 try:
                                     query4 = """
                                     insert into vtpartner.cab_driver_earningstbl(driver_id,amount,order_id,payment_id,payment_mode) values (%s,%s,%s,%s,%s)
@@ -17230,8 +17230,8 @@ def generate_order_id_for_booking_id_other_driver(request):
                                 row_count = update_query(query_update, values_update)
                                 
                                 #Adding the amount to driver earnings table
-                                if penalty_amount > 0:
-                                    total_amount = float(total_amount) + float(penalty_amount)
+                                # if penalty_amount > 0:
+                                #     total_amount = float(total_amount) + float(penalty_amount)
                                 try:
                                     query4 = """
                                     insert into vtpartner.other_driver_earningstbl(driver_id,amount,order_id,payment_id,payment_mode) values (%s,%s,%s,%s,%s)
@@ -19950,8 +19950,8 @@ def generate_order_id_for_booking_id_jcb_crane_driver(request):
                                 row_count = update_query(query_update, values_update)
                                 
                                 #Adding the amount to driver earnings table
-                                if penalty_amount > 0:
-                                    total_amount = float(total_amount) + float(penalty_amount)
+                                # if penalty_amount > 0:
+                                #     total_amount = float(total_amount) + float(penalty_amount)
                                 try:
                                     query4 = """
                                     insert into vtpartner.jcb_crane_driver_earningstbl(driver_id,amount,order_id,payment_id,payment_mode) values (%s,%s,%s,%s,%s)
@@ -22261,8 +22261,8 @@ def generate_order_id_for_booking_id_handyman(request):
                                 row_count = update_query(query_update, values_update)
                                 
                                 #Adding the amount to driver earnings table
-                                if penalty_amount > 0:
-                                    total_amount = float(total_amount) + float(penalty_amount)
+                                # if penalty_amount > 0:
+                                #     total_amount = float(total_amount) + float(penalty_amount)
                                 try:
                                     query4 = """
                                     insert into vtpartner.handyman_earningstbl(handy_man_id,amount,order_id,payment_id,payment_mode) values (%s,%s,%s,%s,%s)
