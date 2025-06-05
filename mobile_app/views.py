@@ -14885,12 +14885,12 @@ def generate_new_cab_drivers_booking_id_get_nearby_drivers_with_fcm_token(reques
                     distance, time, total_price, base_price, booking_timing, booking_date, 
                     otp, gst_amount, igst_amount, 
                     payment_method, city_id,pickup_address,drop_address,
-                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time,hike_price
+                    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time,hike_price,booking_type_locations
                 ) 
                 VALUES (
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
-                    %s, %s,%s, %s,%s, %s,%s, %s,%s,%s,%s
+                    %s, %s,%s, %s,%s, %s,%s, %s,%s,%s,%s,%s
                 ) 
                 RETURNING booking_id;
             """
@@ -14899,7 +14899,7 @@ def generate_new_cab_drivers_booking_id_get_nearby_drivers_with_fcm_token(reques
                 customer_id, '-1', pickup_lat, pickup_lng, destination_lat, destination_lng, 
                 distance, time, total_price, base_price, otp, 
                 gst_amount, igst_amount, payment_method, city_id,pickup_address,drop_address,
-                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time,hike_price
+                coupon_applied,coupon_id,coupon_amount,before_coupon_amount,is_scheduled, scheduled_time,hike_price,price_type
             ]
 
             # Assuming insert_query is a function that runs the query
