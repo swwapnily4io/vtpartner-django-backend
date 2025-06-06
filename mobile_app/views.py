@@ -465,7 +465,7 @@ def find_nearby_other_drivers(booking):
      cancel_time, order_id, pickup_address, drop_address, booking_completed, payment_id, pickup_time,
      drop_time, sub_cat_id, service_id, coupon_applied, coupon_id, coupon_amount, before_coupon_amount,
      retry_count, last_retry_time, error_message, booking_timezone, is_scheduled, scheduled_time,
-     penalty_amount,hike_price,booking_type_locations) = booking
+     penalty_amount,hike_price) = booking
     
 
     query = """
