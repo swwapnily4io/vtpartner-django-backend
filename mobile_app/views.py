@@ -11952,7 +11952,7 @@ def goods_driver_earning_orders(request):
         authToken = data.get('auth')
         start_date = data.get('start_date')
         end_date = data.get('end_date')
-        driver_id = 4
+        # driver_id = 4 # For testing purposes, you can remove this line in production
 
         if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
             return JsonResponse({"message": "Invalid or expired token", "status": "unauthorized"}, status=401)
