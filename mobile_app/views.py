@@ -11976,23 +11976,50 @@ def goods_driver_earning_orders(request):
             orders_result = select_query(orders_query, params)
 
             # Get attendance data
-            attendance_query = """
-                SELECT time, status 
-                FROM vtpartner.goods_driver_attendance_tbl 
-                WHERE date = %s AND driver_id = %s 
-                ORDER BY time ASC
-            """
-            attendance_result = select_query(attendance_query, [start_date, driver_id])
-
-            # Calculate total working time
+            # Calculate time spent based on date range
             total_time = 0
-            login_time = None
-            for time, status in attendance_result:
-                if status == 1:  # Login
-                    login_time = float(time)
-                elif status == 0 and login_time:  # Logout
-                    total_time += (float(time) - login_time)
-                    login_time = None
+            if start_date == end_date:
+                # Single day calculation
+                attendance_query = """
+                    SELECT time, status 
+                    FROM vtpartner.goods_driver_attendance_tbl 
+                    WHERE date = %s AND driver_id = %s 
+                    ORDER BY time ASC
+                """
+                attendance_result = select_query(attendance_query, [start_date, driver_id])
+                
+                login_time = None
+                for time, status in attendance_result:
+                    if status == 1:  # Login
+                        login_time = float(time)
+                    elif status == 0 and login_time:  # Logout
+                        total_time += (float(time) - login_time)
+                        login_time = None
+            else:
+                # Multiple days calculation
+                attendance_query = """
+                    SELECT date, time, status 
+                    FROM vtpartner.goods_driver_attendance_tbl 
+                    WHERE date BETWEEN %s AND %s 
+                    AND driver_id = %s 
+                    ORDER BY date ASC, time ASC
+                """
+                attendance_result = select_query(attendance_query, [start_date, end_date, driver_id])
+                
+                current_date = None
+                login_time = None
+                
+                for date, time, status in attendance_result:
+                    if current_date != date:
+                        # Reset login time for new date
+                        login_time = None
+                        current_date = date
+                    
+                    if status == 1:  # Login
+                        login_time = float(time)
+                    elif status == 0 and login_time:  # Logout
+                        total_time += (float(time) - login_time)
+                        login_time = None
 
             # Convert total_time from seconds to hours and minutes
             total_hours = int(total_time / 3600)
@@ -12014,10 +12041,11 @@ def goods_driver_earning_orders(request):
                                for order in orders)
 
             response_data = {
-                "results": orders,
-                "total_orders": len(orders),
-                "time_spent": f"{total_hours}h {total_minutes}m",
-                "total_earnings": total_earnings
+            "results": orders,
+            "total_orders": len(orders),
+            "time_spent": f"{total_hours}h {total_minutes}m",
+            "total_earnings": total_earnings,
+            "weekly_time_spent": f"{total_hours}h {total_minutes}m"  # Added for weekly summary
             }
 
             return JsonResponse(response_data, status=200)
