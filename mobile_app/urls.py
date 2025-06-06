@@ -221,6 +221,8 @@ urlpatterns = [
     path('new_goods_driver_new_recharge_plan',views.new_goods_driver_new_recharge_plan,name='new_goods_driver_new_recharge_plan'),
     #My All Rides
     path('goods_driver_all_orders',views.goods_driver_all_orders,name='goods_driver_all_orders'),
+    #My WholeEarnings Goods Driver
+    path('goods_driver_earning_orders',views.goods_driver_earning_orders,name='goods_driver_earning_orders'),
     #My Whole Years Earnings
     path('goods_driver_whole_year_earnings',views.goods_driver_whole_year_earnings,name='goods_driver_whole_year_earnings'),
     #My All Rides

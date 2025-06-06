@@ -11936,6 +11936,71 @@ def goods_driver_all_orders(request):
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt 
+def goods_driver_earning_orders(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        driver_id = data.get("driver_id")
+        driver_unique_id = data.get('driver_unique_id')
+        authToken = data.get('auth')
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+
+        if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
+            return JsonResponse({"message": "Invalid or expired token", "status": "unauthorized"}, status=401)
+
+        required_fields = {
+            "driver_id": driver_id,
+            "start_date": start_date
+        }
+        
+        missing_fields = check_missing_fields(required_fields)
+        if missing_fields:
+            return JsonResponse(
+                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                status=400
+            )
+
+        try:
+            query = """
+                SELECT order_id,booking_date,customer_name,total_price FROM vtpartner.orders_tbl,vtpartner.customers_tbl
+                WHERE   customers_tbl.customer_id=orders_tbl.customer_id and driver_id = %s 
+                AND booking_date >= %s
+            """
+            params = [driver_id, start_date]
+
+            if end_date:
+                query += " AND booking_date <= %s"
+                params.append(end_date)
+
+            query += " ORDER BY booking_date DESC"
+            
+            result = select_query(query, params)
+
+            if not result:
+                return JsonResponse({"message": "No orders found"}, status=404)
+
+            orders = [
+                {
+                    "order_id": row[0],
+                    "booking_date": row[1],
+                    "customer_name": row[2],
+                    "total_price": row[3],
+                    # Add other fields as needed
+                }
+                for row in result
+            ]
+
+            return JsonResponse({
+                "results": orders,
+                "total_orders": len(orders)
+            }, status=200)
+
+        except Exception as err:
+            print("Error:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+@csrf_exempt 
 def goods_driver_whole_year_earnings(request):
     if request.method == "POST":
         data = json.loads(request.body)
