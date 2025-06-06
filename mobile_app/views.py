@@ -14632,7 +14632,7 @@ def cab_driver_all_orders(request):
             
         try:
             query = """
-                select booking_id,cab_orders_tbl.customer_id,cab_orders_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,cab_orders_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,payment_method,cab_orders_tbl.city_id,order_id,driver_first_name,cab_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,cab_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,cab_orders_tbl.ratings,cab_orders_tbl.rating_description from vtpartner.vehiclestbl,vtpartner.cab_orders_tbl,vtpartner.cab_driverstbl,vtpartner.customers_tbl where cab_driverstbl.cab_driver_id=cab_orders_tbl.driver_id and customers_tbl.customer_id=cab_orders_tbl.customer_id and cab_orders_tbl.driver_id=%s and  vehiclestbl.vehicle_id=cab_driverstbl.vehicle_id order by order_id desc
+                select booking_id,cab_orders_tbl.customer_id,cab_orders_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,cab_orders_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,payment_method,cab_orders_tbl.city_id,order_id,driver_first_name,cab_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,cab_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,cab_orders_tbl.ratings,cab_orders_tbl.rating_description,penalty_amount from vtpartner.vehiclestbl,vtpartner.cab_orders_tbl,vtpartner.cab_driverstbl,vtpartner.customers_tbl where cab_driverstbl.cab_driver_id=cab_orders_tbl.driver_id and customers_tbl.customer_id=cab_orders_tbl.customer_id and cab_orders_tbl.driver_id=%s and  vehiclestbl.vehicle_id=cab_driverstbl.vehicle_id order by order_id desc
             """
             result = select_query(query,[driver_id])  # Assuming select_query is defined elsewhere
 
@@ -14676,6 +14676,7 @@ def cab_driver_all_orders(request):
                     "vehicle_image": str(row[31]),
                     "ratings": str(row[32]),
                     "rating_description": str(row[33]),
+                    "penalty_amount": str(row[34]),
                 }
                 for row in result
             ]
@@ -17480,7 +17481,8 @@ def other_driver_all_orders(request):
     other_servicestbl.service_name,
     sub_categorytbl.sub_cat_name,
     other_driver_orders_tbl.ratings,
-    other_driver_orders_tbl.rating_description
+    other_driver_orders_tbl.rating_description,
+    other_driver_orders_tbl.penalty_amount
 FROM 
     vtpartner.other_driver_orders_tbl
 JOIN 
@@ -17544,7 +17546,8 @@ ORDER BY
                     "service_name": str(row[29]),
                     "sub_cat_name": str(row[30]),
                     "ratings": str(row[31]),
-                    "rating_description": str(row[32])
+                    "rating_description": str(row[32]),
+                    "penalty_amount": str(row[33]),
                     
                 }
                 for row in result
@@ -20213,7 +20216,8 @@ def jcb_crane_driver_all_orders(request):
     other_servicestbl.service_name,
     sub_categorytbl.sub_cat_name,
     jcb_crane_orders_tbl.ratings,
-    jcb_crane_orders_tbl.rating_description
+    jcb_crane_orders_tbl.rating_description,
+    jcb_crane_orders_tbl.penalty_amount
     
 FROM 
     vtpartner.jcb_crane_orders_tbl
@@ -22518,7 +22522,8 @@ def handyman_all_orders(request):
                     other_servicestbl.service_name,
                     sub_categorytbl.sub_cat_name,
                     handyman_orders_tbl.ratings,
-                    handyman_orders_tbl.rating_description
+                    handyman_orders_tbl.rating_description,
+                    handyman_orders_tbl.penalty_amount
                 FROM 
                     vtpartner.handyman_orders_tbl
                 JOIN 
@@ -22579,7 +22584,8 @@ def handyman_all_orders(request):
                     "service_name": str(row[29]),
                     "sub_cat_name": str(row[30]),
                     "ratings": str(row[31]),
-                    "rating_description": str(row[32])
+                    "rating_description": str(row[32]),
+                    "penalty_amount": str(row[33]),
                 }
                 for row in result
             ]
