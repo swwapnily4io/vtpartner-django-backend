@@ -15144,7 +15144,7 @@ def cab_booking_details_live_track(request):
         try:
             query = """
                 select booking_id,cab_bookings_tbl.customer_id,cab_bookings_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,cab_bookings_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,payment_method,cab_bookings_tbl.city_id,cancelled_reason,cancel_time,order_id,driver_first_name,cab_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,cab_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,cab_driverstbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,
-                cab_bookings_tbl.hike_price,vehiclestbl.vehicle_map_image from vtpartner.vehiclestbl,vtpartner.cab_bookings_tbl,vtpartner.cab_driverstbl,vtpartner.customers_tbl where cab_driverstbl.cab_driver_id=cab_bookings_tbl.driver_id and customers_tbl.customer_id=cab_bookings_tbl.customer_id and booking_id=%s and booking_status!='End Trip' and vehiclestbl.vehicle_id=cab_driverstbl.vehicle_id
+                cab_bookings_tbl.hike_price,vehiclestbl.vehicle_map_image,cab_bookings_tbl.penalty_amount from vtpartner.vehiclestbl,vtpartner.cab_bookings_tbl,vtpartner.cab_driverstbl,vtpartner.customers_tbl where cab_driverstbl.cab_driver_id=cab_bookings_tbl.driver_id and customers_tbl.customer_id=cab_bookings_tbl.customer_id and booking_id=%s and booking_status!='End Trip' and vehiclestbl.vehicle_id=cab_driverstbl.vehicle_id
             """
             result = select_query(query,[booking_id])  # Assuming select_query is defined elsewhere
 
@@ -15197,6 +15197,7 @@ def cab_booking_details_live_track(request):
                     "before_coupon_amount":row[40],
                     "hike_price":row[41],
                     "vehicle_map_image":row[42],
+                    "penalty_amount":row[43],
                     
                 }
                 for row in result
