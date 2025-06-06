@@ -11956,59 +11956,77 @@ def goods_driver_earning_orders(request):
         if not is_valid_goods_driver_fcm_token(driver_unique_id, authToken):
             return JsonResponse({"message": "Invalid or expired token", "status": "unauthorized"}, status=401)
 
-        required_fields = {
-            "driver_id": driver_id,
-            "start_date": start_date
-        }
-        
-        missing_fields = check_missing_fields(required_fields)
-        if missing_fields:
-            return JsonResponse(
-                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
-                status=400
-            )
-
         try:
-            query = """
-                SELECT order_id,booking_date,customer_name,total_price,penalty_amount FROM vtpartner.orders_tbl,vtpartner.customers_tbl
-                WHERE   customers_tbl.customer_id=orders_tbl.customer_id and driver_id = %s 
-                AND booking_date >= %s
+            # Get orders
+            orders_query = """
+                SELECT order_id, booking_date, customer_name, total_price, penalty_amount 
+                FROM vtpartner.orders_tbl, vtpartner.customers_tbl
+                WHERE customers_tbl.customer_id = orders_tbl.customer_id 
+                AND driver_id = %s AND booking_date >= %s
             """
-            params = [driver_id, start_date]
-
             if end_date:
-                query += " AND booking_date <= %s"
-                params.append(end_date)
-
-            query += " ORDER BY booking_date DESC"
+                orders_query += " AND booking_date <= %s"
+            orders_query += " ORDER BY booking_date DESC"
             
-            result = select_query(query, params)
+            params = [driver_id, start_date]
+            if end_date:
+                params.append(end_date)
+            
+            orders_result = select_query(orders_query, params)
 
-            if not result:
-                return JsonResponse({"message": "No orders found"}, status=404)
+            # Get attendance data
+            attendance_query = """
+                SELECT time, status 
+                FROM vtpartner.goods_driver_attendance_tbl 
+                WHERE date = %s AND driver_id = %s 
+                ORDER BY time ASC
+            """
+            attendance_result = select_query(attendance_query, [start_date, driver_id])
 
+            # Calculate total working time
+            total_time = 0
+            login_time = None
+            for time, status in attendance_result:
+                if status == 1:  # Login
+                    login_time = float(time)
+                elif status == 0 and login_time:  # Logout
+                    total_time += (float(time) - login_time)
+                    login_time = None
+
+            # Convert total_time from seconds to hours and minutes
+            total_hours = int(total_time / 3600)
+            total_minutes = int((total_time % 3600) / 60)
+
+            # Format response
             orders = [
                 {
                     "order_id": row[0],
                     "booking_date": row[1],
                     "customer_name": row[2],
                     "total_price": row[3],
-                    "penalty_amount": row[4],
-                    # Add other fields as needed
+                    "penalty_amount": row[4]
                 }
-                for row in result
+                for row in orders_result
             ]
 
-            return JsonResponse({
+            total_earnings = sum(float(order["total_price"]) + float(order["penalty_amount"]) 
+                               for order in orders)
+
+            response_data = {
                 "results": orders,
-                "total_orders": len(orders)
-            }, status=200)
+                "total_orders": len(orders),
+                "time_spent": f"{total_hours}h {total_minutes}m",
+                "total_earnings": total_earnings
+            }
+
+            return JsonResponse(response_data, status=200)
 
         except Exception as err:
             print("Error:", err)
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 @csrf_exempt 
 def goods_driver_whole_year_earnings(request):
     if request.method == "POST":
