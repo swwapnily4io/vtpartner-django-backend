@@ -11962,7 +11962,7 @@ def goods_driver_earning_orders(request):
 
         try:
             query = """
-                SELECT order_id,booking_date,customer_name,total_price FROM vtpartner.orders_tbl,vtpartner.customers_tbl
+                SELECT order_id,booking_date,customer_name,total_price,penalty_amount FROM vtpartner.orders_tbl,vtpartner.customers_tbl
                 WHERE   customers_tbl.customer_id=orders_tbl.customer_id and driver_id = %s 
                 AND booking_date >= %s
             """
@@ -11985,6 +11985,7 @@ def goods_driver_earning_orders(request):
                     "booking_date": row[1],
                     "customer_name": row[2],
                     "total_price": row[3],
+                    "penalty_amount": row[4],
                     # Add other fields as needed
                 }
                 for row in result
