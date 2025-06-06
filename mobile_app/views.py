@@ -4382,7 +4382,8 @@ def goods_order_details(request):
                     booking_timezone,
                     orders_tbl.goods_vehicle_id,
                     vehicle_price_type,
-                    vehicle_radius_km
+                    vehicle_radius_km,
+                    penalty_amount
                 FROM vtpartner.vehiclestbl, vtpartner.orders_tbl, vtpartner.goods_driverstbl, vtpartner.customers_tbl 
                 WHERE goods_driverstbl.goods_driver_id = orders_tbl.driver_id 
                 AND customers_tbl.customer_id = orders_tbl.customer_id 
@@ -4460,7 +4461,8 @@ def goods_order_details(request):
                     "booking_timezone": str(row[59]),
                     "goods_vehicle_id": int(row[60]),
                     "vehicle_price_type": int(row[61]),
-                    "vehicle_radius_km": int(row[62])
+                    "vehicle_radius_km": int(row[62]),
+                    "penalty_amount": int(row[63]),
                     
                 }
                 for row in result
@@ -4503,7 +4505,7 @@ def cab_order_details(request):
             
         try:
             query = """
-                select booking_id,cab_orders_tbl.customer_id,cab_orders_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,cab_orders_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,payment_method,cab_orders_tbl.city_id,order_id,driver_first_name,cab_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,cab_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,cab_driverstbl.profile_pic,cab_orders_tbl.ratings,pickup_time,drop_time,coupon_applied,coupon_id,coupon_amount,before_coupon_amount from vtpartner.vehiclestbl,vtpartner.cab_orders_tbl,vtpartner.cab_driverstbl,vtpartner.customers_tbl where cab_driverstbl.cab_driver_id=cab_orders_tbl.driver_id and customers_tbl.customer_id=cab_orders_tbl.customer_id and order_id=%s and vehiclestbl.vehicle_id=cab_driverstbl.vehicle_id
+                select booking_id,cab_orders_tbl.customer_id,cab_orders_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,cab_orders_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,payment_method,cab_orders_tbl.city_id,order_id,driver_first_name,cab_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,cab_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,cab_driverstbl.profile_pic,cab_orders_tbl.ratings,pickup_time,drop_time,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount from vtpartner.vehiclestbl,vtpartner.cab_orders_tbl,vtpartner.cab_driverstbl,vtpartner.customers_tbl where cab_driverstbl.cab_driver_id=cab_orders_tbl.driver_id and customers_tbl.customer_id=cab_orders_tbl.customer_id and order_id=%s and vehiclestbl.vehicle_id=cab_driverstbl.vehicle_id
             """
             result = select_query(query,[order_id])  # Assuming select_query is defined elsewhere
 
@@ -4554,7 +4556,8 @@ def cab_order_details(request):
                     "coupon_applied":str(row[38]),
                     "coupon_id":str(row[39]),
                     "coupon_amount":str(row[40]),
-                    "before_coupon_amount":str(row[41])
+                    "before_coupon_amount":str(row[41]),
+                    "penalty_amount":str(row[42]),
                     
                 }
                 for row in result
@@ -4633,7 +4636,7 @@ def other_driver_order_details(request):
     drop_time,
     other_servicestbl.service_name,
     sub_categorytbl.sub_cat_name,
-    coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+    coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount
 FROM 
     vtpartner.other_driver_orders_tbl
 JOIN 
@@ -4706,7 +4709,8 @@ ORDER BY
                     "coupon_applied":str(row[35]),
                     "coupon_id":str(row[36]),
                     "coupon_amount":str(row[37]),
-                    "before_coupon_amount":str(row[38])
+                    "before_coupon_amount":str(row[38]),
+                    "penalty_amount":str(row[39]),
                     
                 }
                 for row in result
@@ -4784,7 +4788,7 @@ def handyman_order_details(request):
     pickup_time,
     drop_time,
     other_servicestbl.service_name,
-    sub_categorytbl.sub_cat_name,coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+    sub_categorytbl.sub_cat_name,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount
 FROM 
     vtpartner.handyman_orders_tbl
 JOIN 
@@ -4859,7 +4863,8 @@ ORDER BY
                     "coupon_applied":str(row[35]),
                     "coupon_id":str(row[36]),
                     "coupon_amount":str(row[37]),
-                    "before_coupon_amount":str(row[38])
+                    "before_coupon_amount":str(row[38]),
+                    "penalty_amount":str(row[39]),
                     
                 }
                 for row in result
@@ -4938,7 +4943,7 @@ def jcb_crane_order_details(request):
     pickup_time,
     drop_time,
     other_servicestbl.service_name,
-    sub_categorytbl.sub_cat_name,coupon_applied,coupon_id,coupon_amount,before_coupon_amount
+    sub_categorytbl.sub_cat_name,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,penalty_amount
 FROM 
     vtpartner.jcb_crane_orders_tbl
 JOIN 
@@ -5012,7 +5017,9 @@ ORDER BY
                     "coupon_applied":str(row[35]),
                     "coupon_id":str(row[36]),
                     "coupon_amount":str(row[37]),
-                    "before_coupon_amount":str(row[38])
+                    "before_coupon_amount":str(row[38]),
+                    "penalty_amount":str(row[39]),
+                    
 
                     
                 }
