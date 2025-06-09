@@ -7474,8 +7474,8 @@ def get_all_sub_categories(request):
         cat_id = data.get("cat_id")
         customer_id = data.get('customer_id')
         authToken = data.get('auth')
-        if not is_valid_customer_fcm_token(customer_id, authToken):
-                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+        # if not is_valid_customer_fcm_token(customer_id, authToken):
+        #         return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
          # List of required fields
         required_fields = {
@@ -7531,8 +7531,8 @@ def get_all_sub_services(request):
         sub_cat_id = data.get("sub_cat_id")
         customer_id = data.get('customer_id')
         authToken = data.get('auth')
-        if not is_valid_customer_fcm_token(customer_id, authToken):
-                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+        # if not is_valid_customer_fcm_token(customer_id, authToken):
+        #         return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
          # List of required fields
         required_fields = {
