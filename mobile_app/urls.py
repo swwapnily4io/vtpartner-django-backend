@@ -475,6 +475,8 @@ urlpatterns = [
     
     path('get_category_cancel_reasons', views.get_category_cancel_reasons, name='get_category_cancel_reasons'),
     
+    path('get_driver_category_cancel_reasons', views.get_driver_category_cancel_reasons, name='get_driver_category_cancel_reasons'),
+    
     path('update_goods_booking_penalty_amount', views.update_goods_booking_penalty_amount, name='update_goods_booking_penalty_amount'),
     
     path('goods_driver_wallet_details', views.goods_driver_wallet_details, name='goods_driver_wallet_details'),
