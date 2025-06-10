@@ -5046,8 +5046,8 @@ def cancel_booking(request):
         pickup_address = data.get("pickup_address")
         cancel_reason = data.get("cancel_reason")
         authToken = data.get('auth')
-        if not is_valid_customer_fcm_token(customer_id, authToken):
-                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+        # if not is_valid_customer_fcm_token(customer_id, authToken):
+        #         return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
         
 
