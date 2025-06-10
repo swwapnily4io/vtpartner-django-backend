@@ -8586,6 +8586,7 @@ def get_nearby_drivers(request):
     vehicle_city_wise_price_tbl.base_fare,
     vehiclestbl.vehicle_id,
     vehiclestbl.size_image,
+    vehiclestbl.vehicle_map_image,
     (6371 * acos(
         cos(radians(%s)) * cos(radians(main.current_lat)) *
         cos(radians(main.current_lng) - radians(%s)) +
@@ -8637,7 +8638,8 @@ ORDER BY distance;
                     "base_fare": driver[12],
                     "vehicle_id": driver[13],
                     "size_image": driver[14],
-                    "distance": driver[15]
+                    "vehicle_map_image": driver[15],
+                    "distance": driver[16]
                 }
                 for driver in nearby_drivers
             ]
