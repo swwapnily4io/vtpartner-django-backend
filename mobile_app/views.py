@@ -5046,6 +5046,7 @@ def cancel_booking(request):
         pickup_address = data.get("pickup_address")
         cancel_reason = data.get("cancel_reason")
         authToken = data.get('auth')
+        cancelledBy = data.get('cancelled_by',"Customer")
         # if not is_valid_customer_fcm_token(customer_id, authToken):
         #         return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
         
@@ -5125,10 +5126,23 @@ def cancel_booking(request):
                 'booking_id':str(booking_id)
             }
             print("sending fcm to customer cancel confirmed")
+            
+            customer_message = (
+            f'The ride has been cancelled by the driver.' 
+            if cancelledBy == "Agent" 
+            else f'Your ride request has been successfully canceled. \nPickup Location: {pickup_address}.'
+            )
+
+            customer_title = (
+                'Driver Cancelled the Ride' 
+                if cancelledBy == "Agent" 
+                else 'Ride Cancellation Confirmation'
+            )
+
             sendFMCMsg(
                 customer_auth_token,
-                f'Your ride request has been successfully canceled. \nPickup Location: {pickup_address}.',
-                'Ride Cancellation Confirmation',
+                customer_message,
+                customer_title,
                 fcm_data2,
                 customer_server_token,
                 "Customer"
