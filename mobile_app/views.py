@@ -10475,10 +10475,14 @@ def get_goods_driver_new_recharge_plans_list(request):
             )
             
         try:
+            # query = """
+            #    select recharge_plan_id,plan_title,plan_description,plan_days,expiry_days,plan_price from vtpartner.goods_driver_recharge_plans_tbl where category_id=%s and vehicle_id=%s
+            # """
             query = """
-               select recharge_plan_id,plan_title,plan_description,plan_days,expiry_days,plan_price from vtpartner.goods_driver_recharge_plans_tbl where category_id=%s and vehicle_id=%s
+               select recharge_plan_id,plan_title,plan_description,plan_days,expiry_days,plan_price from vtpartner.goods_driver_recharge_plans_tbl where category_id=%s
             """
-            result = select_query(query,[category_id,vehicle_id])  
+            result = select_query(query,[category_id])  
+            # result = select_query(query,[category_id,vehicle_id])  
 
             if result == []:
                 return JsonResponse({"message": "No Data Found"}, status=404)
