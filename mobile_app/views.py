@@ -9946,9 +9946,8 @@ def check_location_proximity(request):
                         data_map = {
                             'intent': 'goods_booking_live_track',
                             'booking_id': str(booking_id),
-                            'notification_type': 'proximity_drop',
-                            'drop_index': current_drop_index,
-                            'total_drops': len(drops)
+                            'notification_type': 'proximity_drop'
+                            
                         }
                 else:
                     title = "Driver Arrived Destination"
@@ -9957,8 +9956,7 @@ def check_location_proximity(request):
                         'intent': 'goods_booking_live_track',
                         'booking_id': str(booking_id),
                         'notification_type': 'proximity_drop',
-                        'drop_index': 0,
-                        'total_drops': 1
+                        
                     }
 
             # Send notification
