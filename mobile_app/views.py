@@ -9925,8 +9925,8 @@ def check_location_proximity(request):
             auth_token = get_customer_auth_token(customer_id)
 
             if status_type == "Pickup":
-                title = "Driver Approaching Pickup"
-                body = f"Driver is approaching your pickup location at {pickup_address}"
+                title = "Driver Arrived for Pickup"
+                body = f"Driver arrived at your pickup location at {pickup_address}"
                 data_map = {
                     'intent': 'goods_booking_live_track',
                     'booking_id': str(booking_id),
@@ -9940,8 +9940,8 @@ def check_location_proximity(request):
                         current_drop = drops[current_drop_index]
                         drop_address = current_drop.get("address", "destination")
                         
-                        title = f"Driver Approaching Drop {current_drop_index + 1}"
-                        body = f"Driver is approaching drop location {current_drop_index + 1} at {drop_address}"
+                        title = f"Driver Arrived at Drop {current_drop_index + 1}"
+                        body = f"Driver arrived at your drop location {current_drop_index + 1} at {drop_address}"
                         data_map = {
                             'intent': 'goods_booking_live_track',
                             'booking_id': str(booking_id),
@@ -9950,8 +9950,8 @@ def check_location_proximity(request):
                             'total_drops': len(drops)
                         }
                 else:
-                    title = "Driver Approaching Destination"
-                    body = "Driver is approaching your drop location"
+                    title = "Driver Arrived Destination"
+                    body = "Driver arrived at your drop location"
                     data_map = {
                         'intent': 'goods_booking_live_track',
                         'booking_id': str(booking_id),
