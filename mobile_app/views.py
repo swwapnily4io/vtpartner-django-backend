@@ -9891,6 +9891,94 @@ def goods_driver_booking_accepted(request):
 #     return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt 
+def check_location_proximity(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            booking_id = data.get("booking_id")
+            status_type = data.get("status_type")  # "Pickup" or "Drop_{index}"
+            current_drop_index = data.get("current_drop_index", 0)
+            server_token = data.get("server_token")
+
+            # Get booking details
+            booking_query = """
+                SELECT b.multiple_drops, b.drop_locations, b.customer_id,
+                       b.pickup_address, b.booking_status
+                FROM vtpartner.bookings_tbl b
+                WHERE b.booking_id = %s
+            """
+            booking_info = select_query(booking_query, [booking_id])
+            
+            if not booking_info:
+                return JsonResponse({
+                    "success": False, 
+                    "message": "Booking not found"
+                }, status=404)
+
+            multiple_drops = booking_info[0][0]
+            drop_locations = booking_info[0][1]
+            customer_id = booking_info[0][2]
+            pickup_address = booking_info[0][3]
+            booking_status = booking_info[0][4]
+
+            # Get customer auth token
+            auth_token = get_customer_auth_token(customer_id)
+
+            if status_type == "Pickup":
+                title = "Driver Approaching Pickup"
+                body = f"Driver is approaching your pickup location at {pickup_address}"
+                data_map = {
+                    'intent': 'goods_booking_live_track',
+                    'booking_id': str(booking_id),
+                    'notification_type': 'proximity_pickup'
+                }
+                
+            else:  # Drop notifications
+                if multiple_drops > 0 and drop_locations:
+                    drops = json.loads(drop_locations)
+                    if current_drop_index < len(drops):
+                        current_drop = drops[current_drop_index]
+                        drop_address = current_drop.get("address", "destination")
+                        
+                        title = f"Driver Approaching Drop {current_drop_index + 1}"
+                        body = f"Driver is approaching drop location {current_drop_index + 1} at {drop_address}"
+                        data_map = {
+                            'intent': 'goods_booking_live_track',
+                            'booking_id': str(booking_id),
+                            'notification_type': 'proximity_drop',
+                            'drop_index': current_drop_index,
+                            'total_drops': len(drops)
+                        }
+                else:
+                    title = "Driver Approaching Destination"
+                    body = "Driver is approaching your drop location"
+                    data_map = {
+                        'intent': 'goods_booking_live_track',
+                        'booking_id': str(booking_id),
+                        'notification_type': 'proximity_drop',
+                        'drop_index': 0,
+                        'total_drops': 1
+                    }
+
+            # Send notification
+            success = sendFMCMsg(auth_token, body, title, data_map, server_token, "Customer")
+
+            return JsonResponse({
+                "success": success,
+                "message": "Proximity notification sent successfully" if success else "Failed to send notification"
+            })
+
+        except Exception as e:
+            print(f"Error in check_location_proximity: {str(e)}")
+            return JsonResponse({
+                "success": False,
+                "message": f"An error occurred: {str(e)}"
+            }, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+
+@csrf_exempt 
 def update_booking_status_driver(request):
     if request.method == "POST":
         data = json.loads(request.body)

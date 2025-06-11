@@ -193,6 +193,8 @@ urlpatterns = [
     path('booking_details_for_ride_acceptance',views.booking_details_for_ride_acceptance,name='booking_details_for_ride_acceptance'),
     #Booking accepted
     path('goods_driver_booking_accepted',views.goods_driver_booking_accepted,name='goods_driver_booking_accepted'),
+    #sending notification to customer about driver arrival and driver dropping location
+    path('check_location_proximity',views.check_location_proximity,name='check_location_proximity'),
     #Update Booking Status Done by Goods Driver
     path('update_booking_status_driver',views.update_booking_status_driver,name='update_booking_status_driver'),
     #Generate Order Id after successful delivery completed
