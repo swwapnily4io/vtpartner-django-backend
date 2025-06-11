@@ -9899,6 +9899,7 @@ def check_location_proximity(request):
             status_type = data.get("status_type")  # "Pickup" or "Drop_{index}"
             current_drop_index = data.get("current_drop_index", 0)
             server_token = data.get("server_token")
+            server_token = get_customer_firebase_access_token_internal()
 
             # Get booking details
             booking_query = """
