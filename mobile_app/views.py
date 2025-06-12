@@ -9120,7 +9120,7 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
 
                     """
                     values = [pickup_lat, pickup_lng, pickup_lat,city_id,price_type, pickup_lat, pickup_lng, pickup_lat, radius_km,vehicle_id,
-                              body_type,booking_type_locations]
+                              body_type,body_type,booking_type_locations]
 
                     # Execute the query
                     nearby_drivers = select_query(query, values)
