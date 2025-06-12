@@ -9109,7 +9109,12 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                         )) <= %s
                     AND goods_driverstbl.category_id = vehiclestbl.category_id
                     AND goods_driverstbl.category_id = '1' AND  goods_driverstbl.vehicle_id=%s
-                    AND goods_driverstbl.body_type = %s
+                    AND (
+                        CASE 
+                            WHEN %s = 'Any' THEN goods_driverstbl.body_type IN ('Any', 'Open Body', 'Close Body')
+                            ELSE goods_driverstbl.body_type = %s
+                        END
+                    )
                     AND (goods_driverstbl.location_preference=%s OR goods_driverstbl.location_preference='0')
                     ORDER BY distance;
 
