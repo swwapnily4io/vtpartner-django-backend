@@ -4,8 +4,47 @@ from . import views
 app_name = 'vt_partner'
 
 urlpatterns = [
+    
+    
     #Send OTP 
     path('send_otp',views.send_otp,name='send_otp'),
+    
+    #Customer Apis with sequence
+    
+    #Customer Login
+    path('login',views.login_view,name='login'),
+    #New Customer Registration
+    path('customer_registration',views.customer_registration,name='customer_registration'),
+    #Update Customer Firebase Token
+    path('update_firebase_customer_token',views.update_firebase_customer_token,name='update_firebase_customer_token'),
+    #All Services
+    path('all_services',views.all_services,name='all_services'),
+    #getting all banners
+    path('get_all_banners',views.get_all_banners,name='get_all_banners'),
+    #All App Controls From Dashboard Settings
+    path('get_control_settings', views.get_control_settings, name='get_control_settings'),
+    
+    #Customer Bookings a Service Api's URLs
+    #Allowed PinCodes
+    path('allowed_pin_code',views.allowed_pin_code,name='allowed_pin_code'),
+    #Calculate Distance between 2 place IDs
+    path('distance',views.distance,name='distance'),
+    #Get Near By Drivers
+    path('get_nearby_drivers',views.get_nearby_drivers,name='get_nearby_drivers'),
+    #All Vehicles
+    path('all_vehicles',views.all_vehicles,name='all_vehicles'),
+    #All Vehicles with category id , price
+    path('all_vehicles_with_price_details',views.all_vehicles_with_price_details,name='all_vehicles_with_price_details'),
+    #Update customer details
+    path('get_peak_hour_prices',views.get_peak_hour_prices,name='get_peak_hour_prices'),
+    #Goods types 
+    path('get_all_goods_types',views.get_all_goods_types,name='get_all_goods_types'),
+    #GuideLines according to category
+    path('get_all_guide_lines',views.get_all_guide_lines,name='get_all_guide_lines'),
+
+
+    
+    
     #To get customer auth token for apis
     path('get_customer_api_auth_token',views.get_customer_api_auth_token,name='get_customer_api_auth_token'),
     #To get Goods Driver auth token for apis
@@ -27,10 +66,8 @@ urlpatterns = [
     path('upload',views.upload_image,name='upload'),
     #Customer Saved addresses
     path('add_or_update_customer_address',views.add_or_update_customer_address,name='add_or_update_customer_address'),
-    #Customer Login
-    path('login',views.login_view,name='login'),
-    #New Customer Registration
-    path('customer_registration',views.customer_registration,name='customer_registration'),
+    
+    
     #All Coupons
     path('all_coupons',views.all_coupons,name='all_coupons'),
     #Customer wallet balance and history
@@ -45,32 +82,21 @@ urlpatterns = [
     path('update_customer_details',views.update_customer_details,name='update_customer_details'),
     #All Saved Addresses
     path('all_saved_addresses',views.all_saved_addresses,name='all_saved_addresses'),
-    #All Services
-    path('all_services',views.all_services,name='all_services'),
+    
     #All Cities
     path('all_cities',views.all_cities,name='all_cities'),
-    #All Vehicles
-    path('all_vehicles',views.all_vehicles,name='all_vehicles'),
-    #All Vehicles with category id , price
-    path('all_vehicles_with_price_details',views.all_vehicles_with_price_details,name='all_vehicles_with_price_details'),
+    
     # Vehicles with category id , price upgraded
     path('get_vehicle_upgrade_prices',views.get_vehicle_upgrade_prices,name='get_vehicle_upgrade_prices'),
     # Service with category id , price upgraded
     path('get_service_upgrade_prices',views.get_service_upgrade_prices,name='get_service_upgrade_prices'),
-    #Allowed PinCodes
-    path('allowed_pin_code',views.allowed_pin_code,name='allowed_pin_code'),
-    #Calculate Distance between 2 place IDs
-    path('distance',views.distance,name='distance'),
-    #Goods types 
-    path('get_all_goods_types',views.get_all_goods_types,name='get_all_goods_types'),
-    #GuideLines according to category
-    path('get_all_guide_lines',views.get_all_guide_lines,name='get_all_guide_lines'),
+    
+    
     #New Goods Delivery Booking
     path('new_goods_delivery_booking',views.new_goods_delivery_booking,name='new_goods_delivery_booking'),
     #Search Near by Goods Driver for vehicle id to send notification to accept booking
     path('search_nearby_drivers',views.search_nearby_drivers,name='search_nearby_drivers'),
-    #Update Customer Firebase Token
-    path('update_firebase_customer_token',views.update_firebase_customer_token,name='update_firebase_customer_token'),
+    
     #Update Goods Driver Body Type
     path('update_goods_driver_body_type',views.update_goods_driver_body_type,name='update_goods_driver_body_type'),
     #Update Goods Driver Location Preference Type
@@ -153,8 +179,7 @@ urlpatterns = [
     path('get_customer_details',views.get_customer_details,name='get_customer_details'),
     #Update customer details
     path('update_customer_details',views.update_customer_details,name='update_customer_details'),
-    #Update customer details
-    path('get_peak_hour_prices',views.get_peak_hour_prices,name='get_peak_hour_prices'),
+    
     
     
     
@@ -185,8 +210,7 @@ urlpatterns = [
     path('delete_active_goods_driver',views.delete_goods_driver_to_active_drivers_table,name='delete_active_goods_driver'),
     #Update Drivers Current Location until he goes offline
     path('update_goods_drivers_current_location',views.update_goods_drivers_current_location,name='update_goods_drivers_current_location'),
-    #Get Near By Drivers
-    path('get_nearby_drivers',views.get_nearby_drivers,name='get_nearby_drivers'),
+    
     #Update Goods Driver Firebase Token
     path('update_firebase_goods_driver_token',views.update_firebase_goods_driver_token,name='update_firebase_goods_driver_token'),
     #Booking Details for ride acceptance
@@ -241,8 +265,7 @@ urlpatterns = [
     path('handyman_current_new_recharge_details',views.handyman_current_new_recharge_details,name='handyman_current_new_recharge_details'),
     #getting goods driver faq 
     path('get_faqs_by_category',views.get_faqs_by_category,name='get_faqs_by_category'),
-    #getting all banners
-    path('get_all_banners',views.get_all_banners,name='get_all_banners'),
+    
     
     
     #Cab Driver Api's URLs
@@ -491,5 +514,4 @@ urlpatterns = [
     
     path('handyman_wallet_details', views.handyman_wallet_details, name='handyman_wallet_details'),
     
-    path('get_control_settings', views.get_control_settings, name='get_control_settings'),
 ]

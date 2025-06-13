@@ -807,9 +807,9 @@ def run_all_scheduled_booking_processors():
     )
 
 # Run the scheduler every minute
-scheduler = BackgroundScheduler()
-scheduler.add_job(run_all_scheduled_booking_processors, 'interval', minutes=1)
-scheduler.start()
+# scheduler = BackgroundScheduler()
+# scheduler.add_job(run_all_scheduled_booking_processors, 'interval', minutes=1)
+# scheduler.start()
 
 #To check and validate api with fcm token for customers
 def is_valid_customer_fcm_token(customer_id, fcm_token):
