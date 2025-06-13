@@ -30,6 +30,7 @@ from google.auth.transport.requests import Request
 import boto3
 from botocore.exceptions import ClientError
 # Load environment variables from the root directory
+import configparser
 
     
 def check_missing_fields(fields):
@@ -168,6 +169,11 @@ def login_view(request):
         )
         
         try:
+            config = configparser.ConfigParser()
+            config.read('query_mapping.ini')
+            GET_CUSTOMER_BY_MOBILE_NUMBER = config.get('query_mapping', 'GET_CUSTOMER_BY_MOBILE_NUMBER')
+            print("GET_CUSTOMER_BY_MOBILE_NUMBER::", GET_CUSTOMER_BY_MOBILE_NUMBER)
+            
             get_query = """ 
             select query from vtpartner.query_master_tbl where query_id=%s;
             """
@@ -189,7 +195,7 @@ def login_view(request):
                     get_insert_query = """ 
                     select query from vtpartner.query_master_tbl where query_id=%s;
                     """
-                    get_insert_result = select_query(get_insert_query, ['ENTER_CUSTOMER_ID'])
+                    get_insert_result = select_query(get_insert_query, ['ADD_NEW_CUSTOMER_ID'])
                     
                     if get_insert_result:  
                         # Construct the query by adding the WHERE clause
