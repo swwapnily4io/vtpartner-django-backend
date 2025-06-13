@@ -416,6 +416,12 @@ urlpatterns = [
     path('update_service_plan_upgrade', views.update_service_plan_upgrade, name='update_service_plan_upgrade'),
     path('delete_service_plan_upgrade', views.delete_service_plan_upgrade, name='delete_service_plan_upgrade'),
     
+    path('get_all_master_queries', views.get_all_master_queries, name='get_all_master_queries'),
+    path('add_master_query', views.add_master_query, name='add_master_query'),
+    path('edit_master_query', views.edit_master_query, name='edit_master_query'),
+    
+    
+    
     
     
     

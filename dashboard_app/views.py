@@ -18725,3 +18725,155 @@ def delete_service_plan_upgrade(request):
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+def get_all_master_queries(request):
+    if request.method == "POST":
+        try:
+            query = """
+                select query_master_id,app_name,query_id,query,description,change_logs,modified_by from vtpartner.query_master_tbl order by query_master_id desc
+            """
+            result = select_query(query)
+
+            if not result:
+                return JsonResponse({"message": "No settings found"}, status=404)
+
+            settings = [
+                {
+                    "query_master_id": row[0],
+                    "app_name": row[1],
+                    "query_id": row[2],
+                    "query": row[3],
+                    "description": row[4],
+                    "change_logs": row[5],
+                    "modified_by": row[6]
+                }
+                for row in result
+            ]
+
+            return JsonResponse({"control_settings": settings}, status=200)
+
+        except Exception as err:
+            print("Error fetching control settings:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def add_master_query(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            app_name = data.get("app_name")
+            query_id = data.get("query_id")
+            query = data.get("query")
+            description = data.get("description")
+            change_logs = data.get("change_logs")
+            modified_by = data.get("modified_by")
+            
+            required_fields = {
+                "app_name": app_name,
+                "query_id": query_id,
+                "query": query,
+                "description": description,
+                "change_logs": change_logs,
+                "modified_by": modified_by,
+            }
+            
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+
+            # Check for duplicate query id name
+            check_query = """
+                SELECT COUNT(*) FROM vtpartner.query_master_tbl
+                WHERE query_id = %s
+            """
+            result = select_query(check_query, [query_id])
+            if result[0][0] > 0:
+                return JsonResponse({"message": "Query Id already exists"}, status=409)
+
+            query = """
+                INSERT INTO vtpartner.query_master_tbl
+                (app_name,query_id,query,description,change_logs,modified_by)
+                VALUES (%s, %s, %s,%s, %s, %s)
+            """
+            params = [
+                app_name,
+                query_id,
+                query,
+                description,
+                change_logs,
+                modified_by
+            ]
+            
+            row_count = insert_query(query, params)
+            return JsonResponse({"message": f"{row_count} query added successfully"}, status=200)
+
+        except Exception as err:
+            print("Error adding query setting:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def edit_master_query(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            query_master_id = data.get("query_master_id")
+            app_name = data.get("app_name")
+            query_id = data.get("query_id")
+            query = data.get("query")
+            description = data.get("description")
+            change_logs = data.get("change_logs")
+            modified_by = data.get("modified_by")
+            
+            required_fields = {
+                "query_master_id": query_master_id,
+                "app_name": app_name,
+                "query_id": query_id,
+                "query": query,
+                "description": description,
+                "change_logs": change_logs,
+                "modified_by": modified_by,
+            }
+            
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+
+            # Check for duplicate query id name
+            check_query = """
+                SELECT COUNT(*) FROM vtpartner.query_master_tbl
+                WHERE query_id = %s
+            """
+            result = select_query(check_query, [query_id])
+            if result[0][0] > 0:
+                return JsonResponse({"message": "Query Id already exists"}, status=409)
+
+            query = """
+                UPDATE vtpartner.query_master_tbl
+                SET  app_name = %s, query_id = %s, query = %s, description =%s, change_logs = %s, modified_by = %s,
+                    last_modified = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)
+                WHERE query_master_id = %s
+            """
+            params = [
+                 app_name,
+                 query_id,
+                 query,
+                 description,
+                 change_logs,
+                 modified_by,
+                 query_master_id
+            ]
+            
+            row_count = update_query(query, params)
+            return JsonResponse({"message": f"{row_count} query updated successfully"}, status=200)
+
+        except Exception as err:
+            print("Error updating query setting:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
