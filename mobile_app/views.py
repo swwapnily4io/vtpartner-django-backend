@@ -2279,7 +2279,7 @@ def login_view(request):
             """
             get_result = select_query(get_query, ['CUST_BY_MOB'])
             
-            if get_result:  # Changed from 'if not get_result'
+            if get_result:  
                 # Construct the query by adding the WHERE clause
                 query = get_result[0][0] + "=%s"
                 print("query::", query)
@@ -2292,25 +2292,38 @@ def login_view(request):
 
             if not result:  # Changed from 'if result == []'
                 try:
-                    #Insert if not found
-                    query = """
-                        INSERT INTO vtpartner.customers_tbl (
-                            mobile_no
-                        ) VALUES (%s) RETURNING customer_id
+                    get_insert_query = """ 
+                    select query from vtpartner.query_master_tbl where query_id=%s;
                     """
-                    values = [mobile_no]
-                    new_result = insert_query(query, values)
-                    print("new_result::", new_result)
+                    get_insert_result = select_query(get_insert_query, ['ENTER_CUSTOMER_ID'])
                     
-                    if new_result:
-                        print("new_result[0][0]::", new_result[0][0])
-                        customer_id = new_result[0][0]
-                        response_value = [
-                            {
-                                "customer_id": customer_id
-                            }
-                        ]
-                        return JsonResponse({"result": response_value}, status=200)
+                    if get_insert_result:  
+                        # Construct the query by adding the WHERE clause
+                        query = get_insert_result[0][0] + "VALUES (%s) RETURNING customer_id"
+                        print("query::", query)
+                        values = [mobile_no]
+                        new_result = insert_query(query, values)
+                        print("new_result::", new_result)
+                        
+                        if new_result:
+                            print("new_result[0][0]::", new_result[0][0])
+                            customer_id = new_result[0][0]
+                            response_value = [
+                                {
+                                    "customer_id": customer_id
+                                }
+                            ]
+                            return JsonResponse({"result": response_value}, status=200)
+                    else:
+                        # Handle case when query is not found in query_master_tbl
+                        return JsonResponse({"message": "Query not found"}, status=404)
+                    #Insert if not found
+                    # query = """
+                    #     INSERT INTO vtpartner.customers_tbl (
+                    #         mobile_no
+                    #     ) VALUES (%s) RETURNING customer_id
+                    # """
+                    
                 except Exception as err:
                     print("Error executing query:", err)
                     return JsonResponse({"message": "An error occurred"}, status=500)
