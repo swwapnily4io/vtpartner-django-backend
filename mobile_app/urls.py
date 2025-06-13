@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .apis.logins import customer_login
 
 app_name = 'vt_partner'
 
@@ -12,11 +13,14 @@ urlpatterns = [
     #Customer Apis with sequence
     
     #Customer Login
-    path('login',views.login_view,name='login'),
+    path('login',customer_login.login_view,name='login'),
+    #Update Customer Firebase Token
+    path('update_firebase_customer_token',customer_login.update_firebase_customer_token,name='update_firebase_customer_token'),
+    
+    
+    
     #New Customer Registration
     path('customer_registration',views.customer_registration,name='customer_registration'),
-    #Update Customer Firebase Token
-    path('update_firebase_customer_token',views.update_firebase_customer_token,name='update_firebase_customer_token'),
     #All Services
     path('all_services',views.all_services,name='all_services'),
     #getting all banners
