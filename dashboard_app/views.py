@@ -18731,10 +18731,24 @@ def delete_service_plan_upgrade(request):
 def get_all_master_queries(request):
     if request.method == "POST":
         try:
+            data = json.loads(request.body)
+            app_name = data.get("app_name")
+            
+            
+            required_fields = {
+                "app_name": app_name,
+                
+            }
+            
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+
+            
             query = """
-                select query_master_id,app_name,query_id,query,description,change_logs,modified_by from vtpartner.query_master_tbl order by query_master_id desc
+                select query_master_id,app_name,query_id,query,description,change_logs,modified_by from vtpartner.query_master_tbl where app_name=%s order by query_master_id desc
             """
-            result = select_query(query)
+            result = select_query(query,[app_name])
 
             if not result:
                 return JsonResponse({"message": "No settings found"}, status=404)
