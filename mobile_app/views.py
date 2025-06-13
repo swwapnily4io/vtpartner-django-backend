@@ -2279,17 +2279,18 @@ def login_view(request):
             """
             get_result = select_query(get_query, ['CUST_BY_MOB'])
             
-            if not get_result:
-                query = get_result[0][0]+"=%s"
-                print("query::",query)
-            # query = """
-            # SELECT customer_id,customer_name,profile_pic,is_online,ratings,mobile_no,registration_date,time,r_lat,r_lng,current_lat,current_lng,status,full_address,email,gst_no,gst_address,pincode FROM
-            # vtpartner.customers_tbl WHERE mobile_no=%s
-            # """
+            if get_result:  # Changed from 'if not get_result'
+                # Construct the query by adding the WHERE clause
+                query = get_result[0][0] + "=%s"
+                print("query::", query)
+            else:
+                # Handle case when query is not found in query_master_tbl
+                return JsonResponse({"message": "Query not found"}, status=404)
+                
             params = [mobile_no]
-            result = select_query(query, params)  # Assuming select_query is defined elsewhere
+            result = select_query(query, params)
 
-            if result == []:
+            if not result:  # Changed from 'if result == []'
                 try:
                     #Insert if not found
                     query = """
@@ -2299,20 +2300,21 @@ def login_view(request):
                     """
                     values = [mobile_no]
                     new_result = insert_query(query, values)
-                    print("new_result::",new_result)
+                    print("new_result::", new_result)
+                    
                     if new_result:
-                        print("new_result[0][0]::",new_result[0][0])
+                        print("new_result[0][0]::", new_result[0][0])
                         customer_id = new_result[0][0]
                         response_value = [
                             {
-                                "customer_id":customer_id
+                                "customer_id": customer_id
                             }
                         ]
                         return JsonResponse({"result": response_value}, status=200)
                 except Exception as err:
                     print("Error executing query:", err)
                     return JsonResponse({"message": "An error occurred"}, status=500)
-                
+            
             # Map the results to a list of dictionaries with meaningful keys
             response_value = [
                 {
