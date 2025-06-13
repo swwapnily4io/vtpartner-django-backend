@@ -169,10 +169,10 @@ def login_view(request):
         )
         
         try:
-            config = configparser.ConfigParser()
-            config.read('query_mapping.ini')
-            GET_CUSTOMER_BY_MOBILE_NUMBER = config.get('query_mapping', 'GET_CUSTOMER_BY_MOBILE_NUMBER')
-            print("GET_CUSTOMER_BY_MOBILE_NUMBER::", GET_CUSTOMER_BY_MOBILE_NUMBER)
+            # config = configparser.ConfigParser()
+            # config.read('query_mapping.ini')
+            # GET_CUSTOMER_BY_MOBILE_NUMBER = config.get('query_mapping', 'GET_CUSTOMER_BY_MOBILE_NUMBER')
+            # print("GET_CUSTOMER_BY_MOBILE_NUMBER::", GET_CUSTOMER_BY_MOBILE_NUMBER)
             
             get_query = """ 
             select query from vtpartner.query_master_tbl where query_id=%s;
