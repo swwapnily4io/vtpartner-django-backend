@@ -176,7 +176,7 @@ def login_view(request):
         try:
             
             # Use the query from mapping
-            get_query = query_mappings.get('GET_CUSTOMER_BY_MOBILE_NUMBE')
+            get_query = query_mappings.get('GET_CUSTOMER_BY_MOBILE_NUMBER')
             print("get_query::", get_query)
             if not get_query:
                 raise ValueError("Query mapping 'GET_CUSTOMER_BY_MOBILE_NUMBER' not found")
