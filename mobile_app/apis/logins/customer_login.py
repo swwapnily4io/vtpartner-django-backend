@@ -34,6 +34,8 @@ from mobile_app.apis.logins.configurations import load_query_mappings
 import logging
 
 
+logger = logging.getLogger('ApplicationLogger')
+
     
 def check_missing_fields(fields):
     # Only consider a field missing if its value is None
@@ -152,9 +154,10 @@ def insert_query(query, params):
 
 @csrf_exempt
 def login_view(request):
+    
     if request.method == "POST":
         try:
-            logger = logging.getLogger('CustomerLogin')
+            
             data = json.loads(request.body)
             mobile_no = data.get("mobile_no")
             logger.info(f'Login attempt for mobile: {mobile_no}')

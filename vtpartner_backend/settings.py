@@ -238,7 +238,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'debug.log',
+            'filename': 'application.log',
             'maxBytes': 1024*1024*1,  # 5 MB
             'backupCount': 3,
             'formatter': 'verbose',
@@ -255,7 +255,7 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        'CustomerLogins': {  # Add your custom logger
+        'ApplicationLogger': {  # Add your custom logger
             'handlers': ['file', 'console'],
             'level': 'INFO',
             'propagate': True,
