@@ -1,155 +1,13 @@
-from django.shortcuts import render,redirect, reverse
-from django.db import connection, DatabaseError
-from django.views.decorators.cache import never_cache
-from django.contrib.auth import logout
-from django.http import HttpResponseServerError,JsonResponse,HttpResponse,HttpResponseRedirect
-from colorama import Fore, Style
-from django.views.decorators.cache import never_cache
-from django.utils import timezone
-from datetime import datetime
-import pytz
-import base64
-import uuid
-import mimetypes
-import requests
 import json
-import time
-import re
-import random
-from django.middleware.csrf import get_token
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.db.utils import IntegrityError
-from django.conf import settings
-from django.core.files.storage import FileSystemStorage
-from google.oauth2 import service_account
-import google.auth.transport.requests
-import os
-from dotenv import load_dotenv
-from google.oauth2 import service_account
-from google.auth.transport.requests import Request
-import boto3
-from botocore.exceptions import ClientError
-# Load environment variables from the root directory
-from mobile_app.apis.logins.configurations import load_query_mappings
+from mobile_app.configurations import load_query_mappings
 import logging
+from views import select_query, insert_query, update_query, check_missing_fields
 
 
+# Initialize logger
 logger = logging.getLogger('ApplicationLogger')
-
-    
-def check_missing_fields(fields):
-    # Only consider a field missing if its value is None
-    missing_fields = [field for field, value in fields.items() if value is None]
-    print("missing_fields::", missing_fields)
-    return missing_fields if missing_fields else None
-
-
-#Common Functions 
-def select_query(query, params=None):
-    """
-    Executes a parameterized SQL select query and returns the result.
-    
-    Args:
-        query (str): The SQL query to execute.
-        params (list or tuple): Parameters to substitute into the query.
-
-    Returns:
-        list: Rows from the query result.
-
-    Raises:
-        ValueError: If no data is found.
-        DatabaseError: For database-specific errors.
-    """
-    try:
-        # print("Select_Query::=>", query)
-        # print("Params::", params)
-        
-        with connection.cursor() as cursor:
-            cursor.execute(query, params)
-            result = None
-            result = cursor.fetchall()
-
-            # if result == []:
-            #     raise ValueError("No Data Found")  # Custom error when no results are found
-            print("result::",result)
-            return result
-
-    except ValueError as e:
-        # print(f"Error: {e}")
-        raise  # Re-raise to be handled by calling function
-    
-    except DatabaseError as e:
-        # print("DatabaseError executing query:", e)
-        raise  # Re-raise to be handled by calling function
-
-    except Exception as e:
-        # print("Unexpected error:", e)
-        raise  # Re-raise for unexpected errors
-    
-def insert_query2(query, params=None):
-    if params is None:
-        params = ()  # Default to empty tuple if no params are passed
-    
-    print("Executing insert query:", query)
-    print("With parameters:", params)
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(query, params)
-            
-            # If the query has a RETURNING clause, fetch the returned rows
-            if cursor.description:
-                result = cursor.fetchall()  # Fetch all returned rows if any
-                connection.commit()  # Commit after insertion
-                return result
-            else:
-                connection.commit()  # Commit if only affecting rows
-                return cursor.rowcount  # Return number of affected rows
-    
-    except IntegrityError as e:
-        print("Integrity Error: Failed to insert data due to integrity error", e)
-        raise
-    except Exception as e:
-        print("General Error executing query:", e)
-        raise
-
-
-def update_query(query, params):
-    print("update query::",query)
-    print("update query params::",params)
-    with connection.cursor() as cursor:
-        cursor.execute(query, params)
-        return cursor.rowcount
-
-def delete_query(query, params):
-    print("delete query::",query)
-    print("delete query params::",params)
-    with connection.cursor() as cursor:
-        cursor.execute(query, params)
-        return cursor.rowcount
-
-def insert_query(query, params):
-    print("Executing insert query:", query)
-    print("With parameters:", params)
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute(query, params)
-            
-            # If the query has a RETURNING clause, fetch the returned rows
-            if cursor.description:
-                result = cursor.fetchall()  # Fetch all returned rows if any
-                connection.commit()  # Commit after insertion
-                return result
-            else:
-                connection.commit()  # Commit if only affecting rows
-                return cursor.rowcount  # Return number of affected rows
-    
-    except IntegrityError as e:
-        print("Integrity Error: Failed to insert data due to integrity error", e)
-        raise
-    except Exception as e:
-        print("General Error executing query:", e)
-        raise
-
 
 
 @csrf_exempt
@@ -160,7 +18,7 @@ def login_view(request):
             
             data = json.loads(request.body)
             mobile_no = data.get("mobile_no")
-            logger.info(f'Login attempt for mobile: {mobile_no}')
+            logger.debug(f'Login attempt for mobile: {mobile_no}')
             required_fields = {
                 "mobile_no": mobile_no,
             }

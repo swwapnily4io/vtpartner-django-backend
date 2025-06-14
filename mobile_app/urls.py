@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from .apis.logins import customer_login
+from .apis.registration import customer_registration
 
 app_name = 'vt_partner'
 
@@ -18,9 +19,9 @@ urlpatterns = [
     path('update_firebase_customer_token',customer_login.update_firebase_customer_token,name='update_firebase_customer_token'),
     
     
-    
     #New Customer Registration
-    path('customer_registration',views.customer_registration,name='customer_registration'),
+    path('customer_registration',customer_registration.customer_new_registration,name='customer_registration'),
+    
     #All Services
     path('all_services',views.all_services,name='all_services'),
     #getting all banners
@@ -28,27 +29,39 @@ urlpatterns = [
     #All App Controls From Dashboard Settings
     path('get_control_settings', views.get_control_settings, name='get_control_settings'),
     
-    #Customer Bookings a Service Api's URLs
+    #TODO:Goes into generic_apis.py
+    #Customer Bookings a Service Api's URLs 
+    #Upload Images
+    path('upload',views.upload_image,name='upload'),
     #Allowed PinCodes
     path('allowed_pin_code',views.allowed_pin_code,name='allowed_pin_code'),
     #Calculate Distance between 2 place IDs
     path('distance',views.distance,name='distance'),
+    #All Coupons
+    path('all_coupons',views.all_coupons,name='all_coupons'),
+    #All Cities
+    path('all_cities',views.all_cities,name='all_cities'),
+    
     #Get Near By Drivers
     path('get_nearby_drivers',views.get_nearby_drivers,name='get_nearby_drivers'),
+    
     #All Vehicles
     path('all_vehicles',views.all_vehicles,name='all_vehicles'),
+    
     #All Vehicles with category id , price
     path('all_vehicles_with_price_details',views.all_vehicles_with_price_details,name='all_vehicles_with_price_details'),
     #Update customer details
     path('get_peak_hour_prices',views.get_peak_hour_prices,name='get_peak_hour_prices'),
+    
     #Goods types 
     path('get_all_goods_types',views.get_all_goods_types,name='get_all_goods_types'),
+    
     #GuideLines according to category
     path('get_all_guide_lines',views.get_all_guide_lines,name='get_all_guide_lines'),
 
 
     
-    
+    #TODO:Need to add them in to logins directory according to their roles
     #To get customer auth token for apis
     path('get_customer_api_auth_token',views.get_customer_api_auth_token,name='get_customer_api_auth_token'),
     #To get Goods Driver auth token for apis
@@ -62,18 +75,21 @@ urlpatterns = [
     #To get Handyman Agent auth token for apis
     path('get_handyman_agent_api_auth_token',views.get_handyman_agent_api_auth_token,name='get_handyman_agent_api_auth_token'),
     
+    
+    #This should go in fetch_fcm_server_token.py
     #To get Agent App Request Token HTTp FCM
     path('get_agent_app_firebase_access_token',views.get_agent_app_firebase_access_token,name='get_agent_app_firebase_access_token'),
     #Send OTP 
     path('get_customer_app_firebase_access_token',views.get_customer_app_firebase_access_token,name='get_customer_app_firebase_access_token'),
-    #Upload Images
-    path('upload',views.upload_image,name='upload'),
+    
+    #TODO: Addresses
     #Customer Saved addresses
     path('add_or_update_customer_address',views.add_or_update_customer_address,name='add_or_update_customer_address'),
+    #All Saved Addresses
+    path('all_saved_addresses',views.all_saved_addresses,name='all_saved_addresses'),
     
     
-    #All Coupons
-    path('all_coupons',views.all_coupons,name='all_coupons'),
+    #TODO: Wallets and rewards
     #Customer wallet balance and history
     path('customer_wallet_details',views.customer_wallet_details,name='customer_wallet_details'),
     #Customer wallet balance add
@@ -84,12 +100,10 @@ urlpatterns = [
     path('customer_reward_points_details',views.customer_reward_points_details,name='customer_reward_points_details'),
     #Update Customer Details
     path('update_customer_details',views.update_customer_details,name='update_customer_details'),
-    #All Saved Addresses
-    path('all_saved_addresses',views.all_saved_addresses,name='all_saved_addresses'),
     
-    #All Cities
-    path('all_cities',views.all_cities,name='all_cities'),
     
+    
+    #TODO: Price Upgrade
     # Vehicles with category id , price upgraded
     path('get_vehicle_upgrade_prices',views.get_vehicle_upgrade_prices,name='get_vehicle_upgrade_prices'),
     # Service with category id , price upgraded
@@ -121,7 +135,7 @@ urlpatterns = [
     path('customers_all_handyman_bookings',views.customers_all_handyman_bookings,name='customers_all_handyman_bookings'),
     #All Schedule bookings
     path('get_scheduled_bookings',views.get_scheduled_bookings,name='get_scheduled_bookings'),
-    #Cab Driver Current Booking Details
+    # Cab Driver Current Booking Details
     path('get_cab_driver_current_booking_detail',views.get_cab_driver_current_booking_detail,name='get_cab_driver_current_booking_detail'),
     # Other Driver Current Booking Details
     path('get_other_driver_current_booking_detail',views.get_other_driver_current_booking_detail,name='get_other_driver_current_booking_detail'),

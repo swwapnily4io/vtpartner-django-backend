@@ -30,8 +30,9 @@ from google.auth.transport.requests import Request
 import boto3
 from botocore.exceptions import ClientError
 # Load environment variables from the root directory
+import logging
 
-
+logger = logging.getLogger('ApplicationLogger')
 
 
 
@@ -124,7 +125,7 @@ def process_scheduled_bookings_generic(
     if expired_bookings:
         #sending notification to customer about the booking expired
         send_expired_booking_notifications(expired_bookings, table_name)
-        print(f"Expired {len(expired_bookings)} bookings for {table_name}")
+        logger.debug(f"Expired {len(expired_bookings)} bookings for {table_name}")
 
 #finding the customer and sending notification
 def send_expired_booking_notifications(expired_bookings, table_name):
@@ -139,7 +140,7 @@ def send_expired_booking_notifications(expired_bookings, table_name):
         # Get Firebase access token
         server_access_token = get_customer_firebase_access_token_internal()
         if not server_access_token:
-            print("Failed to get Firebase access token")
+            logger.debug("Failed to get Firebase access token")
             return
 
         for booking_id in expired_bookings:
@@ -2249,75 +2250,6 @@ def get_peak_hour_prices(request):
 
 
 
-@csrf_exempt
-def customer_registration(request):
-    try:
-        data = json.loads(request.body)
-        #customer_id,customer_name,profile_pic,is_online,ratings,mobile_no,registration_date,time,r_lat,r_lng,current_lat,current_lng,status,full_address,email
-        customer_id = data.get("customer_id")
-        customer_name = data.get("customer_name")
-        r_lat = data.get("r_lat")
-        r_lng = data.get("r_lng")
-        full_address = data.get("full_address")
-        purpose = data.get("purpose")
-        email = data.get("email")
-        pincode = data.get("pincode")
-        # authToken = data.get('auth')
-        
-        # if not is_valid_customer_fcm_token(customer_id, authToken):
-        #     return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
-        
-        
-        
-        # List of required fields
-        required_fields = {
-            "customer_id":customer_id,
-            "customer_name":customer_name,
-            "r_lat":r_lat,
-            "r_lng":r_lng,
-            "full_address":full_address,
-            "purpose":purpose,
-            "email":email,
-            "pincode":pincode,
-        }
-
-        # Use the utility function to check for missing fields
-        missing_fields = check_missing_fields(required_fields)
-
-        # If there are missing fields, return an error response
-        if missing_fields:
-            return JsonResponse(
-                {"message": f"Missing required fields: {', '.join(missing_fields)}"},
-                status=400
-            )
-
-        
-        query = """
-            UPDATE vtpartner.customers_tbl 
-            SET customer_name=%s, r_lat=%s, r_lng=%s, current_lat=%s, current_lng=%s, full_address=%s, purpose=%s, 
-            email=%s, pincode=%s
-            WHERE customer_id=%s
-        """
-        values = [
-            customer_name ,
-            r_lat ,
-            r_lng ,
-            r_lat ,
-            r_lng ,
-            full_address ,
-            purpose ,
-            email ,
-            pincode ,
-            customer_id
-        ]
-        row_count = update_query(query, values)
-
-        # Send success response
-        return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
-
-    except Exception as err:
-        print("Error executing add new faq query", err)
-        return JsonResponse({"message": "Error executing add new faq query"}, status=500)
 
 @csrf_exempt  # Disable CSRF protection for this view
 def all_coupons(request):
@@ -8980,6 +8912,8 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                     AND (
                         CASE 
                             WHEN %s = 'Any' THEN goods_driverstbl.body_type IN ('Any', 'Open Body', 'Close Body')
+                            WHEN %s = 'Open Body' THEN goods_driverstbl.body_type IN ('Any', 'Open Body')
+                            WHEN %s = 'Close Body' THEN goods_driverstbl.body_type IN ('Any', 'Close Body')
                             ELSE goods_driverstbl.body_type = %s
                         END
                     )
@@ -8988,7 +8922,7 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
 
                     """
                     values = [pickup_lat, pickup_lng, pickup_lat,city_id,price_type, pickup_lat, pickup_lng, pickup_lat, radius_km,vehicle_id,
-                              body_type,body_type,booking_type_locations]
+                              body_type,body_type,body_type,body_type,booking_type_locations]
 
                     # Execute the query
                     nearby_drivers = select_query(query, values)
