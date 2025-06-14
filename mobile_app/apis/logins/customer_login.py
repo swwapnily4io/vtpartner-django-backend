@@ -187,7 +187,7 @@ def login_view(request):
             logger = logging.getLogger('CustomerLogin')
             # logger.setLevel(logging.INFO)
             logger.warning("Warning Error")
-            logger.info("Info Error")
+            logger.info('Info Error')
             logger.critical("Critical error:")
             if not result:
                 # Try to insert new customer
