@@ -283,6 +283,8 @@ def find_nearby_goods_drivers(booking):
                     AND (
                         CASE 
                             WHEN %s = 'Any' THEN goods_driverstbl.body_type IN ('Any', 'Open Body', 'Close Body')
+                            WHEN %s = 'Open Body' THEN goods_driverstbl.body_type IN ('Any', 'Open Body')
+                            WHEN %s = 'Close Body' THEN goods_driverstbl.body_type IN ('Any', 'Close Body')
                             ELSE goods_driverstbl.body_type = %s
                         END
                     )
@@ -290,7 +292,7 @@ def find_nearby_goods_drivers(booking):
                     ORDER BY distance;
                     """
     values = [pickup_lat, pickup_lng, pickup_lat,city_id,vehicle_price_type, pickup_lat, pickup_lng, pickup_lat,vehicle_radius_km ,goods_vehicle_id,
-                              body_type,body_type,booking_type_locations]
+                              body_type,body_type,body_type,body_type,booking_type_locations]
     nearby_drivers = select_query(query, values)
 
     # Prepare FCM data
