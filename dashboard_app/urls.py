@@ -387,10 +387,15 @@ urlpatterns = [
     path('get_handyman_booking_detail_history_with_id', views.get_handyman_booking_detail_history_with_id, name='get_handyman_booking_detail_history_with_id'),
     path('handyman_current_location', views.handyman_current_location, name='handyman_current_location'),
     
-    
+    #Customer Cancel Reasons
     path('get_cancel_reasons', views.get_cancel_reasons, name='get_cancel_reasons'),
     path('add_cancel_reason', views.add_cancel_reason, name='add_cancel_reason'),
     path('update_cancel_reason', views.update_cancel_reason, name='update_cancel_reason'),
+    
+    #Driver Cancel Reasons
+    path('get_driver_cancel_reasons', views.get_driver_cancel_reasons, name='get_driver_cancel_reasons'),
+    path('add_driver_cancel_reason', views.add_driver_cancel_reason, name='add_driver_cancel_reason'),
+    path('update_driver_cancel_reason', views.update_driver_cancel_reason, name='update_driver_cancel_reason'),
     
     path('get_all_control_settings', views.get_all_control_settings, name='get_all_control_settings'),
     path('add_control_setting', views.add_control_setting, name='add_control_setting'),

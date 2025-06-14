@@ -17905,6 +17905,125 @@ def update_cancel_reason(request):
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt
+def get_driver_cancel_reasons(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            category_id = data.get("category_id")
+            page = data.get("page", 1)
+            limit = data.get("limit", 10)
+            search = data.get("search", "")
+            
+            offset = (page - 1) * limit
+            
+            query = """
+                SELECT 
+                    reason_id, reason, category_id, last_updated_epoch
+                FROM vtpartner.driver_cancel_resons_tbl
+                WHERE category_id = %s
+                AND LOWER(reason) LIKE LOWER(%s)
+                ORDER BY last_updated_epoch DESC
+                LIMIT %s OFFSET %s
+            """
+            
+            count_query = """
+                SELECT COUNT(*) 
+                FROM vtpartner.driver_cancel_resons_tbl
+                WHERE category_id = %s
+                AND LOWER(reason) LIKE LOWER(%s)
+            """
+            
+            search_pattern = f"%{search}%"
+            
+            count_result = select_query(count_query, [category_id, search_pattern])
+            total_count = count_result[0][0] if count_result else 0
+            
+            result = select_query(query, [category_id, search_pattern, limit, offset])
+            
+            reasons = [{
+                "reason_id": row[0],
+                "reason": row[1],
+                "category_id": row[2],
+                "last_updated_epoch": row[3]
+            } for row in result]
+            
+            return JsonResponse({
+                "reasons": reasons,
+                "total_pages": math.ceil(total_count / limit)
+            }, status=200)
+            
+        except Exception as err:
+            print("Error fetching driver cancel reasons:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+    
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def add_driver_cancel_reason(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            required_fields = {
+                "reason": data.get("reason"),
+                "category_id": data.get("category_id")
+            }
+            
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+            
+            query = """
+                INSERT INTO vtpartner.driver_cancel_resons_tbl
+                (reason, category_id)
+                VALUES (%s, %s)
+            """
+            
+            params = [data["reason"], data["category_id"]]
+            row_count = insert_query(query, params)
+            
+            return JsonResponse({"message": f"{row_count} reason added successfully"}, status=200)
+            
+        except Exception as err:
+            print("Error adding driver cancel reason:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+    
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def update_driver_cancel_reason(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            required_fields = {
+                "reason_id": data.get("reason_id"),
+                "reason": data.get("reason"),
+                "category_id": data.get("category_id")
+            }
+            
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
+            
+            query = """
+                UPDATE vtpartner.driver_cancel_resons_tbl
+                SET reason = %s,
+                    category_id = %s,
+                    last_updated_epoch = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)
+                WHERE reason_id = %s
+            """
+            
+            params = [data["reason"], data["category_id"], data["reason_id"]]
+            row_count = update_query(query, params)
+            
+            return JsonResponse({"message": f"{row_count} reason updated successfully"}, status=200)
+            
+        except Exception as err:
+            print("Error updating driver cancel reason:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+    
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
 def get_all_control_settings(request):
     if request.method == "POST":
         try:
