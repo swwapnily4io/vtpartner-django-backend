@@ -154,9 +154,10 @@ def insert_query(query, params):
 def login_view(request):
     if request.method == "POST":
         try:
+            logger = logging.getLogger('CustomerLogin')
             data = json.loads(request.body)
             mobile_no = data.get("mobile_no")
-
+            logger.info(f'Login attempt for mobile: {mobile_no}')
             required_fields = {
                 "mobile_no": mobile_no,
             }
@@ -184,8 +185,9 @@ def login_view(request):
             query = get_result[0][0] + "=%s"
             result = select_query(query, [mobile_no])
 
-            logger = logging.getLogger('CustomerLogin')
-            logger.setLevel(logging.INFO)
+            
+            # logger.setLevel(logging.INFO)
+            logger.info('Processing login request')
             logger.warning("Warning Error")
             logger.info('Info Error')
             logger.critical("Critical error:")
