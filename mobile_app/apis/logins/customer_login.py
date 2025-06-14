@@ -171,23 +171,19 @@ def login_view(request):
         )
         query_mappings = load_query_mappings()
             
-        # Use the query from mapping
-        get_query = query_mappings.get('GET_CUSTOMER_BY_MOBILE_NUMBER')
-        print("get_query::", get_query)
-        if not get_query:
-            raise ValueError("Query mapping 'GET_CUSTOMER_BY_MOBILE_NUMBER' not found")
+        
         
         try:
-            # config = configparser.ConfigParser()
-            # config.read('query_mapping.ini')
-            # GET_CUSTOMER_BY_MOBILE_NUMBER = config.get('query_mapping', 'GET_CUSTOMER_BY_MOBILE_NUMBER')
-            # print("GET_CUSTOMER_BY_MOBILE_NUMBER::", GET_CUSTOMER_BY_MOBILE_NUMBER)
-            # Get query mappings
             
+            # Use the query from mapping
+            get_query = query_mappings.get('GET_CUSTOMER_BY_MOBILE_NUMBE')
+            print("get_query::", get_query)
+            if not get_query:
+                raise ValueError("Query mapping 'GET_CUSTOMER_BY_MOBILE_NUMBER' not found")
             
-            get_query = """ 
-            select query from vtpartner.query_master_tbl where query_id=%s;
-            """
+            # get_query = """ 
+            # select query from vtpartner.query_master_tbl where query_id=%s;
+            # """
             get_result = select_query(get_query, ['CUST_BY_MOB'])
             
             if get_result:  
