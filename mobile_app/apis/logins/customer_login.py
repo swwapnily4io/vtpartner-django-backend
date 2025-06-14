@@ -185,7 +185,7 @@ def login_view(request):
             result = select_query(query, [mobile_no])
 
             logger = logging.getLogger('CustomerLogin')
-            # logger.setLevel(logging.INFO)
+            logger.setLevel(logging.INFO)
             logger.warning("Warning Error")
             logger.info('Info Error')
             logger.critical("Critical error:")
