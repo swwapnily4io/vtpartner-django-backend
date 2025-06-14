@@ -184,13 +184,15 @@ def login_view(request):
             query = get_result[0][0] + "=%s"
             result = select_query(query, [mobile_no])
 
+            logger = logging.getLogger('CustomerLogin')
+            # logger.setLevel(logging.INFO)
+            logger.warning("Warning Error")
+            logger.info("Info Error")
+            logger.critical("Critical error:")
             if not result:
                 # Try to insert new customer
                 get_insert_query = query_mappings.get('ADD_NEW_CUSTOMER_ID')
-                logger = logging.getLogger('CustomerLogin')
-                logger.setLevel(logging.INFO)
-                # logger.warning("Warning Error: No customer found, attempting to insert new customer")
-                logger.info("Insert query mapping:")
+                
                 # logger.debug("Insert query mapping:", get_insert_query)
                 if not get_insert_query:
                     return JsonResponse({"message": "Insert query mapping not found"}, status=404)
