@@ -30,7 +30,7 @@ from google.auth.transport.requests import Request
 import boto3
 from botocore.exceptions import ClientError
 # Load environment variables from the root directory
-from config import load_query_mappings
+from mobile_app.apis.logins.configurations import load_query_mappings
 
 
     
