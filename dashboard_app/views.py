@@ -18858,32 +18858,33 @@ def edit_master_query(request):
             if missing_fields:
                 return JsonResponse({"message": f"Missing fields: {', '.join(missing_fields)}"}, status=400)
 
-            # Check for duplicate query id name
+            # Check for duplicate query id name excluding current query_master_id
             check_query = """
                 SELECT COUNT(*) FROM vtpartner.query_master_tbl
-                WHERE query_id = %s and query_master_id!=%s
+                WHERE query_id = %s AND query_master_id != %s
             """
-            result = select_query(check_query, [query_id,query_master_id])
+            result = select_query(check_query, [query_id, query_master_id])
             if result[0][0] > 0:
                 return JsonResponse({"message": "Query Id already exists"}, status=409)
 
-            query = """
+            update_query_str = """
                 UPDATE vtpartner.query_master_tbl
-                SET  app_name = %s, query_id = %s, query = %s, description =%s, change_logs = %s, modified_by = %s,
-                    last_modified = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)
+                SET  app_name = %s, query_id = %s, query = %s, description = %s, 
+                     change_logs = %s, modified_by = %s,
+                     last_modified = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)
                 WHERE query_master_id = %s
             """
             params = [
-                 app_name,
-                 query_id,
-                 query,
-                 description,
-                 change_logs,
-                 modified_by,
-                 query_master_id
+                app_name,
+                query_id,
+                query,
+                description,
+                change_logs,
+                modified_by,
+                query_master_id
             ]
             
-            row_count = update_query(query, params)
+            row_count = update_query(update_query_str, params)
             return JsonResponse({"message": f"{row_count} query updated successfully"}, status=200)
 
         except Exception as err:
