@@ -188,7 +188,7 @@ def login_view(request):
                 # Try to insert new customer
                 get_insert_query = query_mappings.get('ADD_NEW_CUSTOMER_ID')
                 logger = logging.getLogger('CustomerLogin')
-                logger.warning("Insert query mapping:", get_insert_query)
+                logger.warning("Warning Error: No customer found, attempting to insert new customer")
                 logger.info("Insert query mapping:", get_insert_query)
                 logger.debug("Insert query mapping:", get_insert_query)
                 if not get_insert_query:
