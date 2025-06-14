@@ -30,7 +30,6 @@ from google.auth.transport.requests import Request
 import boto3
 from botocore.exceptions import ClientError
 # Load environment variables from the root directory
-import configparser
 from config import load_query_mappings
 
     
