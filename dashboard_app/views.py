@@ -18861,9 +18861,9 @@ def edit_master_query(request):
             # Check for duplicate query id name
             check_query = """
                 SELECT COUNT(*) FROM vtpartner.query_master_tbl
-                WHERE query_id = %s
+                WHERE query_id = %s and query_master_id!=%s
             """
-            result = select_query(check_query, [query_id])
+            result = select_query(check_query, [query_id,query_master_id])
             if result[0][0] > 0:
                 return JsonResponse({"message": "Query Id already exists"}, status=409)
 
