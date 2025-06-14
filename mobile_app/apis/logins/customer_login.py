@@ -188,6 +188,8 @@ def login_view(request):
                 # Try to insert new customer
                 get_insert_query = query_mappings.get('ADD_NEW_CUSTOMER_ID')
                 logger = logging.getLogger('CustomerLogin')
+                logger.warning("Insert query mapping:", get_insert_query)
+                logger.info("Insert query mapping:", get_insert_query)
                 logger.debug("Insert query mapping:", get_insert_query)
                 if not get_insert_query:
                     return JsonResponse({"message": "Insert query mapping not found"}, status=404)
