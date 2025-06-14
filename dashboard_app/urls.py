@@ -56,6 +56,14 @@ urlpatterns = [
     path('edit_peak_hour_price',views.edit_peak_hour_price,name='edit_peak_hour_price'),
     #Adding peak hour prices
     path('add_peak_hour_price',views.add_peak_hour_price,name='add_peak_hour_price'),
+    
+    #Getting Peak Hours Prices
+    path('get_pincodes_with_peak_hours',views.get_pincodes_with_peak_hours,name='get_pincodes_with_peak_hours'),
+    #Editing peak hour prices
+    path('edit_peak_hour_pincodewise_price',views.edit_peak_hour_pincodewise_price,name='edit_peak_hour_pincodewise_price'),
+    #Adding peak hour prices
+    path('add_peak_hour_pincodewise_price',views.add_peak_hour_pincodewise_price,name='add_peak_hour_pincodewise_price'),
+    
     #Adding peak hour prices 
     path('get_all_banners',views.get_all_banners,name='get_all_banners'),
     #Adding peak hour prices
