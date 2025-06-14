@@ -236,10 +236,10 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'INFO',
+            'level': 'DEBUG', # Set to INFO to capture info logs
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': 'application.log',
-            'maxBytes': 1024*1024*1,  # 5 MB
+            'maxBytes': 1024*1024*1,  # 1 MB
             'backupCount': 3,
             'formatter': 'verbose',
         },
@@ -252,12 +252,12 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['file', 'console'],
-            'level': 'INFO',
+            'level': 'DEBUG',  # Set to INFO to capture info logs
             'propagate': True,
         },
         'ApplicationLogger': {  # Add your custom logger
             'handlers': ['file', 'console'],
-            'level': 'INFO',
+            'level': 'DEBUG', # Set to INFO to capture info logs
             'propagate': True,
         },
     },
