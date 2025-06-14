@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+import logging.handlers
 
 # Load environment variables
 load_dotenv('/home/ubuntu/.env_vtpartner_customer')
