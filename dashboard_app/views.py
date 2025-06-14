@@ -1898,7 +1898,6 @@ def edit_vehicle_price(request):
             return JsonResponse({"message": "Error executing updating price to vehicle query"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
-
 @csrf_exempt
 def add_peak_hour_pincodewise_price(request):
     if request.method == "POST":
@@ -1964,6 +1963,89 @@ def add_peak_hour_pincodewise_price(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+@csrf_exempt 
+def get_pincodes_with_peak_hours(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            city_id = data.get('city_id')
+            vehicle_id = data.get('vehicle_id')
+            page = int(data.get('page', 1))
+            limit = int(data.get('limit', 10))
+            search = data.get('search', '')
+            
+            offset = (page - 1) * limit
+
+            # Get total count
+            count_query = """
+                SELECT COUNT(DISTINCT p.pincode_id) 
+                FROM vtpartner.allowed_pincodes_tbl p
+                WHERE p.city_id = %s 
+                AND p.status = 1
+                AND CASE WHEN %s != '' THEN p.pincode LIKE %s ELSE TRUE END
+            """
+            count_values = (city_id, search, f"%{search}%" if search else '')
+            total_count = select_query(count_query, count_values)[0][0]
+
+            # Get pincodes with all their peak hours
+            query = """
+                WITH paginated_pincodes AS (
+                    SELECT DISTINCT ON (p.pincode_id) 
+                        p.pincode_id,
+                        p.pincode
+                    FROM vtpartner.allowed_pincodes_tbl p
+                    WHERE p.city_id = %s 
+                    AND p.status = 1
+                    AND CASE WHEN %s != '' THEN p.pincode LIKE %s ELSE TRUE END
+                    ORDER BY p.pincode_id
+                    LIMIT %s OFFSET %s
+                )
+                SELECT 
+                    pp.pincode_id,
+                    pp.pincode,
+                    COALESCE(
+                        json_agg(
+                            json_build_object(
+                                'peak_price_id', ph.peak_price_id,
+                                'price_per_km', ph.price_per_km,
+                                'start_time', ph.start_time,
+                                'end_time', ph.end_time,
+                                'status', ph.status
+                            ) 
+                            ORDER BY ph.start_time
+                        ) FILTER (WHERE ph.peak_price_id IS NOT NULL),
+                        '[]'
+                    ) as peak_hours
+                FROM paginated_pincodes pp
+                LEFT JOIN vtpartner.vehicle_peak_hours_price_tbl ph 
+                    ON pp.pincode_id = ph.pincode_id 
+                    AND ph.vehicle_id = %s
+                GROUP BY pp.pincode_id, pp.pincode
+                ORDER BY pp.pincode
+            """
+            values = (city_id, search, f"%{search}%" if search else '', limit, offset, vehicle_id)
+            result = select_query(query, values)
+
+            pincodes = []
+            for row in result:
+                pincodes.append({
+                    'pincode_id': row[0],
+                    'pincode': row[1],
+                    'peak_hours': row[2] if isinstance(row[2], list) else json.loads(row[2])
+                })
+
+            return JsonResponse({
+                'pincodes': pincodes,
+                'total': total_count
+            }, status=200)
+
+        except Exception as err:
+            print("Error fetching pincodes:", err)
+            return JsonResponse({"message": "Error fetching pincodes"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+
 @csrf_exempt
 def edit_peak_hour_pincodewise_price(request):
     if request.method == "POST":
@@ -2015,8 +2097,20 @@ def edit_peak_hour_pincodewise_price(request):
             result = select_query(query_overlap_check, values_overlap_check)
 
             if result and result[0][0] > 0:
-                return JsonResponse({"message": "Time slot overlaps with existing peak hours"}, status=409)
+                return JsonResponse({
+                    "message": "Time slot overlaps with existing peak hours"
+                }, status=409)
 
+            # Validate time format
+            try:
+                datetime.strptime(start_time, '%H:%M:%S')
+                datetime.strptime(end_time, '%H:%M:%S')
+            except ValueError:
+                return JsonResponse({
+                    "message": "Invalid time format. Use HH:MM:SS"
+                }, status=400)
+
+            # Update the peak hour price record
             query = """
                 UPDATE vtpartner.vehicle_peak_hours_price_tbl 
                 SET pincode_id = %s,
@@ -2027,87 +2121,58 @@ def edit_peak_hour_pincodewise_price(request):
                     status = %s,
                     time_created_at = EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)
                 WHERE peak_price_id = %s
+                RETURNING peak_price_id
             """
-            values = (pincode_id, vehicle_id, price_per_km, start_time, end_time, status, peak_price_id)
-            row_count = update_query(query, values)
-
-            return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
-
-        except Exception as err:
-            print("Error updating peak hour price:", err)
-            return JsonResponse({"message": "Error updating peak hour price"}, status=500)
-
-    return JsonResponse({"message": "Method not allowed"}, status=405)
-
-@csrf_exempt
-def get_pincodes_with_peak_hours(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            city_id = data.get('city_id')
-            vehicle_id = data.get('vehicle_id')
-            page = int(data.get('page', 1))
-            limit = int(data.get('limit', 10))
-            search = data.get('search', '')
+            values = (
+                pincode_id, 
+                vehicle_id, 
+                price_per_km, 
+                start_time, 
+                end_time, 
+                status, 
+                peak_price_id
+            )
             
-            offset = (page - 1) * limit
+            result = update_query(query, values)
+            
+            if not result:
+                return JsonResponse({
+                    "message": "Peak hour price record not found"
+                }, status=404)
 
-            # Get total count
-            count_query = """
-                SELECT COUNT(*) 
-                FROM vtpartner.allowed_pincodes_tbl p
-                WHERE p.city_id = %s 
-                AND p.status = 1
-                AND CASE WHEN %s != '' THEN p.pincode LIKE %s ELSE TRUE END
-            """
-            count_values = (city_id, search, f"%{search}%" if search else '')
-            total_count = select_query(count_query, count_values)[0][0]
-
-            # Get pincodes with peak hour prices
-            query = """
+            # Get updated peak hour details
+            query_get = """
                 SELECT 
-                    p.pincode_id,
-                    p.pincode,
-                    ph.peak_price_id,
-                    ph.price_per_km,
-                    ph.start_time,
-                    ph.end_time,
-                    COALESCE(ph.status, 1) as status
-                FROM vtpartner.allowed_pincodes_tbl p
-                LEFT JOIN vtpartner.vehicle_peak_hours_price_tbl ph 
-                    ON p.pincode_id = ph.pincode_id 
-                    AND ph.vehicle_id = %s
-                WHERE p.city_id = %s 
-                AND p.status = 1
-                AND CASE WHEN %s != '' THEN p.pincode LIKE %s ELSE TRUE END
-                ORDER BY p.pincode
-                LIMIT %s OFFSET %s
+                    peak_price_id,
+                    price_per_km,
+                    start_time,
+                    end_time,
+                    status
+                FROM vtpartner.vehicle_peak_hours_price_tbl 
+                WHERE peak_price_id = %s
             """
-            values = (vehicle_id, city_id, search, f"%{search}%" if search else '', limit, offset)
-            result = select_query(query, values)
-
-            pincodes = []
-            for row in result:
-                pincodes.append({
-                    'pincode_id': row[0],
-                    'pincode': row[1],
-                    'peak_price_id': row[2],
-                    'price_per_km': float(row[3]) if row[3] else 0,
-                    'start_time': row[4],
-                    'end_time': row[5],
-                    'status': row[6]
-                })
+            updated_record = select_query(query_get, [peak_price_id])[0]
 
             return JsonResponse({
-                'pincodes': pincodes,
-                'total': total_count
+                "message": "Peak hour price updated successfully",
+                "peak_hour": {
+                    "peak_price_id": updated_record[0],
+                    "price_per_km": float(updated_record[1]),
+                    "start_time": updated_record[2],
+                    "end_time": updated_record[3],
+                    "status": updated_record[4]
+                }
             }, status=200)
 
         except Exception as err:
-            print("Error fetching pincodes:", err)
-            return JsonResponse({"message": "Error fetching pincodes"}, status=500)
+            print("Error updating peak hour price:", err)
+            return JsonResponse({
+                "message": "Error updating peak hour price"
+            }, status=500)
 
-    return JsonResponse({"message": "Method not allowed"}, status=405)
+    return JsonResponse({
+        "message": "Method not allowed"
+    }, status=405)
 
 @csrf_exempt
 def add_peak_hour_price(request):
