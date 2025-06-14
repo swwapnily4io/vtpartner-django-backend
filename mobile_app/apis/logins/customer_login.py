@@ -59,8 +59,8 @@ def select_query(query, params=None):
         DatabaseError: For database-specific errors.
     """
     try:
-        print("Select_Query::=>", query)
-        print("Params::", params)
+        # print("Select_Query::=>", query)
+        # print("Params::", params)
         
         with connection.cursor() as cursor:
             cursor.execute(query, params)
@@ -73,15 +73,15 @@ def select_query(query, params=None):
             return result
 
     except ValueError as e:
-        print(f"Error: {e}")
+        # print(f"Error: {e}")
         raise  # Re-raise to be handled by calling function
     
     except DatabaseError as e:
-        print("DatabaseError executing query:", e)
+        # print("DatabaseError executing query:", e)
         raise  # Re-raise to be handled by calling function
 
     except Exception as e:
-        print("Unexpected error:", e)
+        # print("Unexpected error:", e)
         raise  # Re-raise for unexpected errors
     
 def insert_query2(query, params=None):
