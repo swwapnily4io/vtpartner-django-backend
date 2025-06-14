@@ -152,90 +152,59 @@ def insert_query(query, params):
 @csrf_exempt
 def login_view(request):
     if request.method == "POST":
-        data = json.loads(request.body)
-        mobile_no = data.get("mobile_no")
-
-         # List of required fields
-        required_fields = {
-            "mobile_no": mobile_no,
-        }
-        # Check for missing fields
-         # Use the utility function to check for missing fields
-        missing_fields = check_missing_fields(required_fields)
-        
-        # If there are missing fields, return an error response
-        if missing_fields:
-            return JsonResponse(
-            {"message": f"Missing required fields: {', '.join(missing_fields)}"},
-            status=400
-        )
-        query_mappings = load_query_mappings()
-            
-        
-        
         try:
+            data = json.loads(request.body)
+            mobile_no = data.get("mobile_no")
+
+            required_fields = {
+                "mobile_no": mobile_no,
+            }
             
-            # Use the query from mapping
+            missing_fields = check_missing_fields(required_fields)
+            if missing_fields:
+                return JsonResponse(
+                    {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+                    status=400
+                )
+            
+            query_mappings = load_query_mappings()
             get_query = query_mappings.get('GET_CUSTOMER_BY_MOBILE_NUMBER')
-            print("get_query::", get_query)
-            if not get_query:
-                raise ValueError("Query mapping 'GET_CUSTOMER_BY_MOBILE_NUMBER' not found")
             
-            # get_query = """ 
-            # select query from vtpartner.query_master_tbl where query_id=%s;
-            # """
+            if not get_query:
+                return JsonResponse({"message": "Query mapping not found"}, status=404)
+            
+            # First get the customer query
             get_result = select_query(get_query, ['CUST_BY_MOB'])
             
-            if get_result:  
-                # Construct the query by adding the WHERE clause
-                query = get_result[0][0] + "=%s"
-                print("query::", query)
-            else:
-                # Handle case when query is not found in query_master_tbl
-                return JsonResponse({"message": "Query not found"}, status=404)
+            if not get_result:
+                return JsonResponse({"message": "Customer query not found"}, status=404)
                 
-            params = [mobile_no]
-            result = select_query(query, params)
+            # Construct and execute the customer query
+            query = get_result[0][0] + "=%s"
+            result = select_query(query, [mobile_no])
 
-            if not result:  # Changed from 'if result == []'
-                try:
-                    get_insert_query = """ 
-                    select query from vtpartner.query_master_tbl where query_id=%s;
-                    """
-                    get_insert_result = select_query(get_insert_query, ['ADD_NEW_CUSTOMER_ID'])
+            if not result:
+                # Try to insert new customer
+                get_insert_query = query_mappings.get('ADD_NEW_CUSTOMER_ID')
+                if not get_insert_query:
+                    return JsonResponse({"message": "Insert query mapping not found"}, status=404)
+                
+                get_insert_result = select_query(get_insert_query, ['ADD_NEW_CUSTOMER_ID'])
+                if not get_insert_result:
+                    return JsonResponse({"message": "Insert query not found"}, status=404)
+                
+                insert_query_str = get_insert_result[0][0] + "VALUES (%s) RETURNING customer_id"
+                new_result = insert_query(insert_query_str, [mobile_no])
+                
+                if new_result:
+                    customer_id = new_result[0][0]
+                    return JsonResponse({
+                        "result": [{
+                            "customer_id": customer_id
+                        }]
+                    }, status=200)
                     
-                    if get_insert_result:  
-                        # Construct the query by adding the WHERE clause
-                        query = get_insert_result[0][0] + "VALUES (%s) RETURNING customer_id"
-                        print("query::", query)
-                        values = [mobile_no]
-                        new_result = insert_query(query, values)
-                        print("new_result::", new_result)
-                        
-                        if new_result:
-                            print("new_result[0][0]::", new_result[0][0])
-                            customer_id = new_result[0][0]
-                            response_value = [
-                                {
-                                    "customer_id": customer_id
-                                }
-                            ]
-                            return JsonResponse({"result": response_value}, status=200)
-                    else:
-                        # Handle case when query is not found in query_master_tbl
-                        return JsonResponse({"message": "Query not found"}, status=404)
-                    #Insert if not found
-                    # query = """
-                    #     INSERT INTO vtpartner.customers_tbl (
-                    #         mobile_no
-                    #     ) VALUES (%s) RETURNING customer_id
-                    # """
-                    
-                except Exception as err:
-                    print("Error executing query:", err)
-                    return JsonResponse({"message": "An error occurred"}, status=500)
-            
-            # Map the results to a list of dictionaries with meaningful keys
+            # Map existing customer results
             response_value = [
                 {
                     "customer_id": row[0],
@@ -259,15 +228,14 @@ def login_view(request):
                 }
                 for row in result
             ]
-            # Return customer response
+            
             return JsonResponse({"results": response_value}, status=200)
 
         except Exception as err:
             print("Error executing query:", err)
-            return JsonResponse({"message": "An error occurred"}, status=500)
+            return JsonResponse({"message": str(err)}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
-
 @csrf_exempt
 def update_firebase_customer_token(request):
     if request.method == "POST":
