@@ -30,13 +30,8 @@ from google.auth.transport.requests import Request
 import boto3
 from botocore.exceptions import ClientError
 # Load environment variables from the root directory
+from config import load_query_mappings
 
-import configparser
-
-def load_query_mappings():
-    config = configparser.ConfigParser()
-    config.read('query_mapping.ini')
-    return config['DEFAULT'] if 'DEFAULT' in config else {}
 
     
 def check_missing_fields(fields):
