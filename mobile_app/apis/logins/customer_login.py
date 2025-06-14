@@ -31,6 +31,7 @@ import boto3
 from botocore.exceptions import ClientError
 # Load environment variables from the root directory
 import configparser
+from config import load_query_mappings
 
     
 def check_missing_fields(fields):
@@ -147,6 +148,7 @@ def insert_query(query, params):
         raise
 
 
+
 @csrf_exempt
 def login_view(request):
     if request.method == "POST":
@@ -173,10 +175,17 @@ def login_view(request):
             # config.read('query_mapping.ini')
             # GET_CUSTOMER_BY_MOBILE_NUMBER = config.get('query_mapping', 'GET_CUSTOMER_BY_MOBILE_NUMBER')
             # print("GET_CUSTOMER_BY_MOBILE_NUMBER::", GET_CUSTOMER_BY_MOBILE_NUMBER)
+            # Get query mappings
+            query_mappings = load_query_mappings()
             
-            get_query = """ 
-            select query from vtpartner.query_master_tbl where query_id=%s;
-            """
+            # Use the query from mapping
+            get_query = query_mappings.get('GET_CUSTOMER_BY_MOBILE_NUMBER')
+            if not get_query:
+                raise ValueError("Query mapping 'GET_CUSTOMER_BY_MOBILE_NUMBER' not found")
+            print("get_query::", get_query)
+            # get_query = """ 
+            # select query from vtpartner.query_master_tbl where query_id=%s;
+            # """
             get_result = select_query(get_query, ['CUST_BY_MOB'])
             
             if get_result:  
