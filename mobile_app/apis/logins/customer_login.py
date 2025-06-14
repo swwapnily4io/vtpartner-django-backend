@@ -31,6 +31,7 @@ import boto3
 from botocore.exceptions import ClientError
 # Load environment variables from the root directory
 from mobile_app.apis.logins.configurations import load_query_mappings
+import logging
 
 
     
@@ -186,6 +187,8 @@ def login_view(request):
             if not result:
                 # Try to insert new customer
                 get_insert_query = query_mappings.get('ADD_NEW_CUSTOMER_ID')
+                logger = logging.getLogger('CustomerLogin')
+                logger.debug("Insert query mapping:", get_insert_query)
                 if not get_insert_query:
                     return JsonResponse({"message": "Insert query mapping not found"}, status=404)
                 
