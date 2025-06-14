@@ -189,6 +189,7 @@ def login_view(request):
             logger.warning("Warning Error")
             logger.info('Info Error')
             logger.critical("Critical error:")
+            
             if not result:
                 # Try to insert new customer
                 get_insert_query = query_mappings.get('ADD_NEW_CUSTOMER_ID')
