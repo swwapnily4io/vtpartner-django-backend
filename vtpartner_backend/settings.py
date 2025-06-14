@@ -255,7 +255,7 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        'CustomerLogin': {  # Add your custom logger
+        'CustomerLogins': {  # Add your custom logger
             'handlers': ['file', 'console'],
             'level': 'INFO',
             'propagate': True,
