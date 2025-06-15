@@ -24,9 +24,10 @@ schema_view = get_schema_view(
 
 urlpatterns = [
    path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-   path('login/', schema_view.with_ui('login', cache_timeout=0), name='login'),
+   path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
    path('login',customer_login.login_view,name='login'),
+   path('custom_endpoint/', views.all_services, name='custom-endpoint')
 ]
 
 # urlpatterns = [
