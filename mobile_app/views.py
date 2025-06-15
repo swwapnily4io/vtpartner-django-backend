@@ -2186,60 +2186,96 @@ def add_or_update_customer_address(request):
 #     return JsonResponse({"message": "Method not allowed"}, status=405)
 
 
+# @csrf_exempt
+# def get_peak_hour_prices(request):
+#     if request.method == "POST":
+#         try:
+#             data = json.loads(request.body)
+            
+#             city_id = data.get('city_id')
+#             pincode_id = data.get('pincode_id',1)
+#             category_id = data.get('category_id',1)
+            
+#             customer_id = data.get('customer_id')
+#             authToken = data.get('auth')
+#             if not is_valid_customer_fcm_token(customer_id, authToken):
+#                 return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+
+#             query = """
+#                 SELECT p.*, c.city_name, c.bg_image
+#                 FROM vtpartner.vehicle_peak_hours_price_tbl p
+#                 JOIN vtpartner.available_citys_tbl c ON p.city_id = c.city_id
+#                 WHERE
+#                 (p.city_id = %s OR %s IS NULL) AND category_id=%s
+#                 ORDER BY p.start_time::time
+#             """
+#             values = ( city_id, city_id,category_id)
+#             result = select_query(query, values)
+            
+                
+#             peak_hours = []
+#             for row in result:
+#                 peak_hours.append({
+#                     'peak_price_id': row[0],
+#                     'city_id': row[1],
+#                     'vehicle_id': row[2],
+#                     'price_per_km': float(row[3]),
+#                     'start_time': row[6],  # Changed index to match table structure
+#                     'end_time': row[7],    # Changed index to match table structure
+#                     'status': row[4],
+#                     'time_created_at': float(row[5]),
+#                     'city_name': row[8],
+#                     'bg_image': row[9]
+#                 })
+
+#             return JsonResponse({"peak_hours": peak_hours}, status=200)
+
+#         except Exception as err:
+#             print("Error fetching peak hour prices:", err)
+#             return JsonResponse({"message": "Error fetching peak hour prices"}, status=500)
+
+#     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 @csrf_exempt
 def get_peak_hour_prices(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
             
-            city_id = data.get('city_id')
-            category_id = data.get('category_id',1)
+            pincode_id = data.get('pincode_id', 1)
+            category_id = data.get('category_id', 1)
             
             customer_id = data.get('customer_id')
             authToken = data.get('auth')
             if not is_valid_customer_fcm_token(customer_id, authToken):
-                return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+                return JsonResponse({"message": "Invalid or expired token. Please login again.", "status": "unauthorized"}, status=401)
 
+            # Simplified query using only pincode_id
             query = """
-                SELECT p.*, c.city_name, c.bg_image
+                SELECT p.*, ap.pincode, c.city_name, c.bg_image 
                 FROM vtpartner.vehicle_peak_hours_price_tbl p
-                JOIN vtpartner.available_citys_tbl c ON p.city_id = c.city_id
-                WHERE
-                (p.city_id = %s OR %s IS NULL) AND category_id=%s
+                JOIN vtpartner.allowed_pincodes_tbl ap ON p.pincode_id = ap.pincode_id
+                LEFT JOIN vtpartner.available_citys_tbl c ON ap.city_id = c.city_id
+                WHERE p.pincode_id = %s AND p.category_id = %s
                 ORDER BY p.start_time::time
             """
-            values = ( city_id, city_id,category_id)
+            values = (pincode_id, category_id)
             result = select_query(query, values)
-            # Print raw results
-            # print("\n=== Raw Query Results ===")
-            # print(f"Number of rows: {len(result)}")
-            # for row in result:
-            #     print("\nRow data:")
-            #     print(f"Peak Price ID: {row[0]}")
-            #     print(f"City ID: {row[1]}")
-            #     print(f"Vehicle ID: {row[2]}")
-            #     print(f"Price per KM: {float(row[3])}")
-            #     print(f"Status: {row[4]}")
-            #     print(f"Time Created: {float(row[5])}")
-            #     print(f"Start Time: {row[6]}")
-            #     print(f"End Time: {row[7]}")
-            #     print(f"City Name: {row[8]}")
-            #     print(f"BG Image: {row[9]}")
-            #     print("-" * 50)
-                
+            
             peak_hours = []
             for row in result:
                 peak_hours.append({
                     'peak_price_id': row[0],
-                    'city_id': row[1],
+                    'pincode_id': row[9],  # Added pincode_id
+                    'pincode': row[10],    # Added pincode value
                     'vehicle_id': row[2],
                     'price_per_km': float(row[3]),
-                    'start_time': row[6],  # Changed index to match table structure
-                    'end_time': row[7],    # Changed index to match table structure
+                    'start_time': row[6],
+                    'end_time': row[7],
                     'status': row[4],
                     'time_created_at': float(row[5]),
-                    'city_name': row[8],
-                    'bg_image': row[9]
+                    'city_name': row[11],  # Updated index for city_name
+                    'bg_image': row[12]    # Updated index for bg_image
                 })
 
             return JsonResponse({"peak_hours": peak_hours}, status=200)
@@ -2249,8 +2285,6 @@ def get_peak_hour_prices(request):
             return JsonResponse({"message": "Error fetching peak hour prices"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
-
-
 
 
 @csrf_exempt  # Disable CSRF protection for this view
