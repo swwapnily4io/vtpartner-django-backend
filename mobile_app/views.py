@@ -2702,60 +2702,60 @@ def all_saved_addresses(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
-@csrf_exempt 
-def all_services(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            customer_id = data.get('customer_id')
-            authToken = data.get('auth')
-            # if not is_valid_customer_fcm_token(customer_id, authToken):
-            #         return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+# @csrf_exempt 
+# def all_services(request):
+#     if request.method == "POST":
+#         try:
+#             data = json.loads(request.body)
+#             customer_id = data.get('customer_id')
+#             authToken = data.get('auth')
+#             # if not is_valid_customer_fcm_token(customer_id, authToken):
+#             #         return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
                 
-            query = """
-                SELECT 
-                    category_id, 
-                    category_name, 
-                    category_type_id, 
-                    category_image, 
-                    category_type, 
-                    epoch, 
-                    description 
-                FROM 
-                    vtpartner.categorytbl
-                JOIN 
-                    vtpartner.category_type_tbl 
-                ON 
-                    category_type_tbl.cat_type_id = categorytbl.category_type_id 
-                ORDER BY 
-                    category_id ASC
-            """
-            result = select_query(query)  # Assuming select_query is defined elsewhere
+#             query = """
+#                 SELECT 
+#                     category_id, 
+#                     category_name, 
+#                     category_type_id, 
+#                     category_image, 
+#                     category_type, 
+#                     epoch, 
+#                     description 
+#                 FROM 
+#                     vtpartner.categorytbl
+#                 JOIN 
+#                     vtpartner.category_type_tbl 
+#                 ON 
+#                     category_type_tbl.cat_type_id = categorytbl.category_type_id 
+#                 ORDER BY 
+#                     category_id ASC
+#             """
+#             result = select_query(query)  # Assuming select_query is defined elsewhere
 
-            if result == []:
-                return JsonResponse({"message": "No Data Found"}, status=404)
+#             if result == []:
+#                 return JsonResponse({"message": "No Data Found"}, status=404)
 
-            # Map each row to a dictionary with appropriate keys
-            services_details = [
-                {
-                    "category_id": row[0],
-                    "category_name": row[1],
-                    "category_type_id": row[2],
-                    "category_image": row[3],
-                    "category_type": row[4],
-                    "epoch": row[5],
-                    "description": row[6],
-                }
-                for row in result
-            ]
+#             # Map each row to a dictionary with appropriate keys
+#             services_details = [
+#                 {
+#                     "category_id": row[0],
+#                     "category_name": row[1],
+#                     "category_type_id": row[2],
+#                     "category_image": row[3],
+#                     "category_type": row[4],
+#                     "epoch": row[5],
+#                     "description": row[6],
+#                 }
+#                 for row in result
+#             ]
 
-            return JsonResponse({"results": services_details}, status=200)
+#             return JsonResponse({"results": services_details}, status=200)
 
-        except Exception as err:
-            print("Error executing query:", err)
-            return JsonResponse({"message": "Internal Server Error"}, status=500)
+#         except Exception as err:
+#             print("Error executing query:", err)
+#             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
-    return JsonResponse({"message": "Method not allowed"}, status=405)
+#     return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt 
 def all_cities(request):
@@ -24951,6 +24951,32 @@ class CustomEndpointView(APIView):
                     type=openapi.TYPE_STRING, description="Field 2 Description"),
             },
             required=['field1']
+        )
+    )
+    def post(self, request):
+        """
+        Custom POST Endpoint
+        """
+        return Response("Success")
+    
+@csrf_exempt 
+def all_services_api(request):
+    @swagger_auto_schema(
+        operation_description="Endpoint Operation Description",
+        responses={
+            200: "Success",
+            400: "Bad Request",
+            401: "Unauthorized",
+        },
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'category_id': openapi.Schema(
+                    type=openapi.TYPE_STRING, description="1"),
+                'city_id': openapi.Schema(
+                    type=openapi.TYPE_STRING, description="2"),
+            },
+            required=['category_id,city_id']
         )
     )
     def post(self, request):
