@@ -24926,61 +24926,61 @@ def get_control_settings(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
-from drf_yasg import openapi
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from drf_yasg.utils import swagger_auto_schema
+# from drf_yasg import openapi
+# from rest_framework.response import Response
+# from rest_framework.views import APIView
+# from drf_yasg.utils import swagger_auto_schema
 
-class CustomEndpointView(APIView):
-    """
-    Custom Endpoint Description
-    """
-    @swagger_auto_schema(
-        operation_description="Endpoint Operation Description",
-        responses={
-            200: "Success",
-            400: "Bad Request",
-            401: "Unauthorized",
-        },
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'field1': openapi.Schema(
-                    type=openapi.TYPE_STRING, description="Field 1 Description"),
-                'field2': openapi.Schema(
-                    type=openapi.TYPE_STRING, description="Field 2 Description"),
-            },
-            required=['field1']
-        )
-    )
-    def post(self, request):
-        """
-        Custom POST Endpoint
-        """
-        return Response("Success")
+# class CustomEndpointView(APIView):
+#     """
+#     Custom Endpoint Description
+#     """
+#     @swagger_auto_schema(
+#         operation_description="Endpoint Operation Description",
+#         responses={
+#             200: "Success",
+#             400: "Bad Request",
+#             401: "Unauthorized",
+#         },
+#         request_body=openapi.Schema(
+#             type=openapi.TYPE_OBJECT,
+#             properties={
+#                 'field1': openapi.Schema(
+#                     type=openapi.TYPE_STRING, description="Field 1 Description"),
+#                 'field2': openapi.Schema(
+#                     type=openapi.TYPE_STRING, description="Field 2 Description"),
+#             },
+#             required=['field1']
+#         )
+#     )
+#     def post(self, request):
+#         """
+#         Custom POST Endpoint
+#         """
+#         return Response("Success")
     
 
-class all_services_api(APIView):
-    @swagger_auto_schema(
-        operation_description="Endpoint Operation Description",
-        responses={
-            200: "Success",
-            400: "Bad Request",
-            401: "Unauthorized",
-        },
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'customer_id': openapi.Schema(
-                    type=openapi.TYPE_STRING, description="1"),
+# class all_services_api(APIView):
+#     @swagger_auto_schema(
+#         operation_description="Endpoint Operation Description",
+#         responses={
+#             200: "Success",
+#             400: "Bad Request",
+#             401: "Unauthorized",
+#         },
+#         request_body=openapi.Schema(
+#             type=openapi.TYPE_OBJECT,
+#             properties={
+#                 'customer_id': openapi.Schema(
+#                     type=openapi.TYPE_STRING, description="1"),
                 
-            },
-            required=['customer_id']
-        )
-    )
-    def post(self, request):
-        """
-        Custom POST Endpoint
-        """
-        return get_customer_api_auth_token(request)
+#             },
+#             required=['customer_id']
+#         )
+#     )
+#     def post(self, request):
+#         """
+#         Custom POST Endpoint
+#         """
+#         return get_customer_api_auth_token(request)
         # return all_services(request)
