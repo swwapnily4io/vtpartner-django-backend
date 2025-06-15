@@ -223,44 +223,44 @@ AWS_DEFAULT_ACL = None
 AWS_S3_VERITY = True
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {asctime} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'file': {
-            'level': 'DEBUG', # Set to INFO to capture info logs
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'application.log',
-            'maxBytes': 1024*1024*1,  # 1 MB
-            'backupCount': 3,
-            'formatter': 'verbose',
-        },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file', 'console'],
-            'level': 'DEBUG',  # Set to INFO to capture info logs
-            'propagate': True,
-        },
-        'ApplicationLogger': {  # Add your custom logger
-            'handlers': ['file', 'console'],
-            'level': 'DEBUG', # Set to INFO to capture info logs
-            'propagate': True,
-        },
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         'verbose': {
+#             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+#             'style': '{',
+#         },
+#         'simple': {
+#             'format': '{levelname} {asctime} {message}',
+#             'style': '{',
+#         },
+#     },
+#     'handlers': {
+#         'file': {
+#             'level': 'DEBUG', # Set to INFO to capture info logs
+#             'class': 'logging.handlers.RotatingFileHandler',
+#             'filename': 'application.log',
+#             'maxBytes': 1024*1024*1,  # 1 MB
+#             'backupCount': 3,
+#             'formatter': 'verbose',
+#         },
+#         'console': {
+#             'level': 'DEBUG',
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'simple',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['file', 'console'],
+#             'level': 'DEBUG',  # Set to INFO to capture info logs
+#             'propagate': True,
+#         },
+#         'ApplicationLogger': {  # Add your custom logger
+#             'handlers': ['file', 'console'],
+#             'level': 'DEBUG', # Set to INFO to capture info logs
+#             'propagate': True,
+#         },
+#     },
+# }
