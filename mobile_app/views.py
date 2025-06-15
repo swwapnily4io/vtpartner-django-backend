@@ -24971,16 +24971,16 @@ class all_services_api(APIView):
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'category_id': openapi.Schema(
+                'customer_id': openapi.Schema(
                     type=openapi.TYPE_STRING, description="1"),
-                'city_id': openapi.Schema(
-                    type=openapi.TYPE_STRING, description="2"),
+                
             },
-            required=['category_id,city_id']
+            required=['customer_id']
         )
     )
     def post(self, request):
         """
         Custom POST Endpoint
         """
-        return all_services(request)
+        return get_customer_api_auth_token(request)
+        # return all_services(request)
