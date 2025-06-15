@@ -3069,7 +3069,7 @@ def allowed_pin_code(request):
         try:
             # Modified query to join with available_citys_tbl
             query = """
-            SELECT a.city_id, c.outstation_distance 
+            SELECT a.city_id, c.outstation_distance,a.pincode_id 
             FROM vtpartner.allowed_pincodes_tbl a
             JOIN vtpartner.available_citys_tbl c ON a.city_id = c.city_id
             WHERE a.pincode = %s AND a.status = '1'
@@ -3084,7 +3084,8 @@ def allowed_pin_code(request):
             response_value = [
                 {
                     "city_id": row[0],
-                    "outstation_distance": row[1]
+                    "outstation_distance": row[1],
+                    "pincode_id": row[2],
                 }
                 for row in result
             ]
