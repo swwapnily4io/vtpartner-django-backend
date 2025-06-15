@@ -24959,7 +24959,7 @@ class CustomEndpointView(APIView):
         """
         return Response("Success")
     
-@csrf_exempt 
+
 class all_services_api(APIView):
     @swagger_auto_schema(
         operation_description="Endpoint Operation Description",
