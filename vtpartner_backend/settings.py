@@ -65,7 +65,6 @@ INSTALLED_APPS = [
     'mobile_app',
     'dashboard_app',
     'website_app',
-    'django.contrib.staticfiles',
     'drf_yasg'
 ]
 
