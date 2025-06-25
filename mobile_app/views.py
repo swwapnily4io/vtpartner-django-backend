@@ -24960,27 +24960,27 @@ def get_control_settings(request):
 #         return Response("Success")
     
 
-# class all_services_api(APIView):
-#     @swagger_auto_schema(
-#         operation_description="Endpoint Operation Description",
-#         responses={
-#             200: "Success",
-#             400: "Bad Request",
-#             401: "Unauthorized",
-#         },
-#         request_body=openapi.Schema(
-#             type=openapi.TYPE_OBJECT,
-#             properties={
-#                 'customer_id': openapi.Schema(
-#                     type=openapi.TYPE_STRING, description="1"),
+class all_services_api(APIView):
+    @swagger_auto_schema(
+        operation_description="Endpoint Operation Description",
+        responses={
+            200: "Success",
+            400: "Bad Request",
+            401: "Unauthorized",
+        },
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'customer_id': openapi.Schema(
+                    type=openapi.TYPE_STRING, description="1"),
                 
-#             },
-#             required=['customer_id']
-#         )
-#     )
-#     def post(self, request):
-#         """
-#         Custom POST Endpoint
-#         """
-#         return get_customer_api_auth_token(request)
-        # return all_services(request)
+            },
+            required=['customer_id']
+        )
+    )
+    def post(self, request):
+        """
+        Custom POST Endpoint
+        """
+        return get_customer_api_auth_token(request)
+        return all_services(request)
