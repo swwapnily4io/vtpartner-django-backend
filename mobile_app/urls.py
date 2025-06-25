@@ -74,6 +74,9 @@ urlpatterns = [
     #All Vehicles
     path('all_vehicles',views.all_vehicles,name='all_vehicles'),
     
+    #Vehicle Coin Rewards 
+    path('get_vehicle_coin_reward_points',views.get_vehicle_coin_reward_points,name='get_vehicle_coin_reward_points'),
+    
     #All Vehicles with category id , price
     path('all_vehicles_with_price_details',views.all_vehicles_with_price_details,name='all_vehicles_with_price_details'),
     #Update customer details

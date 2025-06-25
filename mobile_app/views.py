@@ -2853,6 +2853,37 @@ def all_vehicles(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+@csrf_exempt
+def get_vehicle_coin_reward_points(request):
+    if request.method == "POST":
+        try:
+            body = json.loads(request.body)
+            vehicle_id = body.get("vehicle_id")
+            if not vehicle_id:
+                return JsonResponse({"message": "Missing required field: vehicle_id"}, status=400)
+
+            query = """
+                SELECT coin_reward_points
+                FROM vtpartner.vehiclestbl
+                WHERE vehicle_id = %s
+            """
+            result = select_query(query, [vehicle_id]) 
+
+            if not result:
+                return JsonResponse({"message": "Vehicle not found"}, status=404)
+
+            coin_reward_points = result[0][0]
+            return JsonResponse({
+                "vehicle_id": vehicle_id,
+                "coin_reward_points": coin_reward_points
+            }, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
 @csrf_exempt 
 def all_vehicles_with_price_details(request):
     if request.method == "POST":
