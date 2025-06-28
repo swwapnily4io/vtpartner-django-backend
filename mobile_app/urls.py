@@ -49,6 +49,12 @@ urlpatterns = [
     #New Customer Registration
     path('customer_registration',customer_registration.customer_new_registration,name='customer_registration'),
     
+    #Coin Summary
+    path('get_coins_summary',views.get_coins_summary,name='get_coins_summary'),
+    #Coin History Summary
+    path('get_coins_history',views.get_coins_history,name='get_coins_history'),
+    
+    
     #All Services
     path('all_services',views.all_services,name='all_services'),
     #getting all banners

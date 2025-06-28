@@ -25479,6 +25479,105 @@ def get_control_settings(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+@csrf_exempt
+def get_coins_summary(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            customer_id = data.get('customer_id')
+            authToken = data.get('auth')
+            
+            # Query to get total coins, available coins, and expiring coins
+            query = """
+                SELECT 
+                    COALESCE(SUM(coins_earned), 0) as total_coins,
+                    COALESCE(SUM(CASE WHEN NOT is_used AND expires_at > CURRENT_TIMESTAMP THEN coins_earned ELSE 0 END), 0) as available_coins,
+                    COALESCE(SUM(CASE 
+                        WHEN NOT is_used 
+                        AND expires_at > CURRENT_TIMESTAMP 
+                        AND expires_at <= CURRENT_TIMESTAMP + INTERVAL '30 days' 
+                        THEN coins_earned ELSE 0 END), 0) as expiring_coins
+                FROM 
+                    vtpartner.customer_coin_rewards 
+                WHERE 
+                    customer_id = %s
+            """
+            
+            result = select_query(query, [customer_id])
+            
+            if not result:
+                return JsonResponse({
+                    "message": "No coins data found",
+                    "total_coins": 0,
+                    "available_coins": 0,
+                    "expiring_coins": 0
+                })
+                
+            coins_data = {
+                "total_coins": result[0][0],
+                "available_coins": result[0][1],
+                "expiring_coins": result[0][2]
+            }
+            
+            return JsonResponse(coins_data)
+            
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+            
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_coins_history(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            customer_id = data.get('customer_id')
+            authToken = data.get('auth')
+            
+            # Query to get coins history with order details
+            query = """
+                SELECT 
+                    coin_id,
+                    coins_earned,
+                    earned_at,
+                    expires_at,
+                    order_id,
+                    remarks,
+                    is_used
+                FROM 
+                    vtpartner.customer_coin_rewards 
+                WHERE 
+                    customer_id = %s
+                ORDER BY 
+                    earned_at DESC
+            """
+            
+            result = select_query(query, [customer_id])
+            
+            if not result:
+                return JsonResponse({"message": "No transaction history found"}, status=404)
+                
+            transactions = []
+            for row in result:
+                transactions.append({
+                    "coin_id": row[0],
+                    "coins_earned": row[1],
+                    "earned_at": row[2].strftime("%Y-%m-%d %H:%M:%S"),
+                    "expires_at": row[3].strftime("%Y-%m-%d %H:%M:%S") if row[3] else None,
+                    "order_id": row[4],
+                    "remarks": row[5],
+                    "is_used": row[6]
+                })
+                
+            return JsonResponse({"transactions": transactions})
+            
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+            
+    return JsonResponse({"message": "Method not allowed"}, status=405)
+
 # from drf_yasg import openapi
 # from rest_framework.response import Response
 # from rest_framework.views import APIView
