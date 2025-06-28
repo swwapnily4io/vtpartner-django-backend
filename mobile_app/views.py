@@ -25534,7 +25534,14 @@ def get_coins_history(request):
             data = json.loads(request.body)
             customer_id = data.get('customer_id')
             authToken = data.get('auth')
-            print(f'customer_id::',customer_id)
+            
+            if not customer_id:
+                return JsonResponse({
+                    "message": "Customer ID is required",
+                    "status": "error"
+                }, status=400)
+            
+            print(f'Fetching coin history for customer_id:', customer_id)
             
             # Query to get coins history with order details
             query = """
@@ -25557,27 +25564,66 @@ def get_coins_history(request):
             result = select_query(query, [customer_id])
             
             if not result:
-                return JsonResponse({"message": "No transaction history found"}, status=404)
-                
+                return JsonResponse({
+                    "message": "No coin transactions found for this customer",
+                    "status": "empty",
+                    "transactions": [],
+                    "summary": {
+                        "total_earned": 0,
+                        "total_used": 0,
+                        "available": 0
+                    }
+                }, status=404)
+            
             transactions = []
+            total_earned = 0
+            total_used = 0
+            
             for row in result:
+                coins_earned = row[1]
+                is_used = row[6]
+                
+                total_earned += coins_earned
+                if is_used:
+                    total_used += coins_earned
+                
                 transactions.append({
                     "coin_id": row[0],
-                    "coins_earned": row[1],
+                    "coins_earned": coins_earned,
                     "earned_at": row[2].strftime("%Y-%m-%d %H:%M:%S"),
                     "expires_at": row[3].strftime("%Y-%m-%d %H:%M:%S") if row[3] else None,
                     "order_id": row[4],
                     "remarks": row[5],
-                    "is_used": row[6]
+                    "is_used": is_used
                 })
-                
-            return JsonResponse({"transactions": transactions})
             
+            return JsonResponse({
+                "status": "success",
+                "transactions": transactions,
+                "summary": {
+                    "total_earned": total_earned,
+                    "total_used": total_used,
+                    "available": total_earned - total_used
+                }
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                "message": "Invalid JSON in request body",
+                "status": "error"
+            }, status=400)
         except Exception as err:
             print("Error executing query:", err)
-            return JsonResponse({"message": "Internal Server Error"}, status=500)
-            
-    return JsonResponse({"message": "Method not allowed"}, status=405)
+            return JsonResponse({
+                "message": "Internal Server Error",
+                "status": "error",
+                "error": str(err)
+            }, status=500)
+    
+    return JsonResponse({
+        "message": "Method not allowed",
+        "status": "error"
+    }, status=405)
 
 # from drf_yasg import openapi
 # from rest_framework.response import Response
