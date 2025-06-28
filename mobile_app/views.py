@@ -4254,8 +4254,8 @@ def goods_order_details(request):
                     orders_tbl.goods_vehicle_id,
                     vehicle_price_type,
                     vehicle_radius_km,
-                    penalty_amount
-                FROM vtpartner.vehiclestbl, vtpartner.orders_tbl, vtpartner.goods_driverstbl, vtpartner.customers_tbl 
+                    penalty_amount,
+                    wallet_amount_used,coin_to_be_given FROM vtpartner.vehiclestbl, vtpartner.orders_tbl, vtpartner.goods_driverstbl, vtpartner.customers_tbl 
                 WHERE goods_driverstbl.goods_driver_id = orders_tbl.driver_id 
                 AND customers_tbl.customer_id = orders_tbl.customer_id 
                 AND order_id = %s 
@@ -4334,6 +4334,8 @@ def goods_order_details(request):
                     "vehicle_price_type": int(row[61]),
                     "vehicle_radius_km": int(row[62]),
                     "penalty_amount": int(row[63]),
+                    "wallet_amount_used": int(row[64]),
+                    "coin_to_be_given": int(row[65]),
                     
                 }
                 for row in result
