@@ -220,7 +220,7 @@ def find_nearby_goods_drivers(booking):
      pickup_address, drop_address, booking_completed, payment_id, pickup_time, drop_time, coupon_applied,
      coupon_id, coupon_amount, before_coupon_amount, is_scheduled, scheduled_time, drop_locations,
      drop_contacts, multiple_drops, body_type, retry_count, last_retry_time, error_message,
-     booking_timezone, goods_vehicle_id, vehicle_price_type, vehicle_radius_km,booking_type_locations,hike_price,penalty_amount) = booking
+     booking_timezone, goods_vehicle_id, vehicle_price_type, vehicle_radius_km,booking_type_locations,hike_price,penalty_amount,wallet_amount_used,coin_to_be_given) = booking
     
 
     # Parse JSON fields
@@ -4902,6 +4902,128 @@ ORDER BY
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+# @csrf_exempt 
+# def cancel_booking(request):
+#     if request.method == "POST":
+#         data = json.loads(request.body)
+#         booking_id = data.get("booking_id")
+#         customer_id = data.get("customer_id")
+#         driver_id = data.get("driver_id")
+#         agent_server_token = data.get("agent_server_token")
+#         customer_server_token = data.get("customer_server_token")
+#         pickup_address = data.get("pickup_address")
+#         cancel_reason = data.get("cancel_reason")
+#         authToken = data.get('auth')
+#         cancelledBy = data.get('cancelled_by',"Customer")
+#         # if not is_valid_customer_fcm_token(customer_id, authToken):
+#         #         return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
+        
+        
+
+#         # List of required fields
+#         required_fields = {
+#             "booking_id": booking_id,
+#             "agent_server_token": agent_server_token,
+#             "customer_server_token": customer_server_token,
+#             "customer_id": customer_id,
+#             "driver_id": driver_id,
+#             "cancel_reason": cancel_reason,
+        
+        
+#         }
+#         # Check for missing fields
+#         missing_fields = check_missing_fields(required_fields)
+        
+#         # If there are missing fields, return an error response
+#         if missing_fields:
+#             return JsonResponse(
+#                 {"message": f"Missing required fields: {', '.join(missing_fields)}"},
+#                 status=400
+#             )
+            
+#         try:
+#             query = """
+#                 UPDATE vtpartner.bookings_tbl set booking_status='Cancelled',cancelled_reason=%s WHERE booking_id=%s
+#             """
+#             row_count = update_query(query,[cancel_reason,booking_id])  
+            
+#             #Updating it in Booking History Table to maintain record at what time it was cancelled
+#             query2 = """
+#                     insert into vtpartner.bookings_history_tbl(booking_id,status,time) values (%s,%s,EXTRACT(EPOCH FROM CURRENT_TIMESTAMP))
+#                     """
+#             values2 = [
+#                     booking_id,
+#                     'Cancelled'
+#                 ]
+
+#             # Execute the query
+#             row_count = insert_query(query2, values2)
+            
+#             query3 = """
+#             update vtpartner.active_goods_drivertbl set current_status='1',current_booking_id='-1' where goods_driver_id=%s
+#             """
+#             values3 = [
+#                     driver_id
+#             ]
+#             # Execute the query
+#             row_count = update_query(query3, values3)
+#             #Send Notitification to customer and driver
+#             customer_auth_token = get_customer_auth_token(customer_id)
+#             driver_auth_token = get_goods_driver_auth_token(driver_id)
+            
+#             #send notification to goods driver for booking cancelled
+#             fcm_data = {
+#                 'intent':'driver_home',
+#                 'booking_id':str(booking_id)
+#             }
+#             # serverToken = get_agent_app_firebase_access_token()
+#             print("sending fcm to agent cancel confirmed")
+#             sendFMCMsg(
+#             driver_auth_token,
+#             f'The ride request has been canceled by the customer. \nPickup Location: {pickup_address}.',
+#             f'Ride Canceled - [Booking ID: {str(booking_id)}]',
+#             fcm_data,
+#             agent_server_token,
+#             "Agent"
+#             )
+
+            
+#             #send notification to Customer for booking cancellation confirmation.
+#             fcm_data2 = {
+#                 'intent':'customer_home',
+#                 'booking_id':str(booking_id)
+#             }
+#             print("sending fcm to customer cancel confirmed")
+            
+#             customer_message = (
+#             f'The ride has been cancelled by the driver.' 
+#             if cancelledBy == "Agent" 
+#             else f'Your ride request has been successfully canceled. \nPickup Location: {pickup_address}.'
+#             )
+
+#             customer_title = (
+#                 'Driver Cancelled the Ride' 
+#                 if cancelledBy == "Agent" 
+#                 else 'Ride Cancellation Confirmation'
+#             )
+
+#             sendFMCMsg(
+#                 customer_auth_token,
+#                 customer_message,
+#                 customer_title,
+#                 fcm_data2,
+#                 customer_server_token,
+#                 "Customer"
+#             )
+
+            
+#             return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
+#         except Exception as err:
+#             print("Error executing query:", err)
+#             return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+#     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 @csrf_exempt 
 def cancel_booking(request):
     if request.method == "POST":
@@ -4914,13 +5036,9 @@ def cancel_booking(request):
         pickup_address = data.get("pickup_address")
         cancel_reason = data.get("cancel_reason")
         authToken = data.get('auth')
-        cancelledBy = data.get('cancelled_by',"Customer")
-        # if not is_valid_customer_fcm_token(customer_id, authToken):
-        #         return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
-        
-        
+        cancelledBy = data.get('cancelled_by', "Customer")
 
-        # List of required fields
+        # Validate required fields
         required_fields = {
             "booking_id": booking_id,
             "agent_server_token": agent_server_token,
@@ -4928,85 +5046,124 @@ def cancel_booking(request):
             "customer_id": customer_id,
             "driver_id": driver_id,
             "cancel_reason": cancel_reason,
-        
-        
         }
-        # Check for missing fields
         missing_fields = check_missing_fields(required_fields)
-        
-        # If there are missing fields, return an error response
         if missing_fields:
             return JsonResponse(
                 {"message": f"Missing required fields: {', '.join(missing_fields)}"},
                 status=400
             )
-            
-        try:
-            query = """
-                UPDATE vtpartner.bookings_tbl set booking_status='Cancelled',cancelled_reason=%s WHERE booking_id=%s
-            """
-            row_count = update_query(query,[cancel_reason,booking_id])  
-            
-            #Updating it in Booking History Table to maintain record at what time it was cancelled
-            query2 = """
-                    insert into vtpartner.bookings_history_tbl(booking_id,status,time) values (%s,%s,EXTRACT(EPOCH FROM CURRENT_TIMESTAMP))
-                    """
-            values2 = [
-                    booking_id,
-                    'Cancelled'
-                ]
 
-            # Execute the query
-            row_count = insert_query(query2, values2)
-            
-            query3 = """
-            update vtpartner.active_goods_drivertbl set current_status='1',current_booking_id='-1' where goods_driver_id=%s
+        try:
+            # Step 1: Update bookings table
+            cancel_query = """
+                UPDATE vtpartner.bookings_tbl 
+                SET booking_status='Cancelled', 
+                    cancelled_reason=%s, 
+                    cancel_time=EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)
+                WHERE booking_id=%s
             """
-            values3 = [
-                    driver_id
-            ]
-            # Execute the query
-            row_count = update_query(query3, values3)
-            #Send Notitification to customer and driver
+            update_query(cancel_query, [cancel_reason, booking_id])  
+
+            # Step 2: Insert into bookings history
+            history_query = """
+                INSERT INTO vtpartner.bookings_history_tbl(booking_id, status, time) 
+                VALUES (%s, %s, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP))
+            """
+            insert_query(history_query, [booking_id, 'Cancelled'])
+
+            # Step 3: Make driver available again
+            update_driver_query = """
+                UPDATE vtpartner.active_goods_drivertbl 
+                SET current_status='1', current_booking_id='-1' 
+                WHERE goods_driver_id=%s
+            """
+            update_query(update_driver_query, [driver_id])
+
+            # Step 4: Refund wallet amount if used
+            try:
+                fetch_wallet_amount_query = """
+                    SELECT wallet_amount_used 
+                    FROM vtpartner.bookings_tbl 
+                    WHERE booking_id = %s
+                """
+                result = select_query(fetch_wallet_amount_query, [booking_id])
+                if result:
+                    wallet_amount_used = float(result[0][0])
+                    if wallet_amount_used > 0:
+                        wallet_check_query = """
+                            SELECT wallet_id, current_balance 
+                            FROM vtpartner.customer_wallet 
+                            WHERE customer_id = %s
+                        """
+                        wallet_result = select_query(wallet_check_query, [customer_id])
+                        if wallet_result:
+                            wallet_id, current_balance = wallet_result[0]
+                            new_balance = float(current_balance) + wallet_amount_used
+
+                            # Update wallet
+                            update_wallet_query = """
+                                UPDATE vtpartner.customer_wallet 
+                                SET current_balance = %s 
+                                WHERE customer_id = %s
+                            """
+                            insert_query(update_wallet_query, [new_balance, customer_id])
+
+                            # Insert refund transaction
+                            refund_query = """
+                                INSERT INTO vtpartner.customer_wallet_transactions (
+                                    wallet_id,
+                                    customer_id,
+                                    transaction_type,
+                                    amount,
+                                    status,
+                                    transaction_time,
+                                    transaction_date,
+                                    razorpay_payment_id,
+                                    razorpay_order_id,
+                                    razorpay_signature,
+                                    payment_mode,
+                                    remarks,
+                                    booking_id
+                                ) VALUES (
+                                    %s, %s, 'CREDIT', %s, 'SUCCESS',
+                                    date_part('epoch', CURRENT_TIMESTAMP), CURRENT_DATE,
+                                    'NA', 'NA', 'NA', 'Refund', 'Refund for Cancelled Booking', %s
+                                )
+                            """
+                            insert_query(refund_query, [
+                                wallet_id, customer_id, wallet_amount_used, booking_id
+                            ])
+                        else:
+                            print(f"No wallet found for customer_id={customer_id}, skipping refund.")
+            except Exception as e:
+                print(f"Error during wallet refund: {e}")
+
+            # Step 5: Send notifications
             customer_auth_token = get_customer_auth_token(customer_id)
             driver_auth_token = get_goods_driver_auth_token(driver_id)
-            
-            #send notification to goods driver for booking cancelled
-            fcm_data = {
-                'intent':'driver_home',
-                'booking_id':str(booking_id)
-            }
-            # serverToken = get_agent_app_firebase_access_token()
-            print("sending fcm to agent cancel confirmed")
+
+            fcm_data = {'intent': 'driver_home', 'booking_id': str(booking_id)}
             sendFMCMsg(
-            driver_auth_token,
-            f'The ride request has been canceled by the customer. \nPickup Location: {pickup_address}.',
-            f'Ride Canceled - [Booking ID: {str(booking_id)}]',
-            fcm_data,
-            agent_server_token,
-            "Agent"
+                driver_auth_token,
+                f'The ride request has been canceled by the customer.\nPickup Location: {pickup_address}.',
+                f'Ride Canceled - [Booking ID: {str(booking_id)}]',
+                fcm_data,
+                agent_server_token,
+                "Agent"
             )
 
-            
-            #send notification to Customer for booking cancellation confirmation.
-            fcm_data2 = {
-                'intent':'customer_home',
-                'booking_id':str(booking_id)
-            }
-            print("sending fcm to customer cancel confirmed")
-            
+            fcm_data2 = {'intent': 'customer_home', 'booking_id': str(booking_id)}
             customer_message = (
-            f'The ride has been cancelled by the driver.' 
-            if cancelledBy == "Agent" 
-            else f'Your ride request has been successfully canceled. \nPickup Location: {pickup_address}.'
+                f'The ride has been cancelled by the driver.' 
+                if cancelledBy == "Agent" 
+                else f'Your ride request has been successfully canceled.\nPickup Location: {pickup_address}.'
             )
-
             customer_title = (
                 'Driver Cancelled the Ride' 
                 if cancelledBy == "Agent" 
                 else 'Ride Cancellation Confirmation'
             )
-
             sendFMCMsg(
                 customer_auth_token,
                 customer_message,
@@ -5016,13 +5173,14 @@ def cancel_booking(request):
                 "Customer"
             )
 
-            
-            return JsonResponse({"message": f"{row_count} row(s) updated"}, status=200)
+            return JsonResponse({"message": f"Booking ID {booking_id} cancelled and refund processed (if any)."}, status=200)
+
         except Exception as err:
             print("Error executing query:", err)
             return JsonResponse({"message": "Internal Server Error"}, status=500)
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
+
 
 @csrf_exempt 
 def cancel_cab_booking(request):
@@ -8784,6 +8942,9 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
         booking_type_locations = data.get("booking_type_locations", 0)
         hike_price = data.get("hike_price")
         authToken = data.get('auth')
+        wallet_amount_used = data.get('wallet_amount_used')
+        coin_to_be_given = data.get('coin_to_be_given')
+        
         if not is_valid_customer_fcm_token(customer_id, authToken):
                 return JsonResponse({"message": "Invalid or expired token. Please login again.","status":"unauthorized"}, status=401)
 
@@ -8875,13 +9036,13 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                     payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
                     coupon_applied,coupon_id,coupon_amount,before_coupon_amount,
                     is_scheduled, scheduled_time, drop_locations, drop_contacts,
-                    multiple_drops, body_type,vehicle_price_type, vehicle_radius_km,goods_vehicle_id,booking_type_locations,hike_price
+                    multiple_drops, body_type,vehicle_price_type, vehicle_radius_km,goods_vehicle_id,booking_type_locations,hike_price,wallet_amount_used,coin_to_be_given
                 ) 
                 VALUES (
                     %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
                     EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,  %s, %s, %s, 
                     %s, %s,%s, %s,%s, %s,%s, %s,%s,%s,%s,%s,
-                    %s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s
+                    %s, %s, %s, %s, %s, %s, %s, %s,%s,%s,%s,%s,%s
                 ) 
                 RETURNING booking_id;
             """
@@ -8903,7 +9064,7 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                 gst_amount, igst_amount, payment_method, city_id,sender_name,sender_number,receiver_name,receiver_number,pickup_address,drop_address,
                 coupon_applied,coupon_id,coupon_amount,before_coupon_amount,
                 is_scheduled, scheduled_time, drop_locations_json, drop_contacts_json,
-                multiple_drops, body_type,price_type,5,vehicle_id,booking_type_locations,hike_price
+                multiple_drops, body_type,price_type,5,vehicle_id,booking_type_locations,hike_price,wallet_amount_used,coin_to_be_given
             ]
 
             # Assuming insert_query is a function that runs the query
@@ -8918,6 +9079,71 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                     'intent':'driver',
                     'booking_id':str(booking_id)
                 }
+                
+                # Add this after booking_id is generated and before returning the response
+                if wallet_amount_used and float(wallet_amount_used) > 0:
+                    try:
+                        # Fetch current wallet balance and wallet_id
+                        wallet_query = """
+                            SELECT wallet_id, current_balance 
+                            FROM vtpartner.customer_wallet 
+                            WHERE customer_id = %s
+                        """
+                        wallet_result = select_query(wallet_query, [customer_id])
+
+                        if wallet_result:
+                            wallet_id, current_balance = wallet_result[0]
+                            current_balance = float(current_balance)
+                            wallet_amount = float(wallet_amount_used)
+
+                            # Check if customer has sufficient balance
+                            if current_balance < wallet_amount:
+                                return JsonResponse({"message": "Insufficient wallet balance"}, status=400)
+
+                            # Update wallet balance
+                            new_balance = current_balance - wallet_amount
+                            update_wallet_query = """
+                                UPDATE vtpartner.customer_wallet 
+                                SET current_balance = %s 
+                                WHERE customer_id = %s
+                            """
+                            insert_query(update_wallet_query, [new_balance, customer_id])
+
+                            # Insert transaction record into customer_wallet_transactions
+                            wallet_transaction_query = """
+                                INSERT INTO vtpartner.customer_wallet_transactions (
+                                    wallet_id,
+                                    customer_id,
+                                    transaction_type,
+                                    amount,
+                                    status,
+                                    transaction_time,
+                                    transaction_date,
+                                    razorpay_payment_id,
+                                    razorpay_order_id,
+                                    razorpay_signature,
+                                    payment_mode,
+                                    remarks,
+                                    booking_id
+                                ) VALUES (
+                                    %s, %s, 'DEBIT', %s, 'SUCCESS',
+                                    EXTRACT(EPOCH FROM CURRENT_TIMESTAMP), CURRENT_DATE,
+                                    'NA', 'NA', 'NA', 'Wallet', 'Wallet Deduction', %s
+                                )
+                            """
+                            insert_query(wallet_transaction_query, [
+                                wallet_id, customer_id, wallet_amount, booking_id
+                            ])
+                        else:
+                            # Wallet not found, skip silently
+                            print(f"Customer wallet not found for customer_id={customer_id}, skipping wallet deduction.")
+
+                    except Exception as err:
+                        print(f"Error processing wallet deduction: {err}")
+                        # Skip on exception
+
+
+                
                 
                 #To save scheduled Bookings
                 if is_scheduled and scheduled_time:
@@ -10202,7 +10428,7 @@ def generate_order_id_for_booking_id_goods_driver(request):
                         goods_vehicle_id,
                         vehicle_price_type,
                         vehicle_radius_km,
-                        hike_price
+                        hike_price,wallet_amount_used,coin_to_be_given
                     )
                     SELECT 
                         customer_id, 
@@ -10251,7 +10477,7 @@ def generate_order_id_for_booking_id_goods_driver(request):
                         goods_vehicle_id,
                         vehicle_price_type,
                         vehicle_radius_km,
-                        hike_price
+                        hike_price,wallet_amount_used,coin_to_be_given
                     FROM vtpartner.bookings_tbl
                     WHERE booking_id = %s
                     RETURNING order_id;
@@ -10262,8 +10488,89 @@ def generate_order_id_for_booking_id_goods_driver(request):
                     # Execute the query
                     ret_result = insert_query2(query,[booking_id])
                     #get order_id from here
-                    if ret_result!=None:
+                    if ret_result is not None:
                         order_id = ret_result[0][0]
+
+                        # Step: Handle goods driver wallet and transaction for wallet_amount_used
+                        try:
+                            # Step 1: Get wallet_amount_used from orders table
+                            wallet_amount_query = """
+                                SELECT wallet_amount_used 
+                                FROM vtpartner.orders_tbl 
+                                WHERE order_id = %s
+                            """
+                            wallet_result = select_query(wallet_amount_query, [order_id])
+
+                            if wallet_result:
+                                wallet_amount_used = float(wallet_result[0][0])
+
+                                # Step 2: Only proceed if wallet_amount_used is greater than 0
+                                if wallet_amount_used > 0:
+
+                                    # Step 3: Check if goods driver wallet exists
+                                    check_wallet_query = """
+                                        SELECT wallet_id, current_balance 
+                                        FROM vtpartner.goods_driver_wallet 
+                                        WHERE driver_id = %s
+                                    """
+                                    driver_wallet = select_query(check_wallet_query, [driver_id])
+
+                                    if driver_wallet:
+                                        # Wallet exists: update current balance
+                                        wallet_id, current_balance = driver_wallet[0]
+                                        new_balance = float(current_balance) + wallet_amount_used
+
+                                        update_wallet_query = """
+                                            UPDATE vtpartner.goods_driver_wallet 
+                                            SET current_balance = %s 
+                                            WHERE driver_id = %s
+                                        """
+                                        update_query(update_wallet_query, [new_balance, driver_id])
+
+                                    else:
+                                        # Wallet doesn't exist: create new wallet
+                                        create_wallet_query = """
+                                            INSERT INTO vtpartner.goods_driver_wallet (driver_id, current_balance)
+                                            VALUES (%s, %s)
+                                            RETURNING wallet_id
+                                        """
+                                        wallet_result = insert_query2(create_wallet_query, [driver_id, wallet_amount_used])
+                                        wallet_id = wallet_result[0][0] if wallet_result else None
+                                        new_balance = wallet_amount_used
+
+                                    # Step 4: Insert into wallet transaction table
+                                    if wallet_id:
+                                        transaction_query = """
+                                            INSERT INTO vtpartner.goods_driver_wallet_transactions (
+                                                wallet_id,
+                                                driver_id,
+                                                transaction_type,
+                                                amount,
+                                                status,
+                                                transaction_time,
+                                                transaction_date,
+                                                reference_id,
+                                                payment_mode,
+                                                remarks,
+                                                order_id
+                                            ) VALUES (
+                                                %s, %s, 'DEPOSIT', %s, 'COMPLETED',
+                                                date_part('epoch', CURRENT_TIMESTAMP), CURRENT_DATE,
+                                                'NA', %s, 'Wallet share from customer payment', %s
+                                            )
+                                        """
+                                        insert_query(transaction_query, [
+                                            wallet_id,
+                                            driver_id,
+                                            wallet_amount_used,
+                                            payment_method,
+                                            order_id  # This is the order_id going into order_id column
+                                        ])
+                        except Exception as err:
+                            print("Error handling driver wallet from wallet_amount_used:", err)
+
+
+
                         # Send success response
                         auth_token = get_customer_auth_token(customer_id)
                         body = title = ""
