@@ -9266,8 +9266,8 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                             daemon=True  # Important: don't block main thread
                         ).start()
 
-                        except Exception as err:
-                            print(f"Error sending notification to driver ID {driver[1]}: {err}")
+                        # except Exception as err:
+                        #     print(f"Error sending notification to driver ID {driver[1]}: {err}")
 
 
                 return JsonResponse({"result": response_value}, status=200)
