@@ -9388,7 +9388,7 @@ def notify_drivers_periodically(booking_id, pickup_lat, pickup_lng, city_id, pri
                 except Exception as e:
                     print(f"Error sending FCM to driver {driver[1]}: {e}")
 
-            time.sleep(14)  # Wait 14 seconds before next iteration
+            time.sleep(18)  # Wait 18 seconds before next iteration
 
     except Exception as e:
         print(f"Exception in driver notification thread: {e}")
