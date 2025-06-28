@@ -9369,7 +9369,7 @@ def notify_drivers_periodically(booking_id, pickup_lat, pickup_lng, city_id, pri
                 break
 
             booking_status, driver_id = result[0]
-
+            print(f"Checking booking {booking_id}: status={booking_status}, driver_id={driver_id}")
             # Stop if booking is cancelled or driver assigned
             if booking_status == 'Cancelled' or driver_id != -1:
                 print(f"Stopping notifications for booking {booking_id}: status={booking_status}, driver_id={driver_id}")
