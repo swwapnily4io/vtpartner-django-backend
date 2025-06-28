@@ -55,6 +55,7 @@ urlpatterns = [
     path('get_coins_history',views.get_coins_history,name='get_coins_history'),
     
     
+    
     #All Services
     path('all_services',views.all_services,name='all_services'),
     #getting all banners

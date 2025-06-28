@@ -25535,6 +25535,7 @@ def get_coins_history(request):
             customer_id = data.get('customer_id')
             authToken = data.get('auth')
             print(f'customer_id::',customer_id)
+            
             # Query to get coins history with order details
             query = """
                 SELECT 
