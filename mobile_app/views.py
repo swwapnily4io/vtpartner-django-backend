@@ -3884,7 +3884,8 @@ def booking_details_live_track(request):
                 b.is_scheduled, b.scheduled_time, b.drop_locations, b.drop_contacts, 
                 b.multiple_drops, b.body_type, b.retry_count, b.last_retry_time, 
                 b.error_message, b.booking_timezone, b.goods_vehicle_id, 
-                b.vehicle_price_type, b.vehicle_radius_km,v.minimum_waiting_time,v.penalty_charge,v.vehicle_map_image,b.hike_price,b.penalty_amount
+                b.vehicle_price_type, b.vehicle_radius_km,v.minimum_waiting_time,v.penalty_charge,v.vehicle_map_image,b.hike_price
+                ,b.penalty_amount,b.wallet_amount_used,b.coin_to_be_given
                 FROM vtpartner.bookings_tbl b
                 JOIN vtpartner.goods_driverstbl d ON d.goods_driver_id = b.driver_id
                 JOIN vtpartner.customers_tbl c ON c.customer_id = b.customer_id
@@ -3972,6 +3973,8 @@ def booking_details_live_track(request):
                     "vehicle_map_image": row[65],
                     "hike_price": row[66],
                     "penalty_amount": row[67],
+                    "wallet_amount_used": row[68],
+                    "coin_to_be_given": row[69],
                 }
                 booking_details.append(booking_dict)
 
@@ -15487,7 +15490,8 @@ def cab_booking_details_live_track(request):
             
         try:
             query = """
-                select booking_id,cab_bookings_tbl.customer_id,cab_bookings_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,cab_bookings_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,payment_method,cab_bookings_tbl.city_id,cancelled_reason,cancel_time,order_id,driver_first_name,cab_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,cab_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,cab_driverstbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,
+                select booking_id,cab_bookings_tbl.customer_id,cab_bookings_tbl.driver_id,pickup_lat,pickup_lng,destination_lat,destination_lng,distance,cab_bookings_tbl.time,total_price,base_price,booking_timing,booking_date,booking_status,driver_arrival_time,otp,gst_amount,igst_amount,payment_method,cab_bookings_tbl.city_id,cancelled_reason,cancel_time,order_id,driver_first_name,cab_driverstbl.authtoken,customer_name,customers_tbl.authtoken,pickup_address,drop_address,customers_tbl.mobile_no,cab_driverstbl.mobile_no,vehiclestbl.vehicle_id,vehiclestbl.vehicle_name
+                ,vehiclestbl.image,vehicle_plate_no,vehicle_fuel_type,cab_driverstbl.profile_pic,coupon_applied,coupon_id,coupon_amount,before_coupon_amount,
                 cab_bookings_tbl.hike_price,vehiclestbl.vehicle_map_image,cab_bookings_tbl.penalty_amount from vtpartner.vehiclestbl,vtpartner.cab_bookings_tbl,vtpartner.cab_driverstbl,vtpartner.customers_tbl where cab_driverstbl.cab_driver_id=cab_bookings_tbl.driver_id and customers_tbl.customer_id=cab_bookings_tbl.customer_id and booking_id=%s and booking_status!='End Trip' and vehiclestbl.vehicle_id=cab_driverstbl.vehicle_id
             """
             result = select_query(query,[booking_id])  # Assuming select_query is defined elsewhere
