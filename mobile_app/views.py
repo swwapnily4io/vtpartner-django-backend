@@ -9166,95 +9166,95 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                     
                 # Only send notifications if not a scheduled booking
                 if not is_scheduled:
-                    query = """
-                        SELECT 
-                        main.active_id, 
-                        main.goods_driver_id, 
-                        main.current_lat, 
-                        main.current_lng, 
-                        main.entry_time, 
-                        main.current_status, 
-                        goods_driverstbl.driver_first_name,
-                        goods_driverstbl.profile_pic, 
-                        vehiclestbl.image AS vehicle_image, 
-                        vehiclestbl.vehicle_name,
-                        vehiclestbl.weight,
-                        vehicle_city_wise_price_tbl.starting_price_per_km,
-                        vehicle_city_wise_price_tbl.base_fare,
-                        vehiclestbl.vehicle_id,
-                        vehiclestbl.size_image,
-                        goods_driverstbl.authtoken,
-                        (6371 * acos(
-                            cos(radians(%s)) * cos(radians(main.current_lat)) *
-                            cos(radians(main.current_lng) - radians(%s)) +
-                            sin(radians(%s)) * sin(radians(main.current_lat))
-                        )) AS distance
-                    FROM vtpartner.active_goods_drivertbl AS main
-                    INNER JOIN (
-                        SELECT goods_driver_id, MAX(entry_time) AS max_entry_time
-                        FROM vtpartner.active_goods_drivertbl
-                        GROUP BY goods_driver_id
-                    ) AS latest ON main.goods_driver_id = latest.goods_driver_id
-                                AND main.entry_time = latest.max_entry_time
-                    JOIN vtpartner.goods_driverstbl ON main.goods_driver_id = goods_driverstbl.goods_driver_id
-                    JOIN vtpartner.vehiclestbl ON goods_driverstbl.vehicle_id = vehiclestbl.vehicle_id
-                    JOIN vtpartner.vehicle_city_wise_price_tbl ON vehiclestbl.vehicle_id = vehicle_city_wise_price_tbl.vehicle_id
-                    AND vehicle_city_wise_price_tbl.city_id = %s  AND vehicle_city_wise_price_tbl.price_type_id=%s
-                    WHERE main.current_status = 1
-                    AND (6371 * acos(
-                            cos(radians(%s)) * cos(radians(main.current_lat)) *
-                            cos(radians(main.current_lng) - radians(%s)) +
-                            sin(radians(%s)) * sin(radians(main.current_lat))
-                        )) <= %s
-                    AND goods_driverstbl.category_id = vehiclestbl.category_id
-                    AND goods_driverstbl.category_id = '1' AND  goods_driverstbl.vehicle_id=%s
-                    AND (
-                        CASE 
-                            WHEN %s = 'Any' THEN goods_driverstbl.body_type IN ('Any', 'Open Body', 'Close Body')
-                            WHEN %s = 'Open Body' THEN goods_driverstbl.body_type IN ('Any', 'Open Body')
-                            WHEN %s = 'Close Body' THEN goods_driverstbl.body_type IN ('Any', 'Close Body')
-                            ELSE goods_driverstbl.body_type = %s
-                        END
-                    )
-                    AND (goods_driverstbl.location_preference=%s OR goods_driverstbl.location_preference='0')
-                    ORDER BY distance;
+                    # query = """
+                    #     SELECT 
+                    #     main.active_id, 
+                    #     main.goods_driver_id, 
+                    #     main.current_lat, 
+                    #     main.current_lng, 
+                    #     main.entry_time, 
+                    #     main.current_status, 
+                    #     goods_driverstbl.driver_first_name,
+                    #     goods_driverstbl.profile_pic, 
+                    #     vehiclestbl.image AS vehicle_image, 
+                    #     vehiclestbl.vehicle_name,
+                    #     vehiclestbl.weight,
+                    #     vehicle_city_wise_price_tbl.starting_price_per_km,
+                    #     vehicle_city_wise_price_tbl.base_fare,
+                    #     vehiclestbl.vehicle_id,
+                    #     vehiclestbl.size_image,
+                    #     goods_driverstbl.authtoken,
+                    #     (6371 * acos(
+                    #         cos(radians(%s)) * cos(radians(main.current_lat)) *
+                    #         cos(radians(main.current_lng) - radians(%s)) +
+                    #         sin(radians(%s)) * sin(radians(main.current_lat))
+                    #     )) AS distance
+                    # FROM vtpartner.active_goods_drivertbl AS main
+                    # INNER JOIN (
+                    #     SELECT goods_driver_id, MAX(entry_time) AS max_entry_time
+                    #     FROM vtpartner.active_goods_drivertbl
+                    #     GROUP BY goods_driver_id
+                    # ) AS latest ON main.goods_driver_id = latest.goods_driver_id
+                    #             AND main.entry_time = latest.max_entry_time
+                    # JOIN vtpartner.goods_driverstbl ON main.goods_driver_id = goods_driverstbl.goods_driver_id
+                    # JOIN vtpartner.vehiclestbl ON goods_driverstbl.vehicle_id = vehiclestbl.vehicle_id
+                    # JOIN vtpartner.vehicle_city_wise_price_tbl ON vehiclestbl.vehicle_id = vehicle_city_wise_price_tbl.vehicle_id
+                    # AND vehicle_city_wise_price_tbl.city_id = %s  AND vehicle_city_wise_price_tbl.price_type_id=%s
+                    # WHERE main.current_status = 1
+                    # AND (6371 * acos(
+                    #         cos(radians(%s)) * cos(radians(main.current_lat)) *
+                    #         cos(radians(main.current_lng) - radians(%s)) +
+                    #         sin(radians(%s)) * sin(radians(main.current_lat))
+                    #     )) <= %s
+                    # AND goods_driverstbl.category_id = vehiclestbl.category_id
+                    # AND goods_driverstbl.category_id = '1' AND  goods_driverstbl.vehicle_id=%s
+                    # AND (
+                    #     CASE 
+                    #         WHEN %s = 'Any' THEN goods_driverstbl.body_type IN ('Any', 'Open Body', 'Close Body')
+                    #         WHEN %s = 'Open Body' THEN goods_driverstbl.body_type IN ('Any', 'Open Body')
+                    #         WHEN %s = 'Close Body' THEN goods_driverstbl.body_type IN ('Any', 'Close Body')
+                    #         ELSE goods_driverstbl.body_type = %s
+                    #     END
+                    # )
+                    # AND (goods_driverstbl.location_preference=%s OR goods_driverstbl.location_preference='0')
+                    # ORDER BY distance;
 
-                    """
-                    values = [pickup_lat, pickup_lng, pickup_lat,city_id,price_type, pickup_lat, pickup_lng, pickup_lat, radius_km,vehicle_id,
-                              body_type,body_type,body_type,body_type,booking_type_locations]
+                    # """
+                    # values = [pickup_lat, pickup_lng, pickup_lat,city_id,price_type, pickup_lat, pickup_lng, pickup_lat, radius_km,vehicle_id,
+                    #           body_type,body_type,body_type,body_type,booking_type_locations]
 
-                    # Execute the query
-                    nearby_drivers = select_query(query, values)
+                    # # Execute the query
+                    # nearby_drivers = select_query(query, values)
                 
 
-                    # Format drop locations for notification
-                    drop_locations_text = "\n".join([
-                        f"Drop {i+1}: {loc.get('address', '')}"
-                        for i, loc in enumerate(drop_locations)
-                    ]) if drop_locations else drop_address
+                    # # Format drop locations for notification
+                    # drop_locations_text = "\n".join([
+                    #     f"Drop {i+1}: {loc.get('address', '')}"
+                    #     for i, loc in enumerate(drop_locations)
+                    # ]) if drop_locations else drop_address
 
                 
-                    for driver in nearby_drivers:
-                        try:
-                            driver_auth_token = get_goods_driver_auth_token2(driver[1])
-                            print(f"driver_auth_token ->{driver[1]} {driver_auth_token}")
-                            if driver_auth_token:
-                                message = (
-                                    f"You have a new Ride Request\n"
-                                    f"Pickup: {pickup_address}\n"
-                                    f"Drops: {drop_locations_text}"
-                                )
-                                sendFMCMsg(
-                                    driver_auth_token,
-                                    message,
-                                    "New Goods Ride Request",
-                                    fcm_data,
-                                    server_access_token,
-                                    "Agent"
-                                )
-                                print(f"Notification sent to driver ID {driver[1]}")
-                            else:
-                                print(f"Skipped notification for driver ID {driver[1]} due to missing auth token")
+                    # for driver in nearby_drivers:
+                    #     try:
+                    #         driver_auth_token = get_goods_driver_auth_token2(driver[1])
+                    #         print(f"driver_auth_token ->{driver[1]} {driver_auth_token}")
+                    #         if driver_auth_token:
+                    #             message = (
+                    #                 f"You have a new Ride Request\n"
+                    #                 f"Pickup: {pickup_address}\n"
+                    #                 f"Drops: {drop_locations_text}"
+                    #             )
+                    #             sendFMCMsg(
+                    #                 driver_auth_token,
+                    #                 message,
+                    #                 "New Goods Ride Request",
+                    #                 fcm_data,
+                    #                 server_access_token,
+                    #                 "Agent"
+                    #             )
+                    #             print(f"Notification sent to driver ID {driver[1]}")
+                    #         else:
+                    #             print(f"Skipped notification for driver ID {driver[1]} due to missing auth token")
                             Thread(
                             target=notify_drivers_periodically,
                             args=(
@@ -9388,7 +9388,7 @@ def notify_drivers_periodically(booking_id, pickup_lat, pickup_lng, city_id, pri
                 except Exception as e:
                     print(f"Error sending FCM to driver {driver[1]}: {e}")
 
-            time.sleep(18)  # Wait 18 seconds before next iteration
+            time.sleep(15)  # Wait 15 seconds before next iteration
 
     except Exception as e:
         print(f"Exception in driver notification thread: {e}")
