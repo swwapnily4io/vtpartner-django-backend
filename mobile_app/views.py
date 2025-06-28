@@ -10699,7 +10699,7 @@ def generate_order_id_for_booking_id_goods_driver(request):
                         try:
                             # Step 1: Get wallet_amount_used from orders table
                             wallet_amount_query = """
-                                SELECT wallet_amount_used 
+                                SELECT wallet_amount_used,coin_to_be_given 
                                 FROM vtpartner.orders_tbl 
                                 WHERE order_id = %s
                             """
@@ -10707,6 +10707,16 @@ def generate_order_id_for_booking_id_goods_driver(request):
 
                             if wallet_result:
                                 wallet_amount_used = float(wallet_result[0][0])
+                                coin_to_be_given = wallet_result[0][1]
+                                
+                                if coin_to_be_given > 0:
+                                    # add to coins table
+                                    create_coin_query = """
+                                        INSERT INTO vtpartner.customer_coin_rewards (customer_id, coins_earned, order_id) 
+                                        VALUES (%s,%s,%s);
+
+                                    """
+                                    coin_result = insert_query2(create_coin_query, [customer_id, coin_to_be_given,order_id])
 
                                 # Step 2: Only proceed if wallet_amount_used is greater than 0
                                 if wallet_amount_used > 0:
