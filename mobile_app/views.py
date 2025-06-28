@@ -9366,14 +9366,14 @@ def notify_drivers_periodically(booking_id, pickup_lat, pickup_lng, city_id, pri
             result = select_query(status_query, [booking_id])
             if not result:
                 print(f"Booking {booking_id} not found.")
-                break
+                return 
 
             booking_status, driver_id = result[0]
             print(f"Checking booking {booking_id}: status={booking_status}, driver_id={driver_id}")
             # Stop if booking is cancelled or driver assigned
             if booking_status == 'Cancelled' or driver_id != -1:
                 print(f"Stopping notifications for booking {booking_id}: status={booking_status}, driver_id={driver_id}")
-                break
+                return 
 
             # Re-run the same query to get nearby drivers (same as your view logic)
             values = [pickup_lat, pickup_lng, pickup_lat, city_id, price_type,
@@ -9987,7 +9987,7 @@ def goods_driver_booking_accepted(request):
             
         try:
             query = """
-                select driver_id from vtpartner.bookings_tbl where booking_id=%s and driver_id!='-1'
+                select driver_id from vtpartner.bookings_tbl where booking_id=%s and driver_id!='-1' and booking_status!='Cancelled'
             """
             result = select_query(query,[booking_id])  # Assuming select_query is defined elsewhere
 
