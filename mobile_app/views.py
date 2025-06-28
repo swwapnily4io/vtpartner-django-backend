@@ -5186,6 +5186,79 @@ def cancel_booking(request):
 
     return JsonResponse({"message": "Method not allowed"}, status=405)
 
+@csrf_exempt 
+def customer_not_interested_cancelled_booking(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        booking_id = data.get("booking_id")
+        
+        if not booking_id:
+            return JsonResponse({"message": "Booking ID is required"}, status=400)
+
+        try:
+            # First check if driver is assigned
+            check_driver_query = """
+                SELECT driver_id, pickup_address 
+                FROM vtpartner.bookings_tbl 
+                WHERE booking_id = %s
+            """
+            result = select_query(check_driver_query, [booking_id])
+            
+            if not result:
+                return JsonResponse({"message": "Booking not found"}, status=404)
+                
+            driver_id, pickup_address = result[0]
+            has_driver = driver_id and driver_id != '-1'
+
+            # Step 1: Update booking status
+            cancel_query = """
+                UPDATE vtpartner.bookings_tbl 
+                SET booking_status='Cancelled',
+                    cancel_time=EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)
+                WHERE booking_id=%s
+            """
+            update_query(cancel_query, [booking_id])
+
+            # Step 2: Insert into booking history
+            history_query = """
+                INSERT INTO vtpartner.bookings_history_tbl(booking_id, status, time) 
+                VALUES (%s, %s, EXTRACT(EPOCH FROM CURRENT_TIMESTAMP))
+            """
+            insert_query(history_query, [booking_id, 'Cancelled'])
+
+            # Only handle driver update and notification if driver was assigned
+            if has_driver:
+                # Update driver status
+                update_driver_query = """
+                    UPDATE vtpartner.active_goods_drivertbl 
+                    SET current_status='1', current_booking_id='-1' 
+                    WHERE goods_driver_id=%s
+                """
+                update_query(update_driver_query, [driver_id])
+
+                # Send notification to driver
+                driver_auth_token = get_goods_driver_auth_token(driver_id)
+                fcm_data = {'intent': 'driver_home', 'booking_id': str(booking_id)}
+                
+                sendFMCMsg(
+                    driver_auth_token,
+                    f'The ride request has been canceled by the customer.\nPickup Location: {pickup_address}.',
+                    f'Ride Canceled - [Booking ID: {str(booking_id)}]',
+                    fcm_data,
+                    None,  # No agent token needed for this simplified version
+                    "Agent"
+                )
+
+            return JsonResponse({
+                "message": "Booking cancelled successfully",
+                "had_driver": has_driver
+            }, status=200)
+
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({"message": "Internal Server Error"}, status=500)
+
+    return JsonResponse({"message": "Method not allowed"}, status=405)
 
 @csrf_exempt 
 def cancel_cab_booking(request):

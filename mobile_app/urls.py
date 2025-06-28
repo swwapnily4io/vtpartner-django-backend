@@ -192,6 +192,8 @@ urlpatterns = [
     path('other_driver_order_details',views.other_driver_order_details,name='other_driver_order_details'),
     #Get Other HandyMan Order Details
     path('handyman_order_details',views.handyman_order_details,name='handyman_order_details'),
+    #Customer back pressed or waited to long and Cancel Booking
+    path('customer_not_interested_cancelled_booking',views.customer_not_interested_cancelled_booking,name='customer_not_interested_cancelled_booking'),
     #Cancel Booking
     path('cancel_booking',views.cancel_booking,name='cancel_booking'),
     #Cancel Cab Booking
