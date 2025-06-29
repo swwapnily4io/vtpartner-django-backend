@@ -3,6 +3,8 @@ from . import views
 from .apis.logins import customer_login
 from .apis.registration import customer_registration
 from .apis.generic_controls import generic_apis
+from .apis.withdrawals import goods_driver_withdrawal
+
 # from rest_framework import permissions
 # from drf_yasg.views import get_schema_view
 # from drf_yasg import openapi
@@ -65,6 +67,10 @@ urlpatterns = [
     
     #TODO:Goes into generic_apis.py
     #Customer Bookings a Service Api's URLs 
+    
+    #Allowed PinCodes
+    path('initiate_goods_driver_withdrawal',goods_driver_withdrawal.initiate_driver_withdrawal,name='initiate_goods_driver_withdrawal'),
+    
     
     #Allowed PinCodes
     path('allowed_pin_code',views.allowed_pin_code,name='allowed_pin_code'),
