@@ -68,8 +68,10 @@ urlpatterns = [
     #TODO:Goes into generic_apis.py
     #Customer Bookings a Service Api's URLs 
     
-    #Allowed PinCodes
+    #TO initiate goods driver withdrawal
     path('initiate_goods_driver_withdrawal',goods_driver_withdrawal.initiate_driver_withdrawal,name='initiate_goods_driver_withdrawal'),
+    #Get Goods Driver Payouts transactions
+    path('get_goods_driver_payouts',goods_driver_withdrawal.get_goods_driver_payouts,name='get_goods_driver_payouts'),
     
     
     #Allowed PinCodes
