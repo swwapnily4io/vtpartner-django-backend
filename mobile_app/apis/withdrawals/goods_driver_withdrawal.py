@@ -424,7 +424,6 @@ def update_payout_status(payout_data, status):
             # If failed, reverse the transaction
             if status == 'FAILED':
                 rollback_driver_withdrawal(withdrawal_id, driver_id, amount, wallet_id)
-
 @csrf_exempt
 def get_goods_driver_payouts(request):
     if request.method == "POST":
@@ -453,7 +452,6 @@ def get_goods_driver_payouts(request):
                 # Get all withdrawals for the driver
                 withdrawals_query = """
                     SELECT w.*, 
-                           COALESCE(w.payment_details->>'razorpay_id', '') as razorpay_payout_id,
                            g.current_balance
                     FROM vtpartner.goods_driver_withdrawals w
                     LEFT JOIN vtpartner.goods_driver_wallet g ON w.driver_id = g.driver_id
@@ -485,7 +483,12 @@ def get_goods_driver_payouts(request):
                             "withdrawal_id": withdrawal[0],
                             "amount": float(withdrawal[3]),
                             "payment_method": withdrawal[4],
+                            "account_number": withdrawal[5],
+                            "ifsc_code": withdrawal[6],
+                            "account_name": withdrawal[7],
+                            "upi_id": withdrawal[8],
                             "status": withdrawal[9],
+                            "razorpay_payout_id": withdrawal[10],  # Correct column for razorpay_payout_id
                             "created_at": withdrawal[11],
                             "completed_at": withdrawal[12],
                             "remarks": withdrawal[13],
@@ -497,7 +500,7 @@ def get_goods_driver_payouts(request):
                             current_balance = float(withdrawal[-1]) if withdrawal[-1] else 0.0
                         
                         # If has Razorpay ID, check status
-                        razorpay_id = withdrawal[10]  # razorpay_payout_id column
+                        razorpay_id = withdrawal[10]  # Correct column index for razorpay_payout_id
                         if razorpay_id:
                             # Try to get from map first, if not found make individual request
                             payout = payout_map.get(razorpay_id)
@@ -529,7 +532,7 @@ def get_goods_driver_payouts(request):
                                             "status_details": payout['status_details'],
                                             "error": payout.get('error', {}),
                                             "created_at": datetime.utcfromtimestamp(payout['created_at']).strftime('%Y-%m-%d %H:%M:%S'),
-                                            "updated_at": "2025-06-29 14:31:08",
+                                            "updated_at": "2025-06-29 14:36:38",
                                             "updated_by": "mohammed786-svg"
                                         }
 
