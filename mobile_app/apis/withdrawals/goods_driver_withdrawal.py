@@ -601,3 +601,155 @@ def map_razorpay_status(status):
         'pending': 'PENDING'
     }
     return status_map.get(status.lower(), 'PENDING')
+
+
+@csrf_exempt
+def transfer_coins_to_wallet(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            customer_id = data.get('customer_id')
+            coins_to_transfer = data.get('coins')
+            
+            if not customer_id or not coins_to_transfer:
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Missing required parameters"
+                }, status=400)
+            
+            try:
+                # Get available non-expired coins
+                coins_query = """
+                    SELECT 
+                        COALESCE(SUM(coins_earned), 0) as total_coins,
+                        COALESCE(SUM(CASE 
+                            WHEN expires_at > NOW() AND is_used = false 
+                            THEN coins_earned 
+                            ELSE 0 
+                        END), 0) as valid_coins
+                    FROM vtpartner.customer_coin_rewards 
+                    WHERE customer_id = %s
+                """
+                coins_result = select_query(coins_query, [customer_id])
+                
+                if not coins_result:
+                    return JsonResponse({
+                        "status": "error",
+                        "message": "No coins found"
+                    }, status=400)
+                
+                total_coins = int(coins_result[0][0])
+                valid_coins = int(coins_result[0][1])
+                
+                if valid_coins < 25:
+                    return JsonResponse({
+                        "status": "error",
+                        "message": f"Minimum 25 non-expired coins required. You have {valid_coins} valid coins."
+                    }, status=400)
+                
+                if coins_to_transfer > valid_coins:
+                    return JsonResponse({
+                        "status": "error",
+                        "message": f"Only {valid_coins} non-expired coins available"
+                    }, status=400)
+
+                # Check if wallet exists
+                wallet_query = """
+                    SELECT wallet_id FROM vtpartner.customer_wallet 
+                    WHERE customer_id = %s
+                """
+                wallet_result = select_query(wallet_query, [customer_id])
+                
+                if not wallet_result:
+                    # Create wallet if it doesn't exist
+                    wallet_insert_query = """
+                        INSERT INTO vtpartner.customer_wallet 
+                            (customer_id, current_balance, last_updated)
+                        VALUES (%s, 0, extract(epoch from CURRENT_TIMESTAMP))
+                        RETURNING wallet_id
+                    """
+                    wallet_result = select_query(wallet_insert_query, [customer_id])
+                
+                wallet_id = wallet_result[0][0]
+                
+                # Mark coins as used
+                update_coins_query = """
+                    UPDATE vtpartner.customer_coin_rewards 
+                    SET is_used = true,
+                        remarks = %s
+                    WHERE customer_id = %s 
+                    AND expires_at > NOW() 
+                    AND is_used = false
+                    AND coin_id IN (
+                        SELECT coin_id 
+                        FROM vtpartner.customer_coin_rewards 
+                        WHERE customer_id = %s 
+                        AND expires_at > NOW() 
+                        AND is_used = false
+                        ORDER BY earned_at ASC
+                        LIMIT %s
+                    )
+                """
+                update_query(update_coins_query, [
+                    f"Transferred to wallet",
+                    customer_id,
+                    customer_id,
+                    coins_to_transfer
+                ])
+                
+                # Add amount to wallet
+                update_wallet_query = """
+                    UPDATE vtpartner.customer_wallet 
+                    SET current_balance = current_balance + %s,
+                        last_updated = extract(epoch from CURRENT_TIMESTAMP)
+                    WHERE wallet_id = %s
+                """
+                update_query(update_wallet_query, [coins_to_transfer, wallet_id])
+                
+                # Record transaction
+                transaction_query = """
+                    INSERT INTO vtpartner.customer_wallet_transactions
+                        (wallet_id, customer_id, transaction_type, amount, 
+                         status, remarks, transaction_time, transaction_date)
+                    VALUES (%s, %s, %s, %s, %s, %s, 
+                           extract(epoch from CURRENT_TIMESTAMP), CURRENT_DATE)
+                """
+                transaction_params = [
+                    wallet_id,
+                    customer_id,
+                    'CREDIT',
+                    coins_to_transfer,
+                    'SUCCESS',
+                    f'Transferred {coins_to_transfer} coins to wallet'
+                ]
+                insert_query(transaction_query, transaction_params)
+                
+                return JsonResponse({
+                    "status": "success",
+                    "message": f"Successfully transferred {coins_to_transfer} coins to wallet",
+                    "remaining_coins": valid_coins - coins_to_transfer
+                })
+                
+            except Exception as e:
+                logger.error(f"Database error: {str(e)}")
+                return JsonResponse({
+                    "status": "error",
+                    "message": "Failed to process transfer"
+                }, status=500)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                "status": "error",
+                "message": "Invalid JSON data"
+            }, status=400)
+        except Exception as e:
+            logger.error(f"Unexpected error: {str(e)}")
+            return JsonResponse({
+                "status": "error",
+                "message": "Internal server error"
+            }, status=500)
+    
+    return JsonResponse({
+        "status": "error",
+        "message": "Method not allowed"
+    }, status=405)

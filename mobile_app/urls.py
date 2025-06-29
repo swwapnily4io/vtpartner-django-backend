@@ -72,6 +72,8 @@ urlpatterns = [
     path('initiate_goods_driver_withdrawal',goods_driver_withdrawal.initiate_driver_withdrawal,name='initiate_goods_driver_withdrawal'),
     #Get Goods Driver Payouts transactions
     path('get_goods_driver_payouts',goods_driver_withdrawal.get_goods_driver_payouts,name='get_goods_driver_payouts'),
+    #Get Goods Driver Payouts transactions
+    path('transfer_coins_to_wallet',goods_driver_withdrawal.transfer_coins_to_wallet,name='transfer_coins_to_wallet'),
     
     
     #Allowed PinCodes
