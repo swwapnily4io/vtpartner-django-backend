@@ -488,7 +488,7 @@ def get_goods_driver_payouts(request):
                             "account_name": withdrawal[7],
                             "upi_id": withdrawal[8],
                             "status": withdrawal[9],
-                            "razorpay_payout_id": withdrawal[10],  # Correct column for razorpay_payout_id
+                            "razorpay_payout_id": withdrawal[10],
                             "created_at": withdrawal[11],
                             "completed_at": withdrawal[12],
                             "remarks": withdrawal[13],
@@ -500,7 +500,7 @@ def get_goods_driver_payouts(request):
                             current_balance = float(withdrawal[-1]) if withdrawal[-1] else 0.0
                         
                         # If has Razorpay ID, check status
-                        razorpay_id = withdrawal[10]  # Correct column index for razorpay_payout_id
+                        razorpay_id = withdrawal[10]  # razorpay_payout_id
                         if razorpay_id:
                             # Try to get from map first, if not found make individual request
                             payout = payout_map.get(razorpay_id)
@@ -532,8 +532,7 @@ def get_goods_driver_payouts(request):
                                             "status_details": payout['status_details'],
                                             "error": payout.get('error', {}),
                                             "created_at": datetime.utcfromtimestamp(payout['created_at']).strftime('%Y-%m-%d %H:%M:%S'),
-                                            "updated_at": "2025-06-29 14:36:38",
-                                            "updated_by": "mohammed786-svg"
+                                            "last_updated": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
                                         }
 
                                         update_query("""
@@ -541,16 +540,13 @@ def get_goods_driver_payouts(request):
                                             SET status = %s,
                                                 completed_at = %s,
                                                 remarks = %s,
-                                                payment_details = %s::jsonb,
-                                                updated_at = extract(epoch from CURRENT_TIMESTAMP),
-                                                updated_by = %s
+                                                payment_details = %s::jsonb
                                             WHERE withdrawal_id = %s
                                         """, [
                                             new_status,
                                             current_time if new_status in ['COMPLETED', 'FAILED', 'CANCELLED'] else None,
                                             payout['status_details'].get('description', ''),
                                             json.dumps(payment_details),
-                                            "mohammed786-svg",
                                             withdrawal[0]
                                         ])
                                         
