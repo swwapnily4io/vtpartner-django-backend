@@ -260,64 +260,89 @@ def rollback_driver_withdrawal(withdrawal_id, driver_id, amount, wallet_id):
     insert_query(reversal_query, reversal_params)
 
 def initiate_razorpay_payout(data):
-    client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
-    reference_id = str(uuid.uuid4())
-    
-    payout_base = {
-        "account_number": RAZORPAY_ACCOUNT_NUMBER,
-        "amount": int(float(data['amount']) * 100),  # Amount in paise
-        "currency": "INR",
-        "purpose": "refund",
-        "queue_if_low_balance": True,
-        "reference_id": reference_id,
-        "narration": "KAPS Driver Payout"
-    }
-    
-    if data['payment_method'] == "BANK":
-        payout_data = {
-            **payout_base,
-            "mode": "NEFT",
-            "fund_account": {
-                "account_type": "bank_account",
-                "bank_account": {
-                    "name": data['account_name'],
-                    "ifsc": data['ifsc_code'],
-                    "account_number": data['account_number']
-                },
-                "contact": {
-                    "name": data['account_name'],
-                    "type": "vendor",
-                    "reference_id": f"KAPS_DRIVER_{data['driver_id']}"
-                }
-            },
+    try:
+        # Initialize Razorpay client with API version
+        client = razorpay.Client(
+            auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET),
+            requests_kwargs={'verify': True}
+        )
+        
+        reference_id = str(uuid.uuid4())
+        current_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        
+        payout_base = {
+            "account_number": RAZORPAY_ACCOUNT_NUMBER,
+            "amount": int(float(data['amount']) * 100),  # Amount in paise
+            "currency": "INR",
+            "purpose": "payout",
+            "queue_if_low_balance": True,
+            "reference_id": reference_id,
+            "narration": f"KAPS Driver Payout - {reference_id}",
             "notes": {
                 "driver_id": str(data['driver_id']),
-                "payment_type": "bank_transfer"
+                "created_at": current_time,
+                "created_by": "mohammed786-svg"
             }
         }
-    else:  # UPI
-        payout_data = {
-            **payout_base,
-            "mode": "UPI",
-            "fund_account": {
-                "account_type": "vpa",
-                "vpa": {
-                    "address": data['upi_id']
-                },
-                "contact": {
-                    "name": data.get('name', 'Driver'),
-                    "type": "vendor",
-                    "reference_id": f"KAPS_DRIVER_{data['driver_id']}"
+        
+        if data['payment_method'] == "BANK":
+            payout_data = {
+                **payout_base,
+                "mode": "NEFT",
+                "fund_account": {
+                    "account_type": "bank_account",
+                    "bank_account": {
+                        "name": data['account_name'],
+                        "ifsc": data['ifsc_code'],
+                        "account_number": data['account_number']
+                    },
+                    "contact": {
+                        "name": data['account_name'],
+                        "type": "vendor",
+                        "reference_id": f"KAPS_DRIVER_{data['driver_id']}",
+                        "notes": {
+                            "driver_id": str(data['driver_id'])
+                        }
+                    }
                 }
-            },
-            "notes": {
-                "driver_id": str(data['driver_id']),
-                "payment_type": "upi_transfer"
             }
-        }
-    
-    return client.payout.create(payout_data)
+        else:  # UPI
+            payout_data = {
+                **payout_base,
+                "mode": "UPI",
+                "fund_account": {
+                    "account_type": "vpa",
+                    "vpa": {
+                        "address": data['upi_id']
+                    },
+                    "contact": {
+                        "name": data.get('name', f"Driver {data['driver_id']}"),
+                        "type": "vendor",
+                        "reference_id": f"KAPS_DRIVER_{data['driver_id']}",
+                        "notes": {
+                            "driver_id": str(data['driver_id'])
+                        }
+                    }
+                }
+            }
 
+        # Use the transfers API for payouts
+        payout_response = client.transfer.create(payout_data)
+        
+        # Add additional metadata to the response
+        payout_response.update({
+            'created_at': current_time,
+            'created_by': 'mohammed786-svg'
+        })
+        
+        logger.info(f"Razorpay payout initiated: {payout_response['id']}")
+        return payout_response
+
+    except Exception as e:
+        logger.error(f"Razorpay payout creation failed: {str(e)}")
+        raise Exception(f"Failed to create payout: {str(e)}")
+    
+    
 @csrf_exempt
 def razorpay_payout_webhook(request):
     if request.method == "POST":
