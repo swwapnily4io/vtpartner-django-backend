@@ -497,7 +497,7 @@ def get_goods_driver_payouts(request):
                             current_balance = float(withdrawal[-1]) if withdrawal[-1] else 0.0
                         
                         # If has Razorpay ID, check status
-                        razorpay_id = withdrawal[8]  # razorpay_payout_id column
+                        razorpay_id = withdrawal[10]  # razorpay_payout_id column
                         if razorpay_id:
                             # Try to get from map first, if not found make individual request
                             payout = payout_map.get(razorpay_id)
