@@ -27,7 +27,7 @@ def initiate_driver_withdrawal(request):
             required_fields = ['driver_id', 'amount', 'payment_method']
             
             # Check for missing fields
-            missing = check_missing_fields(data, required_fields)
+            missing = check_missing_fields( required_fields)
             if missing:
                 return JsonResponse({
                     "status": "error",
@@ -43,7 +43,7 @@ def initiate_driver_withdrawal(request):
             # Additional validation for payment method specific fields
             if payment_method == "BANK":
                 bank_fields = ['account_number', 'ifsc_code', 'account_name']
-                missing = check_missing_fields(data, bank_fields)
+                missing = check_missing_fields( bank_fields)
                 if missing:
                     return JsonResponse({
                         "status": "error",
