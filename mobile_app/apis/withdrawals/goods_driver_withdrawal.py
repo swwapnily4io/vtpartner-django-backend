@@ -439,6 +439,17 @@ def get_goods_driver_payouts(request):
                 }, status=400)
             
             try:
+                # Function to make authenticated requests to Razorpay
+                def razorpay_request(url):
+                    try:
+                        auth = (RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)
+                        response = requests.get(url, auth=auth)
+                        response.raise_for_status()
+                        return response.json()
+                    except Exception as e:
+                        logger.error(f"Razorpay API error: {str(e)}")
+                        return None
+
                 # Get all withdrawals for the driver
                 withdrawals_query = """
                     SELECT w.*, 
@@ -452,18 +463,21 @@ def get_goods_driver_payouts(request):
                 
                 withdrawals = select_query(withdrawals_query, [driver_id])
                 
-                # Get Razorpay client
-                try:
-                    client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
-                except Exception as e:
-                    logger.error(f"Failed to initialize Razorpay client: {str(e)}")
-                    return JsonResponse({
-                        "status": "error",
-                        "message": "Payment service configuration error"
-                    }, status=500)
+                # First try to get all payouts
+                all_payouts_url = f"https://api.razorpay.com/v1/payouts?account_number={RAZORPAY_ACCOUNT_NUMBER}"
+                all_payouts_response = razorpay_request(all_payouts_url)
+                
+                # Create a map of payout_id to payout details
+                payout_map = {}
+                if all_payouts_response and 'items' in all_payouts_response:
+                    payout_map = {
+                        payout['id']: payout 
+                        for payout in all_payouts_response['items']
+                    }
                 
                 payouts_data = []
                 current_balance = 0
+                current_time = int(time.time())
                 
                 for withdrawal in withdrawals:
                     try:
@@ -482,57 +496,70 @@ def get_goods_driver_payouts(request):
                         if current_balance == 0:
                             current_balance = float(withdrawal[-1]) if withdrawal[-1] else 0.0
                         
-                        # If has Razorpay ID, fetch latest status
+                        # If has Razorpay ID, check status
                         razorpay_id = withdrawal[8]  # razorpay_payout_id column
                         if razorpay_id:
-                            try:
-                                payout = client.payout.fetch(razorpay_id)
-                                
-                                # Update status if changed
+                            # Try to get from map first, if not found make individual request
+                            payout = payout_map.get(razorpay_id)
+                            if not payout:
+                                single_payout_url = f"https://api.razorpay.com/v1/payouts/{razorpay_id}"
+                                payout_response = razorpay_request(single_payout_url)
+                                if payout_response:
+                                    payout = payout_response
+                            
+                            if payout:
                                 new_status = map_razorpay_status(payout['status'])
+                                
                                 if new_status != withdrawal[9]:  # status column
                                     try:
+                                        payment_details = {
+                                            "razorpay_id": payout['id'],
+                                            "status": payout['status'],
+                                            "internal_status": payout.get('internal_status', ''),
+                                            "utr": payout.get('utr', ''),
+                                            "mode": payout['mode'],
+                                            "fee": payout.get('fees', 0),
+                                            "tax": payout.get('tax', 0),
+                                            "fund_account_id": payout['fund_account_id'],
+                                            "currency": payout['currency'],
+                                            "purpose": payout['purpose'],
+                                            "narration": payout['narration'],
+                                            "reference_id": payout['reference_id'],
+                                            "notes": payout.get('notes', {}),
+                                            "status_details": payout['status_details'],
+                                            "error": payout.get('error', {}),
+                                            "created_at": datetime.utcfromtimestamp(payout['created_at']).strftime('%Y-%m-%d %H:%M:%S'),
+                                            "updated_at": "2025-06-29 14:31:08",
+                                            "updated_by": "mohammed786-svg"
+                                        }
+
                                         update_query("""
                                             UPDATE vtpartner.goods_driver_withdrawals
                                             SET status = %s,
                                                 completed_at = %s,
                                                 remarks = %s,
                                                 payment_details = %s::jsonb,
-                                                updated_at = exact(epoch from CURRENT_TIMESTAMP),
+                                                updated_at = extract(epoch from CURRENT_TIMESTAMP),
                                                 updated_by = %s
                                             WHERE withdrawal_id = %s
                                         """, [
                                             new_status,
-                                            int(time.time()),
+                                            current_time if new_status in ['COMPLETED', 'FAILED', 'CANCELLED'] else None,
                                             payout['status_details'].get('description', ''),
-                                            json.dumps({
-                                                "razorpay_id": payout['id'],
-                                                "status": payout['status'],
-                                                "utr": payout.get('utr', ''),
-                                                "mode": payout['mode'],
-                                                "fee": payout.get('fees', 0),
-                                                "tax": payout.get('tax', 0),
-                                                "status_details": payout['status_details'],
-                                                "updated_at": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
-                                                "updated_by": "mohammed786-svg"
-                                            }),
+                                            json.dumps(payment_details),
                                             "mohammed786-svg",
                                             withdrawal[0]
                                         ])
                                         
                                         payout_details['status'] = new_status
-                                        payout_details['payment_details'] = payout
+                                        payout_details['payment_details'] = payment_details
+                                        
                                     except Exception as e:
                                         logger.error(f"Failed to update withdrawal status: {str(e)}")
-                                        # Continue processing other records even if update fails
-                            except Exception as e:
-                                logger.error(f"Failed to fetch Razorpay payout {razorpay_id}: {str(e)}")
-                                # Continue processing other records even if Razorpay fetch fails
                         
                         payouts_data.append(payout_details)
                     except Exception as e:
                         logger.error(f"Error processing withdrawal record: {str(e)}")
-                        # Continue processing other records
                 
                 return JsonResponse({
                     "status": "success",
@@ -570,6 +597,8 @@ def map_razorpay_status(status):
         'processed': 'COMPLETED',
         'reversed': 'REVERSED',
         'cancelled': 'CANCELLED',
-        'failed': 'FAILED'
+        'failed': 'FAILED',
+        'queued': 'PENDING',
+        'pending': 'PENDING'
     }
-    return status_map.get(status, 'PENDING')
+    return status_map.get(status.lower(), 'PENDING')
