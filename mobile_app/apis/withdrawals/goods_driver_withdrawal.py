@@ -21,13 +21,14 @@ logger = logging.getLogger('ApplicationLogger')
 
 @csrf_exempt
 def initiate_driver_withdrawal(request):
+    
     if request.method == "POST":
         try:
             data = json.loads(request.body)
             required_fields = ['driver_id', 'amount', 'payment_method']
             
             # Check for missing fields
-            missing = check_missing_fields(required_fields)
+            missing = check_missing_fields( required_fields)
             if missing:
                 return JsonResponse({
                     "status": "error",
@@ -37,12 +38,13 @@ def initiate_driver_withdrawal(request):
             driver_id = data.get('driver_id')
             amount = float(data.get('amount', 0))
             payment_method = data.get('payment_method')
-            current_epoch = int(time.time())
+            # current_epoch = int(time.time())
+            current_epoch = 'extract(epoch from CURRENT_TIMESTAMP)'
             
-            # Validate payment method-specific fields
+            # Additional validation for payment method specific fields
             if payment_method == "BANK":
                 bank_fields = ['account_number', 'ifsc_code', 'account_name']
-                missing = check_missing_fields(bank_fields)
+                missing = check_missing_fields( bank_fields)
                 if missing:
                     return JsonResponse({
                         "status": "error",
@@ -60,6 +62,9 @@ def initiate_driver_withdrawal(request):
                     "message": "Invalid payment method. Use 'BANK' or 'UPI'"
                 }, status=400)
             
+            # Log the withdrawal request
+            logger.info(f"Withdrawal request: Driver {driver_id}, Amount {amount}, Method {payment_method}")
+            
             # Validate amount
             if amount < 10:
                 return JsonResponse({
@@ -67,12 +72,13 @@ def initiate_driver_withdrawal(request):
                     "message": "Minimum withdrawal amount is ₹10"
                 }, status=400)
             
-            # Check wallet balance
+            # Check balance
             balance_query = """
                 SELECT current_balance, wallet_id
                 FROM vtpartner.goods_driver_wallet 
                 WHERE driver_id = %s
             """
+            
             result = select_query(balance_query, [driver_id])
             if not result:
                 return JsonResponse({
@@ -80,7 +86,9 @@ def initiate_driver_withdrawal(request):
                     "message": "Wallet not found"
                 }, status=404)
             
-            current_balance, wallet_id = float(result[0][0]), result[0][1]
+            current_balance = float(result[0][0])
+            wallet_id = result[0][1]
+            
             if amount > current_balance:
                 return JsonResponse({
                     "status": "error",
@@ -89,40 +97,47 @@ def initiate_driver_withdrawal(request):
             
             # Start transaction
             with transaction.atomic():
-                # Insert withdrawal
+                # Create withdrawal record
                 if payment_method == "BANK":
                     withdraw_query = """
                         INSERT INTO vtpartner.goods_driver_withdrawals 
-                        (driver_id, amount, payment_method, account_number, ifsc_code, account_name, status, created_at)
+                        (driver_id, amount, payment_method, account_number, 
+                         ifsc_code, account_name, status, created_at)
                         VALUES (%s, %s, %s, %s, %s, %s, 'PENDING', %s)
                         RETURNING withdrawal_id
                     """
-                    params = [driver_id, amount, payment_method, data['account_number'], data['ifsc_code'], data['account_name'], current_epoch]
+                    params = [driver_id, amount, payment_method, data['account_number'], 
+                            data['ifsc_code'], data['account_name'], current_epoch]
                 else:  # UPI
                     withdraw_query = """
                         INSERT INTO vtpartner.goods_driver_withdrawals 
-                        (driver_id, amount, payment_method, upi_id, status, created_at)
+                        (driver_id, amount, payment_method, upi_id, 
+                         status, created_at)
                         VALUES (%s, %s, %s, %s, 'PENDING', %s)
                         RETURNING withdrawal_id
                     """
                     params = [driver_id, amount, payment_method, data['upi_id'], current_epoch]
                 
                 withdrawal_id = insert_query(withdraw_query, params)[0][0]
-
-                # Update balance
+                
+                # Update wallet balance
                 update_balance_query = """
                     UPDATE vtpartner.goods_driver_wallet 
-                    SET current_balance = current_balance - %s, last_updated = %s
+                    SET current_balance = current_balance - %s,
+                        last_updated = %s
                     WHERE driver_id = %s
                 """
                 update_query(update_balance_query, [amount, current_epoch, driver_id])
-
-                # Insert wallet transaction
+                
+                # Create transaction record
                 transaction_query = """
                     INSERT INTO vtpartner.goods_driver_wallet_transactions 
-                    (wallet_id, driver_id, transaction_type, amount, status, transaction_time, transaction_date, reference_id, payment_mode, remarks)
+                    (wallet_id, driver_id, transaction_type, amount, status,
+                     transaction_time, transaction_date, reference_id, 
+                     payment_mode, remarks)
                     VALUES (%s, %s, %s, %s, %s, %s, CURRENT_DATE, %s, %s, %s)
                 """
+                
                 transaction_params = [
                     wallet_id,
                     driver_id,
@@ -134,15 +149,13 @@ def initiate_driver_withdrawal(request):
                     payment_method,
                     f"Withdrawal initiated via {payment_method}"
                 ]
+                
                 insert_query(transaction_query, transaction_params)
-
+                
                 try:
                     payout_response = initiate_razorpay_payout(data)
-
-                    # ✅ Ensure the response is a dict (if it's a list, get the first item)
-                    response_data = payout_response[0] if isinstance(payout_response, list) else payout_response
-
-                    # Update withdrawal with Razorpay info
+                    
+                    # Update withdrawal status with Razorpay reference
                     update_withdrawal_query = """
                         UPDATE vtpartner.goods_driver_withdrawals 
                         SET razorpay_payout_id = %s,
@@ -150,46 +163,52 @@ def initiate_driver_withdrawal(request):
                             payment_details = %s::jsonb
                         WHERE withdrawal_id = %s
                     """
+                    
+                    # Store payment details as JSON
                     payment_details = {
-                        "razorpay_id": response_data['id'],
-                        "mode": response_data['mode'],
-                        "status": response_data['status'],
-                        "utr": response_data.get('utr', ''),
+                        "razorpay_id": payout_response['id'],
+                        "mode": payout_response['mode'],
+                        "status": payout_response['status'],
+                        "utr": payout_response.get('utr', ''),
                         "created_at": current_epoch
                     }
-
+                    
                     update_query(
-                        update_withdrawal_query,
-                        [response_data['id'], "Razorpay payout initiated", json.dumps(payment_details), withdrawal_id]
+                        update_withdrawal_query, 
+                        [payout_response['id'], 
+                         "Razorpay payout initiated",
+                         json.dumps(payment_details),
+                         withdrawal_id]
                     )
-
+                    
+                    logger.info(f"Withdrawal initiated successfully: ID {withdrawal_id}, "
+                              f"Razorpay ID {payout_response['id']}")
+                    
                     return JsonResponse({
                         "status": "success",
                         "message": "Withdrawal initiated successfully",
                         "withdrawal_id": withdrawal_id,
-                        "razorpay_payout_id": response_data['id'],
+                        "razorpay_payout_id": payout_response['id'],
                         "payment_details": payment_details
                     })
-
+                    
                 except Exception as e:
+                    logger.error(f"Razorpay payout failed: {str(e)}")
                     rollback_driver_withdrawal(withdrawal_id, driver_id, amount, wallet_id)
-                    return JsonResponse({
-                        "status": "error",
-                        "message": f"Razorpay payout failed: {str(e)}"
-                    }, status=500)
-
+                    raise e
+                    
         except Exception as err:
+            logger.error(f"Error processing withdrawal: {str(err)}")
             return JsonResponse({
                 "status": "error",
                 "message": "Internal Server Error",
                 "error": str(err)
             }, status=500)
-
+    
     return JsonResponse({
         "status": "error",
         "message": "Method not allowed"
     }, status=405)
-
 
 def initiate_razorpay_payout(data):
     client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
