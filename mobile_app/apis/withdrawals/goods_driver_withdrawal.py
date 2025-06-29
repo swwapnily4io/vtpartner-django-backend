@@ -280,11 +280,10 @@ def initiate_razorpay_payout(data):
             "purpose": "payout",
             "queue_if_low_balance": True,
             "reference_id": reference_id,
-            "narration": f"KAPS Driver Payout - {reference_id}",
+            "narration": "Payout to driver",
             "notes": {
-                "driver_id": str(data['driver_id']),
-                "created_at": current_time,
-                "created_by": "mohammed786-svg"
+                "notes_key_1": "Wallet Withdrawal",
+                "notes_key_2": "Driver - " + str(data['driver_id']),
             }
         }
 
@@ -301,9 +300,9 @@ def initiate_razorpay_payout(data):
                     },
                     "contact": {
                         "name": data['account_name'],
-                        "type": "vendor",
+                        "type": "customer",
                         "contact": data.get('contact_no', '9999999999'),
-                        "reference_id": f"KAPS_DRIVER_{data['driver_id']}",
+                        "reference_id": reference_id,
                         "notes": {
                             "driver_id": str(data['driver_id'])
                         }
@@ -323,7 +322,7 @@ def initiate_razorpay_payout(data):
                         "name": data.get('name', f"Driver {data['driver_id']}"),
                         "type": "self",
                         "contact": data.get('contact_no', '9999999999'),
-                        "reference_id": f"KAPS_DRIVER_{data['driver_id']}",
+                        "reference_id": reference_id,
                         "notes": {
                             "driver_id": str(data['driver_id'])
                         }
