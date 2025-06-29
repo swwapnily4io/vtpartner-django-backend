@@ -34,7 +34,7 @@ def initiate_driver_withdrawal(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            required_fields = ['driver_id', 'amount', 'payment_method']
+            required_fields = ['driver_id','driver_name', 'amount', 'payment_method']
             
             # Check for missing fields
             missing = check_missing_fields(data, required_fields)
@@ -283,7 +283,7 @@ def initiate_razorpay_payout(data):
             "narration": "Payout to driver",
             "notes": {
                 "notes_key_1": "Wallet Withdrawal",
-                "notes_key_2": "Driver - " + str(data['driver_id']),
+                "notes_key_2": str(data['driver_name'])+" - " + str(data['driver_id']),
             }
         }
 
@@ -319,7 +319,7 @@ def initiate_razorpay_payout(data):
                         "address": data['upi_id']
                     },
                     "contact": {
-                        "name": data.get('name', f"Driver {data['driver_id']}"),
+                        "name": data.get('driver_name', f"Driver {data['driver_id']}"),
                         "type": "self",
                         "contact": data.get('contact_no', '9999999999'),
                         "reference_id": reference_id,
