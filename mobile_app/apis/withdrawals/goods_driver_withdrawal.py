@@ -640,7 +640,7 @@ def transfer_coins_to_wallet(request):
                 
                 total_coins = int(coins_result[0][0])
                 valid_coins = int(coins_result[0][1])
-                valid_coins = 30
+                
                 if valid_coins < 25:
                     return JsonResponse({
                         "status": "error",
