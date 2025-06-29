@@ -49,7 +49,7 @@ def initiate_driver_withdrawal(request):
             amount = float(data.get('amount', 0))
             payment_method = data.get('payment_method')
             # current_epoch = int(time.time())
-            current_epoch = 'extract(epoch from CURRENT_TIMESTAMP)'
+            # current_epoch = 'extract(epoch from CURRENT_TIMESTAMP)'
             
             # Additional validation for payment method specific fields
             if payment_method == "BANK":
@@ -113,20 +113,20 @@ def initiate_driver_withdrawal(request):
                         INSERT INTO vtpartner.goods_driver_withdrawals 
                         (driver_id, amount, payment_method, account_number, 
                          ifsc_code, account_name, status, created_at)
-                        VALUES (%s, %s, %s, %s, %s, %s, 'PENDING', %s)
+                        VALUES (%s, %s, %s, %s, %s, %s, 'PENDING', extract(epoch from CURRENT_TIMESTAMP))
                         RETURNING withdrawal_id
                     """
                     params = [driver_id, amount, payment_method, data['account_number'], 
-                            data['ifsc_code'], data['account_name'], current_epoch]
+                            data['ifsc_code'], data['account_name']]
                 else:  # UPI
                     withdraw_query = """
                         INSERT INTO vtpartner.goods_driver_withdrawals 
                         (driver_id, amount, payment_method, upi_id, 
                          status, created_at)
-                        VALUES (%s, %s, %s, %s, 'PENDING', %s)
+                        VALUES (%s, %s, %s, %s, 'PENDING', extract(epoch from CURRENT_TIMESTAMP))
                         RETURNING withdrawal_id
                     """
-                    params = [driver_id, amount, payment_method, data['upi_id'], current_epoch]
+                    params = [driver_id, amount, payment_method, data['upi_id']]
                 
                 withdrawal_id = insert_query(withdraw_query, params)[0][0]
                 
@@ -134,10 +134,10 @@ def initiate_driver_withdrawal(request):
                 update_balance_query = """
                     UPDATE vtpartner.goods_driver_wallet 
                     SET current_balance = current_balance - %s,
-                        last_updated = %s
+                        last_updated = extract(epoch from CURRENT_TIMESTAMP)
                     WHERE driver_id = %s
                 """
-                update_query(update_balance_query, [amount, current_epoch, driver_id])
+                update_query(update_balance_query, [amount, driver_id])
                 
                 # Create transaction record
                 transaction_query = """
@@ -145,7 +145,7 @@ def initiate_driver_withdrawal(request):
                     (wallet_id, driver_id, transaction_type, amount, status,
                      transaction_time, transaction_date, reference_id, 
                      payment_mode, remarks)
-                    VALUES (%s, %s, %s, %s, %s, %s, CURRENT_DATE, %s, %s, %s)
+                    VALUES (%s, %s, %s, %s, %s, extract(epoch from CURRENT_TIMESTAMP), CURRENT_DATE, %s, %s, %s)
                 """
                 
                 transaction_params = [
@@ -154,7 +154,6 @@ def initiate_driver_withdrawal(request):
                     'WITHDRAWAL',
                     amount,
                     'PENDING',
-                    current_epoch,
                     str(withdrawal_id),
                     payment_method,
                     f"Withdrawal initiated via {payment_method}"
@@ -180,7 +179,7 @@ def initiate_driver_withdrawal(request):
                         "mode": payout_response['mode'],
                         "status": payout_response['status'],
                         "utr": payout_response.get('utr', ''),
-                        "created_at": current_epoch
+                        
                     }
                     
                     update_query(
@@ -281,7 +280,7 @@ def initiate_razorpay_payout(data):
 
 def rollback_driver_withdrawal(withdrawal_id, driver_id, amount, wallet_id):
     with transaction.atomic():
-        current_epoch = 'extract(epoch from CURRENT_TIMESTAMP)'
+        # current_epoch = 'extract(epoch from CURRENT_TIMESTAMP)'
         
         # Update withdrawal status
         update_withdrawal_query = """
@@ -296,10 +295,10 @@ def rollback_driver_withdrawal(withdrawal_id, driver_id, amount, wallet_id):
         restore_query = """
             UPDATE vtpartner.goods_driver_wallet 
             SET current_balance = current_balance + %s,
-                last_updated = %s
+                last_updated = extract(epoch from CURRENT_TIMESTAMP)
             WHERE driver_id = %s
         """
-        update_query(restore_query, [amount, current_epoch, driver_id])
+        update_query(restore_query, [amount, driver_id])
         
         # Create reversal transaction
         reversal_query = """
@@ -307,7 +306,7 @@ def rollback_driver_withdrawal(withdrawal_id, driver_id, amount, wallet_id):
             (wallet_id, driver_id, transaction_type, amount, status,
              transaction_time, transaction_date, reference_id, 
              payment_mode, remarks)
-            VALUES (%s, %s, %s, %s, %s, %s, CURRENT_DATE, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s,extract(epoch from CURRENT_TIMESTAMP), CURRENT_DATE, %s, %s, %s)
         """
         
         reversal_params = [
@@ -316,7 +315,6 @@ def rollback_driver_withdrawal(withdrawal_id, driver_id, amount, wallet_id):
             'WITHDRAWAL_REVERSAL',
             amount,
             'COMPLETED',
-            current_epoch,
             str(withdrawal_id),
             'SYSTEM',
             'Withdrawal failed - amount reversed'
@@ -354,21 +352,21 @@ def razorpay_payout_webhook(request):
 
 def update_payout_status(payout_data, status):
     with transaction.atomic():
-        current_epoch = 'extract(epoch from CURRENT_TIMESTAMP)'
+        # current_epoch = 'extract(epoch from CURRENT_TIMESTAMP)'
         
         # Update withdrawal record
         query = """
             UPDATE vtpartner.goods_driver_withdrawals 
             SET status = %s,
-                completed_at = %s,
+                completed_at = extract(epoch from CURRENT_TIMESTAMP),
                 remarks = %s
             WHERE razorpay_payout_id = %s
             RETURNING withdrawal_id, driver_id, amount, wallet_id
         """
         
-        result = select_query(query, [
+        result = update_query(query, [
             status,
-            current_epoch,
+            
             f"Payout {status.lower()}",
             payout_data['id']
         ])
