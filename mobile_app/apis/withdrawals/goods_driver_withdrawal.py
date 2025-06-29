@@ -37,7 +37,8 @@ def initiate_driver_withdrawal(request):
             driver_id = data.get('driver_id')
             amount = float(data.get('amount', 0))
             payment_method = data.get('payment_method')
-            current_epoch = int(time.time())
+            # current_epoch = int(time.time())
+            current_epoch = 'extract(epoch from CURRENT_TIMESTAMP)'
             
             # Additional validation for payment method specific fields
             if payment_method == "BANK":
@@ -168,7 +169,7 @@ def initiate_driver_withdrawal(request):
                         "mode": payout_response['mode'],
                         "status": payout_response['status'],
                         "utr": payout_response.get('utr', ''),
-                        "created_at": datetime.fromtimestamp(current_epoch).strftime('%Y-%m-%d %H:%M:%S')
+                        "created_at": current_epoch
                     }
                     
                     update_query(
@@ -269,7 +270,7 @@ def initiate_razorpay_payout(data):
 
 def rollback_driver_withdrawal(withdrawal_id, driver_id, amount, wallet_id):
     with transaction.atomic():
-        current_epoch = int(time.time())
+        current_epoch = 'extract(epoch from CURRENT_TIMESTAMP)'
         
         # Update withdrawal status
         update_withdrawal_query = """
@@ -342,7 +343,7 @@ def razorpay_payout_webhook(request):
 
 def update_payout_status(payout_data, status):
     with transaction.atomic():
-        current_epoch = int(time.time())
+        current_epoch = 'extract(epoch from CURRENT_TIMESTAMP)'
         
         # Update withdrawal record
         query = """
