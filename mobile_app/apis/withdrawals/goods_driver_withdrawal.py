@@ -259,20 +259,23 @@ def rollback_driver_withdrawal(withdrawal_id, driver_id, amount, wallet_id):
     
     insert_query(reversal_query, reversal_params)
 
+import requests
+from requests.auth import HTTPBasicAuth
+
 def initiate_razorpay_payout(data):
     try:
-        # Initialize Razorpay client with API version
-        client = razorpay.Client(
-            auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET),
-            requests_kwargs={'verify': True}
-        )
-        
         reference_id = str(uuid.uuid4())
         current_time = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-        
-        payout_base = {
+
+        payout_url = "https://api.razorpay.com/v1/payouts"
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        # Shared base payload
+        base_payload = {
             "account_number": RAZORPAY_ACCOUNT_NUMBER,
-            "amount": int(float(data['amount']) * 100),  # Amount in paise
+            "amount": int(float(data['amount']) * 100),  # in paise
             "currency": "INR",
             "purpose": "payout",
             "queue_if_low_balance": True,
@@ -284,10 +287,10 @@ def initiate_razorpay_payout(data):
                 "created_by": "mohammed786-svg"
             }
         }
-        
+
         if data['payment_method'] == "BANK":
             payout_data = {
-                **payout_base,
+                **base_payload,
                 "mode": "NEFT",
                 "fund_account": {
                     "account_type": "bank_account",
@@ -299,6 +302,7 @@ def initiate_razorpay_payout(data):
                     "contact": {
                         "name": data['account_name'],
                         "type": "vendor",
+                        "contact": data.get('contact_no', '9999999999'),
                         "reference_id": f"KAPS_DRIVER_{data['driver_id']}",
                         "notes": {
                             "driver_id": str(data['driver_id'])
@@ -308,7 +312,7 @@ def initiate_razorpay_payout(data):
             }
         else:  # UPI
             payout_data = {
-                **payout_base,
+                **base_payload,
                 "mode": "UPI",
                 "fund_account": {
                     "account_type": "vpa",
@@ -317,7 +321,8 @@ def initiate_razorpay_payout(data):
                     },
                     "contact": {
                         "name": data.get('name', f"Driver {data['driver_id']}"),
-                        "type": "vendor",
+                        "type": "self",
+                        "contact": data.get('contact_no', '9999999999'),
                         "reference_id": f"KAPS_DRIVER_{data['driver_id']}",
                         "notes": {
                             "driver_id": str(data['driver_id'])
@@ -326,22 +331,31 @@ def initiate_razorpay_payout(data):
                 }
             }
 
-        # Use the transfers API for payouts
-        payout_response = client.payout.create(payout_data)
-        
-        # Add additional metadata to the response
+        # Call Razorpay payout API
+        response = requests.post(
+            payout_url,
+            auth=HTTPBasicAuth(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET),
+            headers=headers,
+            json=payout_data
+        )
+
+        # Handle response
+        if response.status_code not in [200, 201]:
+            raise Exception(f"Razorpay Payout API Error: {response.status_code} - {response.text}")
+
+        payout_response = response.json()
         payout_response.update({
-            'created_at': current_time,
-            'created_by': 'mohammed786-svg'
+            "created_at": current_time,
+            "created_by": "mohammed786-svg"
         })
-        
-        logger.info(f"Razorpay payout initiated: {payout_response['id']}")
+
+        logger.info(f"Razorpay payout initiated successfully: {payout_response['id']}")
         return payout_response
 
     except Exception as e:
         logger.error(f"Razorpay payout creation failed: {str(e)}")
         raise Exception(f"Failed to create payout: {str(e)}")
-    
+
     
 @csrf_exempt
 def razorpay_payout_webhook(request):
