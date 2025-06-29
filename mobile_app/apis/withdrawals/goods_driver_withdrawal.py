@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
 from mobile_app.configurations import load_query_mappings
-from mobile_app.views import select_query, insert_query, update_query, check_missing_fields
+from mobile_app.views import select_query, insert_query, update_query
 
 # Configuration
 RAZORPAY_KEY_ID = 'rzp_test_4Zsazxushfh47G'
@@ -18,6 +18,16 @@ WEBHOOK_SECRET = 'your_webhook_secret'
 
 # Initialize logger
 logger = logging.getLogger('ApplicationLogger')
+
+def check_missing_fields(data, required_fields):
+    """
+    Check for missing required fields in the data dictionary
+    """
+    missing = []
+    for field in required_fields:
+        if field not in data or data[field] is None or data[field] == "":
+            missing.append(field)
+    return missing
 
 @csrf_exempt
 def initiate_driver_withdrawal(request):
