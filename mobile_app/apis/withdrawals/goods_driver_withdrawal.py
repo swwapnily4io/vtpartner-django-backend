@@ -31,14 +31,13 @@ def check_missing_fields(data, required_fields):
 
 @csrf_exempt
 def initiate_driver_withdrawal(request):
-    
     if request.method == "POST":
         try:
             data = json.loads(request.body)
             required_fields = ['driver_id', 'amount', 'payment_method']
             
             # Check for missing fields
-            missing = check_missing_fields(data,  required_fields)
+            missing = check_missing_fields(data, required_fields)
             if missing:
                 return JsonResponse({
                     "status": "error",
@@ -48,13 +47,11 @@ def initiate_driver_withdrawal(request):
             driver_id = data.get('driver_id')
             amount = float(data.get('amount', 0))
             payment_method = data.get('payment_method')
-            # current_epoch = int(time.time())
-            # current_epoch = 'extract(epoch from CURRENT_TIMESTAMP)'
             
             # Additional validation for payment method specific fields
             if payment_method == "BANK":
                 bank_fields = ['account_number', 'ifsc_code', 'account_name']
-                missing = check_missing_fields(data,  bank_fields)
+                missing = check_missing_fields(data, bank_fields)
                 if missing:
                     return JsonResponse({
                         "status": "error",
@@ -105,107 +102,107 @@ def initiate_driver_withdrawal(request):
                     "message": "Insufficient balance"
                 }, status=400)
             
-            # Start transaction
-            with transaction.atomic():
-                # Create withdrawal record
-                if payment_method == "BANK":
-                    withdraw_query = """
-                        INSERT INTO vtpartner.goods_driver_withdrawals 
-                        (driver_id, amount, payment_method, account_number, 
-                         ifsc_code, account_name, status, created_at)
-                        VALUES (%s, %s, %s, %s, %s, %s, 'PENDING', extract(epoch from CURRENT_TIMESTAMP))
-                        RETURNING withdrawal_id
-                    """
-                    params = [driver_id, amount, payment_method, data['account_number'], 
-                            data['ifsc_code'], data['account_name']]
-                else:  # UPI
-                    withdraw_query = """
-                        INSERT INTO vtpartner.goods_driver_withdrawals 
-                        (driver_id, amount, payment_method, upi_id, 
-                         status, created_at)
-                        VALUES (%s, %s, %s, %s, 'PENDING', extract(epoch from CURRENT_TIMESTAMP))
-                        RETURNING withdrawal_id
-                    """
-                    params = [driver_id, amount, payment_method, data['upi_id']]
-                
-                withdrawal_id = insert_query(withdraw_query, params)[0][0]
-                
-                # Update wallet balance
-                update_balance_query = """
-                    UPDATE vtpartner.goods_driver_wallet 
-                    SET current_balance = current_balance - %s,
-                        last_updated = extract(epoch from CURRENT_TIMESTAMP)
-                    WHERE driver_id = %s
+            # Create withdrawal record
+            if payment_method == "BANK":
+                withdraw_query = """
+                    INSERT INTO vtpartner.goods_driver_withdrawals 
+                    (driver_id, amount, payment_method, account_number, 
+                     ifsc_code, account_name, status, created_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, 'PENDING', extract(epoch from CURRENT_TIMESTAMP))
+                    RETURNING withdrawal_id
                 """
-                update_query(update_balance_query, [amount, driver_id])
+                params = [driver_id, amount, payment_method, data['account_number'], 
+                        data['ifsc_code'], data['account_name']]
+            else:  # UPI
+                withdraw_query = """
+                    INSERT INTO vtpartner.goods_driver_withdrawals 
+                    (driver_id, amount, payment_method, upi_id, 
+                     status, created_at)
+                    VALUES (%s, %s, %s, %s, 'PENDING', extract(epoch from CURRENT_TIMESTAMP))
+                    RETURNING withdrawal_id
+                """
+                params = [driver_id, amount, payment_method, data['upi_id']]
+            
+            withdrawal_id = insert_query(withdraw_query, params)[0][0]
+            
+            # Update wallet balance
+            update_balance_query = """
+                UPDATE vtpartner.goods_driver_wallet 
+                SET current_balance = current_balance - %s,
+                    last_updated = extract(epoch from CURRENT_TIMESTAMP)
+                WHERE driver_id = %s
+            """
+            update_query(update_balance_query, [amount, driver_id])
+            
+            # Create transaction record
+            transaction_query = """
+                INSERT INTO vtpartner.goods_driver_wallet_transactions 
+                (wallet_id, driver_id, transaction_type, amount, status,
+                 transaction_time, transaction_date, reference_id, 
+                 payment_mode, remarks)
+                VALUES (%s, %s, %s, %s, %s, 
+                        extract(epoch from CURRENT_TIMESTAMP), 
+                        CURRENT_DATE, %s, %s, %s)
+            """
+            
+            transaction_params = [
+                wallet_id,
+                driver_id,
+                'WITHDRAWAL',
+                amount,
+                'PENDING',
+                str(withdrawal_id),
+                payment_method,
+                f"Withdrawal initiated via {payment_method}"
+            ]
+            
+            insert_query(transaction_query, transaction_params)
+            
+            try:
+                payout_response = initiate_razorpay_payout(data)
                 
-                # Create transaction record
-                transaction_query = """
-                    INSERT INTO vtpartner.goods_driver_wallet_transactions 
-                    (wallet_id, driver_id, transaction_type, amount, status,
-                     transaction_time, transaction_date, reference_id, 
-                     payment_mode, remarks)
-                    VALUES (%s, %s, %s, %s, %s, extract(epoch from CURRENT_TIMESTAMP), CURRENT_DATE, %s, %s, %s)
+                # Update withdrawal status with Razorpay reference
+                update_withdrawal_query = """
+                    UPDATE vtpartner.goods_driver_withdrawals 
+                    SET razorpay_payout_id = %s,
+                        remarks = %s,
+                        payment_details = %s::jsonb
+                    WHERE withdrawal_id = %s
                 """
                 
-                transaction_params = [
-                    wallet_id,
-                    driver_id,
-                    'WITHDRAWAL',
-                    amount,
-                    'PENDING',
-                    str(withdrawal_id),
-                    payment_method,
-                    f"Withdrawal initiated via {payment_method}"
-                ]
+                # Store payment details as JSON
+                payment_details = {
+                    "razorpay_id": payout_response['id'],
+                    "mode": payout_response['mode'],
+                    "status": payout_response['status'],
+                    "utr": payout_response.get('utr', ''),
+                    "created_at": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+                }
                 
-                insert_query(transaction_query, transaction_params)
+                update_query(
+                    update_withdrawal_query, 
+                    [payout_response['id'], 
+                     "Razorpay payout initiated",
+                     json.dumps(payment_details),
+                     withdrawal_id]
+                )
                 
-                try:
-                    payout_response = initiate_razorpay_payout(data)
-                    
-                    # Update withdrawal status with Razorpay reference
-                    update_withdrawal_query = """
-                        UPDATE vtpartner.goods_driver_withdrawals 
-                        SET razorpay_payout_id = %s,
-                            remarks = %s,
-                            payment_details = %s::jsonb
-                        WHERE withdrawal_id = %s
-                    """
-                    
-                    # Store payment details as JSON
-                    payment_details = {
-                        "razorpay_id": payout_response['id'],
-                        "mode": payout_response['mode'],
-                        "status": payout_response['status'],
-                        "utr": payout_response.get('utr', ''),
-                        
-                    }
-                    
-                    update_query(
-                        update_withdrawal_query, 
-                        [payout_response['id'], 
-                         "Razorpay payout initiated",
-                         json.dumps(payment_details),
-                         withdrawal_id]
-                    )
-                    
-                    logger.info(f"Withdrawal initiated successfully: ID {withdrawal_id}, "
-                              f"Razorpay ID {payout_response['id']}")
-                    
-                    return JsonResponse({
-                        "status": "success",
-                        "message": "Withdrawal initiated successfully",
-                        "withdrawal_id": withdrawal_id,
-                        "razorpay_payout_id": payout_response['id'],
-                        "payment_details": payment_details
-                    })
-                    
-                except Exception as e:
-                    logger.error(f"Razorpay payout failed: {str(e)}")
-                    rollback_driver_withdrawal(withdrawal_id, driver_id, amount, wallet_id)
-                    raise e
-                    
+                logger.info(f"Withdrawal initiated successfully: ID {withdrawal_id}, "
+                          f"Razorpay ID {payout_response['id']}")
+                
+                return JsonResponse({
+                    "status": "success",
+                    "message": "Withdrawal initiated successfully",
+                    "withdrawal_id": withdrawal_id,
+                    "razorpay_payout_id": payout_response['id'],
+                    "payment_details": payment_details
+                })
+                
+            except Exception as e:
+                logger.error(f"Razorpay payout failed: {str(e)}")
+                rollback_driver_withdrawal(withdrawal_id, driver_id, amount, wallet_id)
+                raise e
+                
         except Exception as err:
             logger.error(f"Error processing withdrawal: {str(err)}")
             return JsonResponse({
@@ -218,6 +215,49 @@ def initiate_driver_withdrawal(request):
         "status": "error",
         "message": "Method not allowed"
     }, status=405)
+
+def rollback_driver_withdrawal(withdrawal_id, driver_id, amount, wallet_id):
+    # Update withdrawal status
+    update_withdrawal_query = """
+        UPDATE vtpartner.goods_driver_withdrawals 
+        SET status = 'FAILED',
+            remarks = 'Razorpay payout failed'
+        WHERE withdrawal_id = %s
+    """
+    update_query(update_withdrawal_query, [withdrawal_id])
+    
+    # Restore wallet balance
+    restore_query = """
+        UPDATE vtpartner.goods_driver_wallet 
+        SET current_balance = current_balance + %s,
+            last_updated = extract(epoch from CURRENT_TIMESTAMP)
+        WHERE driver_id = %s
+    """
+    update_query(restore_query, [amount, driver_id])
+    
+    # Create reversal transaction
+    reversal_query = """
+        INSERT INTO vtpartner.goods_driver_wallet_transactions 
+        (wallet_id, driver_id, transaction_type, amount, status,
+         transaction_time, transaction_date, reference_id, 
+         payment_mode, remarks)
+        VALUES (%s, %s, %s, %s, %s, 
+                extract(epoch from CURRENT_TIMESTAMP), 
+                CURRENT_DATE, %s, %s, %s)
+    """
+    
+    reversal_params = [
+        wallet_id,
+        driver_id,
+        'WITHDRAWAL_REVERSAL',
+        amount,
+        'COMPLETED',
+        str(withdrawal_id),
+        'SYSTEM',
+        'Withdrawal failed - amount reversed'
+    ]
+    
+    insert_query(reversal_query, reversal_params)
 
 def initiate_razorpay_payout(data):
     client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
@@ -277,50 +317,6 @@ def initiate_razorpay_payout(data):
         }
     
     return client.payout.create(payout_data)
-
-def rollback_driver_withdrawal(withdrawal_id, driver_id, amount, wallet_id):
-    with transaction.atomic():
-        # current_epoch = 'extract(epoch from CURRENT_TIMESTAMP)'
-        
-        # Update withdrawal status
-        update_withdrawal_query = """
-            UPDATE vtpartner.goods_driver_withdrawals 
-            SET status = 'FAILED',
-                remarks = 'Razorpay payout failed'
-            WHERE withdrawal_id = %s
-        """
-        update_query(update_withdrawal_query, [withdrawal_id])
-        
-        # Restore wallet balance
-        restore_query = """
-            UPDATE vtpartner.goods_driver_wallet 
-            SET current_balance = current_balance + %s,
-                last_updated = extract(epoch from CURRENT_TIMESTAMP)
-            WHERE driver_id = %s
-        """
-        update_query(restore_query, [amount, driver_id])
-        
-        # Create reversal transaction
-        reversal_query = """
-            INSERT INTO vtpartner.goods_driver_wallet_transactions 
-            (wallet_id, driver_id, transaction_type, amount, status,
-             transaction_time, transaction_date, reference_id, 
-             payment_mode, remarks)
-            VALUES (%s, %s, %s, %s, %s,extract(epoch from CURRENT_TIMESTAMP), CURRENT_DATE, %s, %s, %s)
-        """
-        
-        reversal_params = [
-            wallet_id,
-            driver_id,
-            'WITHDRAWAL_REVERSAL',
-            amount,
-            'COMPLETED',
-            str(withdrawal_id),
-            'SYSTEM',
-            'Withdrawal failed - amount reversed'
-        ]
-        
-        insert_query(reversal_query, reversal_params)
 
 @csrf_exempt
 def razorpay_payout_webhook(request):
