@@ -327,7 +327,7 @@ def initiate_razorpay_payout(data):
             }
 
         # Use the transfers API for payouts
-        payout_response = client.transfer.create(payout_data)
+        payout_response = client.payout.create(payout_data)
         
         # Add additional metadata to the response
         payout_response.update({
