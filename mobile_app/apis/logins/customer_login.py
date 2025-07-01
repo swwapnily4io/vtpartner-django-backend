@@ -67,9 +67,9 @@ def generate_customer_jwt_token_api(request):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ValidateCustomerTokenView(APIView):
+    
     def post(self, request):
         token = request.data.get('token')
-
         if not token:
             return Response({'detail': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -82,7 +82,7 @@ class ValidateCustomerTokenView(APIView):
             return Response({
                 'valid': True,
                 'expires_in_seconds': remaining_seconds,
-                'customer_id': decoded.get('customer_id'),
+                'customer_id': decoded.get('user_id'),
                 'mobile_no': decoded.get('mobile_no'),
                 'device_emei_no': decoded.get('device_emei_no'),
                 'api_encrpted_user_id': decoded.get('api_encrpted_user_id'),
@@ -92,27 +92,27 @@ class ValidateCustomerTokenView(APIView):
         except ExpiredSignatureError:
             logger.warning("Token expired")
             return Response({'valid': False, 'detail': 'Token has expired'}, status=status.HTTP_401_UNAUTHORIZED)
-
         except InvalidTokenError as e:
             logger.error(f"Invalid token: {str(e)}")
             return Response({'valid': False, 'detail': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RefreshCustomerTokenView(APIView):
+
     def post(self, request):
         refresh_token = request.data.get('refresh')
-
         if not refresh_token:
             return Response({'detail': 'Refresh token is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             refresh = RefreshToken(refresh_token)
-            new_access_token = str(refresh.access_token)
+            access = str(refresh.access_token)
+            expires_in = refresh.access_token.lifetime.total_seconds()
 
             return Response({
-                'access': new_access_token,
-                'expires_in': str(refresh.access_token.lifetime)
-            }, status=status.HTTP_200_OK)
+                'access': access,
+                'expires_in': expires_in
+            })
 
         except TokenError as e:
             return Response({'detail': f'Invalid or expired refresh token: {str(e)}'}, status=status.HTTP_401_UNAUTHORIZED)
