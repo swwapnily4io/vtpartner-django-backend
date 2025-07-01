@@ -90,7 +90,25 @@ class ValidateCustomerTokenView(APIView):
             logger.error(f"Invalid token: {str(e)}")
             return Response({'valid': False, 'detail': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
 
+@method_decorator(csrf_exempt, name='dispatch')
+class RefreshCustomerTokenView(APIView):
+    def post(self, request):
+        refresh_token = request.data.get('refresh')
 
+        if not refresh_token:
+            return Response({'detail': 'Refresh token is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            new_access_token = str(refresh.access_token)
+
+            return Response({
+                'access': new_access_token,
+                'expires_in': str(refresh.access_token.lifetime)
+            }, status=status.HTTP_200_OK)
+
+        except TokenError as e:
+            return Response({'detail': f'Invalid or expired refresh token: {str(e)}'}, status=status.HTTP_401_UNAUTHORIZED)
 
 def is_customer_token_expired(token_string):
     try:
