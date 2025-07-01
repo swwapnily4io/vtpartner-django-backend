@@ -45,7 +45,7 @@ urlpatterns = [
     #Validate JWT Token
     path('validate-token', customer_login.ValidateCustomerTokenView.as_view(), name='validate_customer_token'),
     #Validate JWT Token Refresh
-    path('validate-token', customer_login.RefreshCustomerTokenView.as_view(), name='validate_customer_token'),
+    path('refresh-token', customer_login.RefreshCustomerTokenView.as_view(), name='validate_customer_token'),
     #Customer Login
     path('login',customer_login.login_view,name='login'),
     #Update Customer Firebase Token
