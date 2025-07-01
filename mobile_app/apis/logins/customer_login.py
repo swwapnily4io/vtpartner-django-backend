@@ -4,7 +4,8 @@ from django.views.decorators.csrf import csrf_exempt
 from mobile_app.configurations import load_query_mappings
 import logging
 from mobile_app.views import select_query, insert_query, update_query, check_missing_fields
-
+import jwt
+from django.conf import settings
 
 # Initialize logger
 logger = logging.getLogger('ApplicationLogger')
@@ -76,6 +77,7 @@ def login_view(request):
                         }]
                     }, status=200)
                     
+            
             # Map existing customer results
             response_value = [
                 {
@@ -100,8 +102,22 @@ def login_view(request):
                 }
                 for row in result
             ]
-            
-            return JsonResponse({"results": response_value}, status=200)
+
+            # Ensure result is not empty before accessing
+            if response_value:
+                payload = {
+                    'customer_id': response_value[0]["customer_id"],
+                    'mobile_no': response_value[0]["mobile_no"],
+                }
+                token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+                
+                return JsonResponse({
+                    "results": response_value,
+                    "token": token,
+                }, status=200)
+            else:
+                return JsonResponse({"message": "No customer found"}, status=404)
+
 
         except Exception as err:
             print("Error executing query:", err)

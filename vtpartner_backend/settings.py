@@ -69,8 +69,16 @@ INSTALLED_APPS = [
     'mobile_app',
     'dashboard_app',
     'website_app',
-    'drf_yasg'
+    'drf_yasg',
+    'rest_framework', 
+    'rest_framework_simplejwt',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
