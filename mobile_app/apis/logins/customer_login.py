@@ -23,6 +23,7 @@ logger = logging.getLogger('ApplicationLogger')
 
 
 
+
 @csrf_exempt
 def generate_customer_jwt_token_api(request):
     if request.method != "POST":
@@ -30,32 +31,38 @@ def generate_customer_jwt_token_api(request):
 
     try:
         data = json.loads(request.body)
-
         required_fields = ['customer_id', 'mobile_no', 'device_emei_no', 'api_encrpted_user_id']
         missing_fields = [field for field in required_fields if field not in data]
 
         if missing_fields:
             return JsonResponse({'detail': f'Missing fields: {", ".join(missing_fields)}'}, status=400)
-        expiration_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=1)
-        payload = {
-            'customer_id': data['customer_id'],
-            'mobile_no': data['mobile_no'],
-            'device_emei_no': data['device_emei_no'],
-            'api_encrpted_user_id': data['api_encrpted_user_id'],
-            'exp': expiration_time,
-            'iat': datetime.datetime.utcnow()
-        }
-        refreshToken = RefreshToken.for_user(payload)
-        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-        if isinstance(token, bytes):
-            token = token.decode('utf-8')
 
-        return JsonResponse({'token': token, 'expires_in': str(expiration_time),'refreshToken':refreshToken,'accessToken':refreshToken.access_token}, status=200)
+        # FakeUser is a custom user-like object (optional) to avoid actual DB user if you don’t have one
+        class FakeUser:
+            def __init__(self, id):
+                self.id = id
+            @property
+            def is_authenticated(self):
+                return True
+
+        user = FakeUser(data['customer_id'])
+
+        refresh = RefreshToken.for_user(user)
+        # Add custom claims
+        refresh['mobile_no'] = data['mobile_no']
+        refresh['device_emei_no'] = data['device_emei_no']
+        refresh['api_encrpted_user_id'] = data['api_encrpted_user_id']
+
+        return JsonResponse({
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'expires_in': str(refresh.access_token.lifetime)
+        }, status=200)
 
     except json.JSONDecodeError:
         return JsonResponse({'detail': 'Invalid JSON'}, status=400)
     except Exception as e:
-        return JsonResponse({'detail': f'Error generating token: {str(e)}'}, status=500)
+        return JsonResponse({'detail': f'Error: {str(e)}'}, status=500)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
