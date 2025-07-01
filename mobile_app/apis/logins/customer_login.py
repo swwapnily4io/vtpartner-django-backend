@@ -16,7 +16,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework_simplejwt.tokens import AccessToken, TokenError
+from rest_framework_simplejwt.tokens import AccessToken,RefreshToken, TokenError
 
 # Initialize logger
 logger = logging.getLogger('ApplicationLogger')
@@ -36,21 +36,21 @@ def generate_customer_jwt_token_api(request):
 
         if missing_fields:
             return JsonResponse({'detail': f'Missing fields: {", ".join(missing_fields)}'}, status=400)
-
+        expiration_time = datetime.datetime.utcnow() + datetime.timedelta(minutes=1)
         payload = {
             'customer_id': data['customer_id'],
             'mobile_no': data['mobile_no'],
             'device_emei_no': data['device_emei_no'],
             'api_encrpted_user_id': data['api_encrpted_user_id'],
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=1),
+            'exp': expiration_time,
             'iat': datetime.datetime.utcnow()
         }
-
+        refreshToken = RefreshToken.for_user(payload)
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
         if isinstance(token, bytes):
             token = token.decode('utf-8')
 
-        return JsonResponse({'token': token, 'expires_in': '1 hour'}, status=200)
+        return JsonResponse({'token': token, 'expires_in': str(expiration_time),'refreshToken':refreshToken,'accessToken':refreshToken.access_token}, status=200)
 
     except json.JSONDecodeError:
         return JsonResponse({'detail': 'Invalid JSON'}, status=400)
