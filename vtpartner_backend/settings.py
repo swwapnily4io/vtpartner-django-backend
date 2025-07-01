@@ -14,6 +14,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 import logging.handlers
+from datetime import timedelta
 
 # Load environment variables
 load_dotenv('/home/ubuntu/.env_vtpartner_customer')
@@ -33,6 +34,8 @@ SECRET_KEY = 'django-insecure-%$w3*@00r2^t+e!q4sy-d_^!7)1j4axp=-(iigv9t*q5t*qxff
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+
 
 ALLOWED_HOSTS = [
     'vtpartner.org',
@@ -78,6 +81,25 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
+}
+
+SIMPLE_JWT = {
+    # Access token lifetime (default: 5 minutes)
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
+
+    # Refresh token lifetime (default: 1 day)
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+
+    # Optional: allow refreshing with the same refresh token multiple times
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+
+    # Token type in Authorization header
+    'AUTH_HEADER_TYPES': ('Bearer',),
+
+    # Algorithm and signing key
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
 }
 
 MIDDLEWARE = [

@@ -5,10 +5,77 @@ from mobile_app.configurations import load_query_mappings
 import logging
 from mobile_app.views import select_query, insert_query, update_query, check_missing_fields
 import jwt
+import datetime
+import logging
+
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework_simplejwt.tokens import AccessToken, TokenError
 
 # Initialize logger
 logger = logging.getLogger('ApplicationLogger')
+
+@csrf_exempt
+def generate_customer_jwt_token(customer_id, mobile_no, device_emei_no, api_encrpted_user_id):
+    payload = {
+        'customer_id': customer_id,
+        'mobile_no': mobile_no,
+        'device_emei_no': device_emei_no,
+        'api_encrpted_user_id': api_encrpted_user_id,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1),  # Token expires in 1 hour
+        'iat': datetime.datetime.utcnow()
+    }
+
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+    return token
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ValidateCustomerTokenView(APIView):
+    def post(self, request):
+        token = request.data.get('token')
+
+        if not token:
+            return Response({'detail': 'Token is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            decoded = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            exp_timestamp = decoded['exp']
+            now_timestamp = datetime.datetime.utcnow().timestamp()
+            remaining_seconds = int(exp_timestamp - now_timestamp)
+
+            return Response({
+                'valid': True,
+                'expires_in_seconds': remaining_seconds,
+                'customer_id': decoded.get('customer_id'),
+                'mobile_no': decoded.get('mobile_no'),
+                'device_emei_no': decoded.get('device_emei_no'),
+                'api_encrpted_user_id': decoded.get('api_encrpted_user_id'),
+                'exp': exp_timestamp
+            })
+
+        except ExpiredSignatureError:
+            logger.warning("Token expired")
+            return Response({'valid': False, 'detail': 'Token has expired'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        except InvalidTokenError as e:
+            logger.error(f"Invalid token: {str(e)}")
+            return Response({'valid': False, 'detail': 'Invalid token'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+
+def is_customer_token_expired(token_string):
+    try:
+        token = AccessToken(token_string)
+        return False, f"Token is valid. Expires at: {token['exp']}"
+    except TokenError as e:
+        return True, f"Invalid or expired token: {str(e)}"
 
 
 @csrf_exempt
@@ -77,7 +144,6 @@ def login_view(request):
                         }]
                     }, status=200)
                     
-            
             # Map existing customer results
             response_value = [
                 {
@@ -102,22 +168,14 @@ def login_view(request):
                 }
                 for row in result
             ]
-
-            # Ensure result is not empty before accessing
-            if response_value:
-                payload = {
-                    'customer_id': response_value[0]["customer_id"],
-                    'mobile_no': response_value[0]["mobile_no"],
-                }
-                token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-                
-                return JsonResponse({
-                    "results": response_value,
-                    "token": token,
-                }, status=200)
-            else:
-                return JsonResponse({"message": "No customer found"}, status=404)
-
+            
+            payload = {
+                'user_id': user.id,
+                'email': user.email,
+            }
+            token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+            
+            return JsonResponse({"results": response_value}, status=200)
 
         except Exception as err:
             print("Error executing query:", err)
