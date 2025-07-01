@@ -41,7 +41,7 @@ urlpatterns = [
     path('upload',views.upload_image,name='upload'),
     
     #Customer Apis with sequence
-    path('api/validate-token/', customer_login.ValidateCustomerTokenView.as_view(), name='validate_customer_token'),
+    path('validate-token', customer_login.ValidateCustomerTokenView.as_view(), name='validate_customer_token'),
     #Customer Login
     path('login',customer_login.login_view,name='login'),
     #Update Customer Firebase Token
