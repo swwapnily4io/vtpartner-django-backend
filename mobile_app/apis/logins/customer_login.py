@@ -216,12 +216,6 @@ def login_view(request):
                 for row in result
             ]
             
-            payload = {
-                'user_id': user.id,
-                'email': user.email,
-            }
-            token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-            
             return JsonResponse({"results": response_value}, status=200)
 
         except Exception as err:
