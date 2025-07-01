@@ -42,7 +42,7 @@ def generate_customer_jwt_token_api(request):
             'mobile_no': data['mobile_no'],
             'device_emei_no': data['device_emei_no'],
             'api_encrpted_user_id': data['api_encrpted_user_id'],
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=1),
             'iat': datetime.datetime.utcnow()
         }
 
