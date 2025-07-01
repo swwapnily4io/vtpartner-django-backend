@@ -21,19 +21,41 @@ from rest_framework_simplejwt.tokens import AccessToken, TokenError
 # Initialize logger
 logger = logging.getLogger('ApplicationLogger')
 
-@csrf_exempt
-def generate_customer_jwt_token(customer_id, mobile_no, device_emei_no, api_encrpted_user_id):
-    payload = {
-        'customer_id': customer_id,
-        'mobile_no': mobile_no,
-        'device_emei_no': device_emei_no,
-        'api_encrpted_user_id': api_encrpted_user_id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1),  # Token expires in 1 hour
-        'iat': datetime.datetime.utcnow()
-    }
 
-    token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-    return token
+
+@csrf_exempt
+def generate_customer_jwt_token_api(request):
+    if request.method != "POST":
+        return JsonResponse({'detail': 'Method not allowed'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+
+        required_fields = ['customer_id', 'mobile_no', 'device_emei_no', 'api_encrpted_user_id']
+        missing_fields = [field for field in required_fields if field not in data]
+
+        if missing_fields:
+            return JsonResponse({'detail': f'Missing fields: {", ".join(missing_fields)}'}, status=400)
+
+        payload = {
+            'customer_id': data['customer_id'],
+            'mobile_no': data['mobile_no'],
+            'device_emei_no': data['device_emei_no'],
+            'api_encrpted_user_id': data['api_encrpted_user_id'],
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+            'iat': datetime.datetime.utcnow()
+        }
+
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+        if isinstance(token, bytes):
+            token = token.decode('utf-8')
+
+        return JsonResponse({'token': token, 'expires_in': '1 hour'}, status=200)
+
+    except json.JSONDecodeError:
+        return JsonResponse({'detail': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'detail': f'Error generating token: {str(e)}'}, status=500)
 
 
 @method_decorator(csrf_exempt, name='dispatch')

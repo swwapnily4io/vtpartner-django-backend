@@ -40,7 +40,9 @@ urlpatterns = [
     #Upload Images
     path('upload',views.upload_image,name='upload'),
     
-    #Customer Apis with sequence
+    #JWT Token Generation
+    path('generate-customer-token', customer_login.generate_customer_jwt_token_api, name='generate_customer_token'),
+    #Validate JWT Token
     path('validate-token', customer_login.ValidateCustomerTokenView.as_view(), name='validate_customer_token'),
     #Customer Login
     path('login',customer_login.login_view,name='login'),
