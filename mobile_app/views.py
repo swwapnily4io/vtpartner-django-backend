@@ -1530,13 +1530,13 @@ def check_missing_fields(fields):
     print("missing_fields::", missing_fields)
     return missing_fields if missing_fields else None
 
-def ensure_db_connection():
-    try:
-        connection.ensure_connection()
-    except DatabaseError as e:
-        print("[DB] ❌ Connection issue detected. Closing and reconnecting.")
-        connection.close()
-        raise e  # Let caller handle it or retry if needed
+# def ensure_db_connection():
+#     try:
+#         connection.ensure_connection()
+#     except DatabaseError as e:
+#         print("[DB] ❌ Connection issue detected. Closing and reconnecting.")
+#         connection.close()
+#         raise e  # Let caller handle it or retry if needed
 
 #Common Functions 
 def select_query(query, params=None):
@@ -1557,7 +1557,7 @@ def select_query(query, params=None):
     try:
         print("Select_Query::=>", query)
         print("Params::", params)
-        ensure_db_connection()
+        # ensure_db_connection()
         with connection.cursor() as cursor:
             cursor.execute(query, params)
             result = None
@@ -1587,7 +1587,7 @@ def insert_query2(query, params=None):
     print("Executing insert query:", query)
     print("With parameters:", params)
     try:
-        ensure_db_connection()
+        # ensure_db_connection()
         with connection.cursor() as cursor:
             cursor.execute(query, params)
             
@@ -1612,7 +1612,7 @@ def update_query(query, params):
     print("update query::",query)
     print("update query params::",params)
     try:
-        ensure_db_connection()
+        # ensure_db_connection()
         with connection.cursor() as cursor:
             cursor.execute(query, params)
             return cursor.rowcount
@@ -1627,7 +1627,7 @@ def delete_query(query, params):
     print("delete query::",query)
     print("delete query params::",params)
     try:
-        ensure_db_connection()
+        # ensure_db_connection()
         with connection.cursor() as cursor:
             cursor.execute(query, params)
             return cursor.rowcount
@@ -1642,7 +1642,7 @@ def insert_query(query, params):
     print("Executing insert query:", query)
     print("With parameters:", params)
     try:
-        ensure_db_connection()
+        # ensure_db_connection()
         with connection.cursor() as cursor:
             cursor.execute(query, params)
             
