@@ -9028,7 +9028,7 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
         receiver_number = data.get("receiver_number")
         pickup_address = data.get("pickup_address")
         drop_address = data.get("drop_address")
-        server_access_token = data.get("server_access_token")
+        # server_access_token = data.get("server_access_token")
         
         coupon_applied = data.get("coupon_applied")
         coupon_id = data.get("coupon_id")
@@ -9078,7 +9078,7 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
             "receiver_number":receiver_number,
             "pickup_address":pickup_address,
             "drop_address":drop_address,
-            "server_access_token":server_access_token,
+            # "server_access_token":server_access_token,
             "is_scheduled": is_scheduled,
             "body_type": body_type
         }
@@ -9091,10 +9091,10 @@ def generate_new_goods_drivers_booking_id_get_nearby_drivers_with_fcm_token(requ
                 {"message": f"Missing required fields: {', '.join(missing_fields)}"},
                 status=400
             )
- 
+    
         if pickup_lat is None or pickup_lng is None:
             return JsonResponse({"message": "Latitude and Longitude are required"}, status=400)
-
+        server_access_token = get_inside_agent_app_firebase_access_token()
          # Process scheduled time with proper timezone awareness
         if is_scheduled and scheduled_time:
             try:
