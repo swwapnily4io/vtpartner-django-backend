@@ -816,22 +816,68 @@ scheduler.start()
 
 #To check and validate api with fcm token for customers
 def is_valid_customer_fcm_token(customer_id, fcm_token):
+    """
+    Validates customer FCM token by comparing with stored token in database.
+    
+    Args:
+        customer_id (str/int): The customer ID to check
+        fcm_token (str): The FCM token to validate
+        
+    Returns:
+        bool: True if token is valid, False otherwise
+    """
     try:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT authtoken FROM vtpartner.customers_tbl WHERE customer_id = %s",
-                [customer_id]
-            )
-            result = cursor.fetchone()
-            print(f"customer_id={customer_id}, fcm_token={fcm_token}")
-            if result:
-                stored_token = result[0]
-                print(f"Stored token: {stored_token}, Provided token: {fcm_token}")
-                return stored_token == fcm_token
+        print(f"Validating FCM token for customer_id={customer_id}")
+        
+        # Validate input parameters
+        if not customer_id or not fcm_token:
+            print("Invalid input: customer_id or fcm_token is empty")
             return False
+        
+        # Use select_query function to get the stored token
+        query = "SELECT authtoken FROM vtpartner.customers_tbl WHERE customer_id = %s"
+        params = [customer_id]
+        
+        result = select_query(query, params)
+        
+        if result and len(result) > 0:
+            stored_token = result[0][0]  # First row, first column
+            
+            # Handle None/NULL values from database
+            if stored_token is None:
+                print(f"No FCM token stored for customer_id: {customer_id}")
+                return False
+                
+            print(f"Stored token: {stored_token}, Provided token: {fcm_token}")
+            return str(stored_token).strip() == str(fcm_token).strip()
+        else:
+            print(f"No customer found with customer_id: {customer_id}")
+            return False
+            
+    except ValueError as e:
+        print(f"No data found for customer_id={customer_id}: {e}")
+        return False
     except Exception as e:
         print(f"Error checking token for customer_id={customer_id}: {e}")
         return False
+    
+# def is_valid_customer_fcm_token(customer_id, fcm_token):
+#     try:
+#         with connection.cursor() as cursor:
+#             cursor.execute(
+#                 "SELECT authtoken FROM vtpartner.customers_tbl WHERE customer_id = %s",
+#                 [customer_id]
+#             )
+#             result = cursor.fetchone()
+#             print(f"customer_id={customer_id}, fcm_token={fcm_token}")
+#             if result:
+#                 stored_token = result[0]
+#                 print(f"Stored token: {stored_token}, Provided token: {fcm_token}")
+#                 return stored_token == fcm_token
+#             return False
+#     except Exception as e:
+#         print(f"Error checking token for customer_id={customer_id}: {e}")
+#         return False
     
 #To check and validate api with fcm token for goods drivers
 def is_valid_goods_driver_fcm_token(driver_id, fcm_token):
