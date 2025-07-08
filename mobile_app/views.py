@@ -32,7 +32,7 @@ from botocore.exceptions import ClientError
 # Load environment variables from the root directory
 import logging
 # Import the new connection pool functions
-from db_connection_pool import (
+from mobile_app.db_connection_pool import (
     select_query_pool, 
     insert_query_pool, 
     update_query_pool, 
