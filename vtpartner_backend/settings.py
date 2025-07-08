@@ -193,8 +193,7 @@ DATABASES = {
             'connect_timeout': 10,
             'sslmode': 'require',
             'application_name': 'vtpartner_backend',
-            # PostgreSQL specific connection options
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            
         },
         'CONN_HEALTH_CHECKS': True,  # Enable connection health checks
     }
