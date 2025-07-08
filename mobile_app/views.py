@@ -843,7 +843,7 @@ scheduler.start()
 #         return False
 def is_valid_customer_fcm_token(customer_id, fcm_token):
     """
-    High-performance version using connection pool directly.
+    Validates customer FCM token using the common select_query function.
     
     Args:
         customer_id: The customer ID to validate
@@ -855,11 +855,11 @@ def is_valid_customer_fcm_token(customer_id, fcm_token):
     try:
         print(f"customer_id={customer_id}, fcm_token={fcm_token}")
         
-        # Use connection pool directly for maximum performance
+        # Use the common select_query function
         query = "SELECT authtoken FROM vtpartner.customers_tbl WHERE customer_id = %s"
         params = [customer_id]
         
-        result = select_query_pool(query, params)
+        result = select_query(query, params)
         
         if result:
             stored_token = result[0][0]  # Get the first column of the first row
@@ -870,14 +870,7 @@ def is_valid_customer_fcm_token(customer_id, fcm_token):
         
     except Exception as e:
         print(f"Error checking token for customer_id={customer_id}: {e}")
-        logger.error(f"Error in is_valid_customer_fcm_token_pool: {e}")
-        
-        # Fallback to Django connection if pool fails
-        try:
-            return is_valid_customer_fcm_token(customer_id, fcm_token)
-        except Exception as fallback_error:
-            logger.error(f"Fallback also failed: {fallback_error}")
-            return False
+        return False
     
 #To check and validate api with fcm token for goods drivers
 def is_valid_goods_driver_fcm_token(driver_id, fcm_token):
