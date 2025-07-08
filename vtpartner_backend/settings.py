@@ -188,9 +188,9 @@ DATABASES = {
         'PASSWORD': 'Vtpartner786',
         'HOST': 'kaps-database-1.c27aay0ieaae.us-east-1.rds.amazonaws.com',
         'PORT': '5432',
-        'CONN_MAX_AGE': 300,  # keeps DB connection alive for 5 minutes
+        'CONN_MAX_AGE': 500,  # keeps DB connection alive for 5 minutes
         'OPTIONS': {
-            'connect_timeout': 10,
+            'connect_timeout': 30,
             'sslmode': 'require',
             'application_name': 'vtpartner_backend',
             
