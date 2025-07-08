@@ -194,9 +194,9 @@ DATABASES = {
         'PASSWORD': 'Vtpartner786',
         'HOST': 'kaps-database-1.c27aay0ieaae.us-east-1.rds.amazonaws.com',
         'PORT': '5432',
-        'CONN_MAX_AGE': 600,  # Connection pooling
+        'CONN_MAX_AGE': 1000,  # Connection pooling
         'OPTIONS': {
-            'connect_timeout': 60
+            'connect_timeout': 1000
             
         }
         # 'CONN_MAX_AGE': 120,  # keeps DB connection alive for 60 seconds
