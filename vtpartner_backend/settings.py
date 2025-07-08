@@ -196,8 +196,8 @@ DATABASES = {
         'PORT': '5432',
         'CONN_MAX_AGE': 600,  # Connection pooling
         'OPTIONS': {
-            'connect_timeout': 10,
-            'MAX_CONNS': 20,
+            'connect_timeout': 60
+            
         }
         # 'CONN_MAX_AGE': 120,  # keeps DB connection alive for 60 seconds
     }
