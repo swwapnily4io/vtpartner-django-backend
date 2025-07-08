@@ -35,8 +35,6 @@ SECRET_KEY = 'django-insecure-%$w3*@00r2^t+e!q4sy-d_^!7)1j4axp=-(iigv9t*q5t*qxff
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-
-
 ALLOWED_HOSTS = [
     'vtpartner.org',
     'www.vtpartner.org',
@@ -50,17 +48,13 @@ ALLOWED_HOSTS = [
     'http://localhost:3004',
     'http://100.24.44.74/',
     '100.24.44.74',
-    'https://100.24.44.74/'
+    'https://100.24.44.74/',
     'http://44.203.96.86/',
     '44.203.96.86',
     'https://44.203.96.86/'
-    ]
-
-
-
+]
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -170,10 +164,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'vtpartner_backend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# Local DB (commented out)
 # DATABASES = {
 #         'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -185,19 +179,26 @@ WSGI_APPLICATION = 'vtpartner_backend.wsgi.application'
 #     }
 # }
 
-#AWS DB
+# AWS DB with optimized connection pooling
 DATABASES = {
-        'default': {
+    'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'kapsdb',
         'USER': 'mysuperuser',
         'PASSWORD': 'Vtpartner786',
         'HOST': 'kaps-database-1.c27aay0ieaae.us-east-1.rds.amazonaws.com',
-        'PORT': '5432'
-        # 'CONN_MAX_AGE': 120,  # keeps DB connection alive for 60 seconds
+        'PORT': '5432',
+        'CONN_MAX_AGE': 300,  # keeps DB connection alive for 5 minutes
+        'OPTIONS': {
+            'connect_timeout': 10,
+            'sslmode': 'require',
+            'application_name': 'vtpartner_backend',
+            # PostgreSQL specific connection options
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
+        'CONN_HEALTH_CHECKS': True,  # Enable connection health checks
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -217,7 +218,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
@@ -228,7 +228,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -242,11 +241,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# MEDIA_URL = 'https://vtpartner.org/media/'
-# MEDIA_ROOT = '/var/www/vtpartner/media/'
-#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
-
-
+# AWS S3 Configuration
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = 'kaps-storeage-bucket'
@@ -257,6 +252,16 @@ AWS_DEFAULT_ACL = None
 AWS_S3_VERITY = True
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
+# Database Connection Pool Configuration
+# These settings work with the custom connection pool
+DB_POOL_CONFIG = {
+    'MIN_CONNECTIONS': 5,
+    'MAX_CONNECTIONS': 20,
+    'CONNECTION_TIMEOUT': 10,
+    'HEALTH_CHECK_INTERVAL': 30,  # seconds
+}
+
+# Logging Configuration (Optional - uncomment if needed)
 # LOGGING = {
 #     'version': 1,
 #     'disable_existing_loggers': False,
@@ -272,15 +277,15 @@ DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 #     },
 #     'handlers': {
 #         'file': {
-#             'level': 'DEBUG', # Set to INFO to capture info logs
+#             'level': 'INFO',
 #             'class': 'logging.handlers.RotatingFileHandler',
 #             'filename': 'application.log',
-#             'maxBytes': 1024*1024*1,  # 1 MB
-#             'backupCount': 3,
+#             'maxBytes': 1024*1024*5,  # 5 MB
+#             'backupCount': 5,
 #             'formatter': 'verbose',
 #         },
 #         'console': {
-#             'level': 'DEBUG',
+#             'level': 'INFO',
 #             'class': 'logging.StreamHandler',
 #             'formatter': 'simple',
 #         },
@@ -288,13 +293,13 @@ DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 #     'loggers': {
 #         'django': {
 #             'handlers': ['file', 'console'],
-#             'level': 'DEBUG',  # Set to INFO to capture info logs
+#             'level': 'INFO',
 #             'propagate': True,
 #         },
-#         'ApplicationLogger': {  # Add your custom logger
+#         'db_connection_pool': {
 #             'handlers': ['file', 'console'],
-#             'level': 'DEBUG', # Set to INFO to capture info logs
+#             'level': 'INFO',
 #             'propagate': True,
 #         },
 #     },
-# }
+# } 

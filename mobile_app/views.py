@@ -31,6 +31,15 @@ import boto3
 from botocore.exceptions import ClientError
 # Load environment variables from the root directory
 import logging
+# Import the new connection pool functions
+from db_connection_pool import (
+    select_query_pool, 
+    insert_query_pool, 
+    update_query_pool, 
+    delete_query_pool,
+    get_pool_status,
+    database_transaction
+)
 
 logger = logging.getLogger('ApplicationLogger')
 
@@ -1541,7 +1550,7 @@ def check_missing_fields(fields):
 #Common Functions 
 def select_query(query, params=None):
     """
-    Executes a parameterized SQL select query and returns the result.
+    Executes a parameterized SQL select query and returns the result using Django's connection.
     
     Args:
         query (str): The SQL query to execute.
@@ -1557,48 +1566,43 @@ def select_query(query, params=None):
     try:
         print("Select_Query::=>", query)
         print("Params::", params)
-        # ensure_db_connection()
+        
         with connection.cursor() as cursor:
             cursor.execute(query, params)
-            result = None
             result = cursor.fetchall()
-
-            # if result == []:
-            #     raise ValueError("No Data Found")  # Custom error when no results are found
             print("result::",result)
             return result
 
     except ValueError as e:
         print(f"Error: {e}")
-        raise  # Re-raise to be handled by calling function
+        raise
     
     except DatabaseError as e:
         print("DatabaseError executing query:", e)
-        raise  # Re-raise to be handled by calling function
+        raise
 
     except Exception as e:
         print("Unexpected error:", e)
-        raise  # Re-raise for unexpected errors
-    
+        raise
+
 def insert_query2(query, params=None):
+    """Original insert query function with RETURNING clause support"""
     if params is None:
-        params = ()  # Default to empty tuple if no params are passed
+        params = ()
     
     print("Executing insert query:", query)
     print("With parameters:", params)
     try:
-        # ensure_db_connection()
         with connection.cursor() as cursor:
             cursor.execute(query, params)
             
-            # If the query has a RETURNING clause, fetch the returned rows
             if cursor.description:
-                result = cursor.fetchall()  # Fetch all returned rows if any
-                connection.commit()  # Commit after insertion
+                result = cursor.fetchall()
+                connection.commit()
                 return result
             else:
-                connection.commit()  # Commit if only affecting rows
-                return cursor.rowcount  # Return number of affected rows
+                connection.commit()
+                return cursor.rowcount
     
     except IntegrityError as e:
         print("Integrity Error: Failed to insert data due to integrity error", e)
@@ -1607,12 +1611,11 @@ def insert_query2(query, params=None):
         print("General Error executing query:", e)
         raise
 
-
 def update_query(query, params):
+    """Original update query function"""
     print("update query::",query)
     print("update query params::",params)
     try:
-        # ensure_db_connection()
         with connection.cursor() as cursor:
             cursor.execute(query, params)
             return cursor.rowcount
@@ -1624,10 +1627,10 @@ def update_query(query, params):
         raise
 
 def delete_query(query, params):
+    """Original delete query function"""
     print("delete query::",query)
     print("delete query params::",params)
     try:
-        # ensure_db_connection()
         with connection.cursor() as cursor:
             cursor.execute(query, params)
             return cursor.rowcount
@@ -1639,21 +1642,20 @@ def delete_query(query, params):
         raise
 
 def insert_query(query, params):
+    """Original insert query function"""
     print("Executing insert query:", query)
     print("With parameters:", params)
     try:
-        # ensure_db_connection()
         with connection.cursor() as cursor:
             cursor.execute(query, params)
             
-            # If the query has a RETURNING clause, fetch the returned rows
             if cursor.description:
-                result = cursor.fetchall()  # Fetch all returned rows if any
-                connection.commit()  # Commit after insertion
+                result = cursor.fetchall()
+                connection.commit()
                 return result
             else:
-                connection.commit()  # Commit if only affecting rows
-                return cursor.rowcount  # Return number of affected rows
+                connection.commit()
+                return cursor.rowcount
     
     except IntegrityError as e:
         print("Integrity Error: Failed to insert data due to integrity error", e)
@@ -1661,6 +1663,361 @@ def insert_query(query, params):
     except Exception as e:
         print("General Error executing query:", e)
         raise
+
+# NEW ENHANCED FUNCTIONS WITH CONNECTION POOLING
+def select_query_enhanced(query, params=None, use_pool=True):
+    """
+    Enhanced select query with option to use connection pool or Django's default connection
+    
+    Args:
+        query (str): The SQL query to execute
+        params (list or tuple): Parameters to substitute into the query
+        use_pool (bool): Whether to use connection pool (True) or Django connection (False)
+        
+    Returns:
+        list: Rows from the query result
+    """
+    if use_pool:
+        try:
+            return select_query_pool(query, params)
+        except Exception as e:
+            logger.error(f"Connection pool failed, falling back to Django connection: {e}")
+            return select_query(query, params)
+    else:
+        return select_query(query, params)
+
+def insert_query_enhanced(query, params=None, use_pool=True):
+    """
+    Enhanced insert query with option to use connection pool or Django's default connection
+    
+    Args:
+        query (str): The SQL query to execute
+        params (list or tuple): Parameters to substitute into the query
+        use_pool (bool): Whether to use connection pool (True) or Django connection (False)
+        
+    Returns:
+        int or list: Number of affected rows or returned data if RETURNING clause
+    """
+    if use_pool:
+        try:
+            return insert_query_pool(query, params)
+        except Exception as e:
+            logger.error(f"Connection pool failed, falling back to Django connection: {e}")
+            return insert_query2(query, params)
+    else:
+        return insert_query2(query, params)
+
+def update_query_enhanced(query, params=None, use_pool=True):
+    """
+    Enhanced update query with option to use connection pool or Django's default connection
+    
+    Args:
+        query (str): The SQL query to execute
+        params (list or tuple): Parameters to substitute into the query
+        use_pool (bool): Whether to use connection pool (True) or Django connection (False)
+        
+    Returns:
+        int: Number of affected rows
+    """
+    if use_pool:
+        try:
+            return update_query_pool(query, params)
+        except Exception as e:
+            logger.error(f"Connection pool failed, falling back to Django connection: {e}")
+            return update_query(query, params)
+    else:
+        return update_query(query, params)
+
+def delete_query_enhanced(query, params=None, use_pool=True):
+    """
+    Enhanced delete query with option to use connection pool or Django's default connection
+    
+    Args:
+        query (str): The SQL query to execute
+        params (list or tuple): Parameters to substitute into the query
+        use_pool (bool): Whether to use connection pool (True) or Django connection (False)
+        
+    Returns:
+        int: Number of affected rows
+    """
+    if use_pool:
+        try:
+            return delete_query_pool(query, params)
+        except Exception as e:
+            logger.error(f"Connection pool failed, falling back to Django connection: {e}")
+            return delete_query(query, params)
+    else:
+        return delete_query(query, params)
+
+# BATCH OPERATIONS FOR BETTER PERFORMANCE
+def batch_insert(table, columns, data_rows, batch_size=1000):
+    """
+    Perform batch insert operations using connection pool
+    
+    Args:
+        table (str): Table name
+        columns (list): List of column names
+        data_rows (list): List of tuples containing data
+        batch_size (int): Number of rows to insert in each batch
+        
+    Returns:
+        int: Total number of rows inserted
+    """
+    total_inserted = 0
+    
+    # Create the SQL query template
+    placeholders = ', '.join(['%s'] * len(columns))
+    columns_str = ', '.join(columns)
+    query = f"INSERT INTO {table} ({columns_str}) VALUES ({placeholders})"
+    
+    # Process in batches
+    for i in range(0, len(data_rows), batch_size):
+        batch = data_rows[i:i + batch_size]
+        
+        try:
+            with database_transaction() as conn:
+                with conn.cursor() as cursor:
+                    for row in batch:
+                        cursor.execute(query, row)
+                    total_inserted += len(batch)
+                    logger.info(f"Inserted batch of {len(batch)} rows")
+        except Exception as e:
+            logger.error(f"Error in batch insert: {e}")
+            raise
+    
+    return total_inserted
+
+def execute_transaction(queries_with_params):
+    """
+    Execute multiple queries in a single transaction
+    
+    Args:
+        queries_with_params (list): List of tuples (query, params)
+        
+    Returns:
+        list: Results from all queries
+    """
+    results = []
+    
+    try:
+        with database_transaction() as conn:
+            with conn.cursor() as cursor:
+                for query, params in queries_with_params:
+                    cursor.execute(query, params or ())
+                    
+                    if cursor.description:
+                        results.append(cursor.fetchall())
+                    else:
+                        results.append(cursor.rowcount)
+                        
+        return results
+    except Exception as e:
+        logger.error(f"Error in transaction: {e}")
+        raise
+
+# UTILITY FUNCTIONS
+def get_database_stats():
+    """
+    Get database connection statistics
+    
+    Returns:
+        dict: Database statistics including pool status
+    """
+    try:
+        pool_status = get_pool_status()
+        
+        # Get Django connection info
+        django_queries = len(connection.queries) if hasattr(connection, 'queries') else 0
+        
+        return {
+            'pool_status': pool_status,
+            'django_queries_count': django_queries,
+            'django_connection_vendor': connection.vendor,
+        }
+    except Exception as e:
+        logger.error(f"Error getting database stats: {e}")
+        return {'error': str(e)}
+
+def test_connection_pool():
+    """
+    Test the connection pool functionality
+    
+    Returns:
+        dict: Test results
+    """
+    try:
+        # Test select query
+        result = select_query_pool("SELECT 1 as test_column")
+        
+        # Test pool status
+        status = get_pool_status()
+        
+        return {
+            'test_passed': True,
+            'test_result': result,
+            'pool_status': status,
+            'message': 'Connection pool is working correctly'
+        }
+    except Exception as e:
+        return {
+            'test_passed': False,
+            'error': str(e),
+            'message': 'Connection pool test failed'
+        }
+
+# CONFIGURATION FUNCTIONS
+def set_pool_preference(use_pool_by_default=True):
+    """
+    Set the default preference for using connection pool
+    
+    Args:
+        use_pool_by_default (bool): Whether to use pool by default
+    """
+    global USE_POOL_BY_DEFAULT
+    USE_POOL_BY_DEFAULT = use_pool_by_default
+
+# Global setting for pool preference
+USE_POOL_BY_DEFAULT = True
+
+# CONVENIENCE FUNCTIONS THAT USE GLOBAL SETTING
+def select_query_auto(query, params=None):
+    """Select query using global pool preference"""
+    return select_query_enhanced(query, params, USE_POOL_BY_DEFAULT)
+
+def insert_query_auto(query, params=None):
+    """Insert query using global pool preference"""
+    return insert_query_enhanced(query, params, USE_POOL_BY_DEFAULT)
+
+def update_query_auto(query, params=None):
+    """Update query using global pool preference"""
+    return update_query_enhanced(query, params, USE_POOL_BY_DEFAULT)
+
+def delete_query_auto(query, params=None):
+    """Delete query using global pool preference"""
+    return delete_query_enhanced(query, params, USE_POOL_BY_DEFAULT) 
+
+# def select_query(query, params=None):
+#     """
+#     Executes a parameterized SQL select query and returns the result.
+    
+#     Args:
+#         query (str): The SQL query to execute.
+#         params (list or tuple): Parameters to substitute into the query.
+
+#     Returns:
+#         list: Rows from the query result.
+
+#     Raises:
+#         ValueError: If no data is found.
+#         DatabaseError: For database-specific errors.
+#     """
+#     try:
+#         print("Select_Query::=>", query)
+#         print("Params::", params)
+#         # ensure_db_connection()
+#         with connection.cursor() as cursor:
+#             cursor.execute(query, params)
+#             result = None
+#             result = cursor.fetchall()
+
+#             # if result == []:
+#             #     raise ValueError("No Data Found")  # Custom error when no results are found
+#             print("result::",result)
+#             return result
+
+#     except ValueError as e:
+#         print(f"Error: {e}")
+#         raise  # Re-raise to be handled by calling function
+    
+#     except DatabaseError as e:
+#         print("DatabaseError executing query:", e)
+#         raise  # Re-raise to be handled by calling function
+
+#     except Exception as e:
+#         print("Unexpected error:", e)
+#         raise  # Re-raise for unexpected errors
+    
+# def insert_query2(query, params=None):
+#     if params is None:
+#         params = ()  # Default to empty tuple if no params are passed
+    
+#     print("Executing insert query:", query)
+#     print("With parameters:", params)
+#     try:
+#         # ensure_db_connection()
+#         with connection.cursor() as cursor:
+#             cursor.execute(query, params)
+            
+#             # If the query has a RETURNING clause, fetch the returned rows
+#             if cursor.description:
+#                 result = cursor.fetchall()  # Fetch all returned rows if any
+#                 connection.commit()  # Commit after insertion
+#                 return result
+#             else:
+#                 connection.commit()  # Commit if only affecting rows
+#                 return cursor.rowcount  # Return number of affected rows
+    
+#     except IntegrityError as e:
+#         print("Integrity Error: Failed to insert data due to integrity error", e)
+#         raise
+#     except Exception as e:
+#         print("General Error executing query:", e)
+#         raise
+
+
+# def update_query(query, params):
+#     print("update query::",query)
+#     print("update query params::",params)
+#     try:
+#         # ensure_db_connection()
+#         with connection.cursor() as cursor:
+#             cursor.execute(query, params)
+#             return cursor.rowcount
+#     except IntegrityError as e:
+#         print("Integrity Error: Failed to update_query due to integrity error", e)
+#         raise
+#     except Exception as e:
+#         print("General Error executing update_query:", e)
+#         raise
+
+# def delete_query(query, params):
+#     print("delete query::",query)
+#     print("delete query params::",params)
+#     try:
+#         # ensure_db_connection()
+#         with connection.cursor() as cursor:
+#             cursor.execute(query, params)
+#             return cursor.rowcount
+#     except IntegrityError as e:
+#         print("Integrity Error: Failed to delete_query data due to integrity error", e)
+#         raise
+#     except Exception as e:
+#         print("General Error executing delete_query:", e)
+#         raise
+
+# def insert_query(query, params):
+#     print("Executing insert query:", query)
+#     print("With parameters:", params)
+#     try:
+#         # ensure_db_connection()
+#         with connection.cursor() as cursor:
+#             cursor.execute(query, params)
+            
+#             # If the query has a RETURNING clause, fetch the returned rows
+#             if cursor.description:
+#                 result = cursor.fetchall()  # Fetch all returned rows if any
+#                 connection.commit()  # Commit after insertion
+#                 return result
+#             else:
+#                 connection.commit()  # Commit if only affecting rows
+#                 return cursor.rowcount  # Return number of affected rows
+    
+#     except IntegrityError as e:
+#         print("Integrity Error: Failed to insert data due to integrity error", e)
+#         raise
+#     except Exception as e:
+#         print("General Error executing query:", e)
+#         raise
 
 @csrf_exempt
 def get_server_key_token():
