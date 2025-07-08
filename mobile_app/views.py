@@ -824,23 +824,60 @@ scheduler.add_job(run_all_scheduled_booking_processors, 'interval', minutes=1)
 scheduler.start()
 
 #To check and validate api with fcm token for customers
+# def is_valid_customer_fcm_token(customer_id, fcm_token):
+#     try:
+#         with connection.cursor() as cursor:
+#             cursor.execute(
+#                 "SELECT authtoken FROM vtpartner.customers_tbl WHERE customer_id = %s",
+#                 [customer_id]
+#             )
+#             result = cursor.fetchone()
+#             print(f"customer_id={customer_id}, fcm_token={fcm_token}")
+#             if result:
+#                 stored_token = result[0]
+#                 print(f"Stored token: {stored_token}, Provided token: {fcm_token}")
+#                 return stored_token == fcm_token
+#             return False
+#     except Exception as e:
+#         print(f"Error checking token for customer_id={customer_id}: {e}")
+#         return False
 def is_valid_customer_fcm_token(customer_id, fcm_token):
+    """
+    High-performance version using connection pool directly.
+    
+    Args:
+        customer_id: The customer ID to validate
+        fcm_token: The FCM token to validate
+        
+    Returns:
+        bool: True if token is valid, False otherwise
+    """
     try:
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT authtoken FROM vtpartner.customers_tbl WHERE customer_id = %s",
-                [customer_id]
-            )
-            result = cursor.fetchone()
-            print(f"customer_id={customer_id}, fcm_token={fcm_token}")
-            if result:
-                stored_token = result[0]
-                print(f"Stored token: {stored_token}, Provided token: {fcm_token}")
-                return stored_token == fcm_token
-            return False
+        print(f"customer_id={customer_id}, fcm_token={fcm_token}")
+        
+        # Use connection pool directly for maximum performance
+        query = "SELECT authtoken FROM vtpartner.customers_tbl WHERE customer_id = %s"
+        params = [customer_id]
+        
+        result = select_query_pool(query, params)
+        
+        if result:
+            stored_token = result[0][0]  # Get the first column of the first row
+            print(f"Stored token: {stored_token}, Provided token: {fcm_token}")
+            return stored_token == fcm_token
+        
+        return False
+        
     except Exception as e:
         print(f"Error checking token for customer_id={customer_id}: {e}")
-        return False
+        logger.error(f"Error in is_valid_customer_fcm_token_pool: {e}")
+        
+        # Fallback to Django connection if pool fails
+        try:
+            return is_valid_customer_fcm_token(customer_id, fcm_token)
+        except Exception as fallback_error:
+            logger.error(f"Fallback also failed: {fallback_error}")
+            return False
     
 #To check and validate api with fcm token for goods drivers
 def is_valid_goods_driver_fcm_token(driver_id, fcm_token):
