@@ -842,7 +842,7 @@ scheduler.start()
 #         print(f"Error checking token for customer_id={customer_id}: {e}")
 #         return False
 def is_valid_customer_fcm_token(customer_id, fcm_token):
-    return True
+    
     """
     Validates customer FCM token using the common select_query function.
     
@@ -1581,7 +1581,7 @@ def check_missing_fields(fields):
 #Common Functions 
 def select_query(query, params=None):
     """
-    Executes a parameterized SQL select query and returns the result using Django's connection.
+    Executes a parameterized SQL select query and returns the result using connection pool.
     
     Args:
         query (str): The SQL query to execute.
@@ -1598,11 +1598,11 @@ def select_query(query, params=None):
         print("Select_Query::=>", query)
         print("Params::", params)
         
-        with connection.cursor() as cursor:
-            cursor.execute(query, params)
-            result = cursor.fetchall()
-            print("result::",result)
-            return result
+        # Use connection pool instead of Django's connection for better performance
+        result = select_query_pool(query, params)
+        
+        print("result::", result)
+        return result
 
     except ValueError as e:
         print(f"Error: {e}")
