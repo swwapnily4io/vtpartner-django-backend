@@ -32,27 +32,47 @@ class DatabaseConnectionPool:
             self.initialized = True
             self.pool = None
             self.pool_creation_attempts = 0
-            self.max_pool_creation_attempts = 3
+            self.max_pool_creation_attempts = 2  # Reduced attempts
+            self.pool_disabled = False  # Flag to disable pool temporarily
+            self.last_pool_attempt = 0  # Track last attempt time
             self.create_pool()
     
     def create_pool(self):
         """Create a connection pool using settings from Django settings with retry logic"""
+        current_time = time.time()
+        
+        # Don't attempt to create pool if recently failed
+        if self.pool_disabled and (current_time - self.last_pool_attempt) < 300:  # 5 minutes
+            logger.info("Pool creation disabled temporarily due to recent failures")
+            return
+        
         while self.pool_creation_attempts < self.max_pool_creation_attempts:
             try:
                 db_config = settings.DATABASES['default']
                 
-                # Enhanced connection pool configuration
+                # Test DNS resolution first
+                import socket
+                try:
+                    socket.gethostbyname(db_config['HOST'])
+                except socket.gaierror as e:
+                    logger.error(f"DNS resolution failed for {db_config['HOST']}: {e}")
+                    self.pool_disabled = True
+                    self.last_pool_attempt = current_time
+                    logger.warning("Pool disabled due to DNS resolution failure")
+                    return
+                
+                # Enhanced connection pool configuration with reduced size for stability
                 self.pool = psycopg2.pool.ThreadedConnectionPool(
-                    minconn=10,     # Increased minimum connections
-                    maxconn=50,     # Increased maximum connections
+                    minconn=3,      # Reduced minimum connections
+                    maxconn=20,     # Reduced maximum connections for stability
                     host=db_config['HOST'],
                     port=db_config['PORT'],
                     database=db_config['NAME'],
                     user=db_config['USER'],
                     password=db_config['PASSWORD'],
                     # Enhanced connection timeout settings
-                    connect_timeout=30,
-                    keepalives_idle=600,
+                    connect_timeout=15,  # Reduced timeout
+                    keepalives_idle=300,  # Reduced keepalive
                     keepalives_interval=30,
                     keepalives_count=3,
                     # Additional connection parameters
@@ -62,15 +82,27 @@ class DatabaseConnectionPool:
                 
                 logger.info(f"Database connection pool created successfully with {self.pool.minconn}-{self.pool.maxconn} connections")
                 self.pool_creation_attempts = 0
+                self.pool_disabled = False
+                self.last_pool_attempt = current_time
                 return
                 
             except Exception as e:
                 self.pool_creation_attempts += 1
+                self.last_pool_attempt = current_time
                 logger.error(f"Error creating database connection pool (attempt {self.pool_creation_attempts}): {e}")
+                
+                # Check if it's a DNS or network issue
+                if "translate host name" in str(e) or "Name or service not known" in str(e):
+                    logger.warning("DNS or network issue detected, disabling pool temporarily")
+                    self.pool_disabled = True
+                    return
+                    
                 if self.pool_creation_attempts >= self.max_pool_creation_attempts:
                     logger.critical("Failed to create connection pool after maximum attempts")
-                    raise
-                time.sleep(2 ** self.pool_creation_attempts)  # Exponential backoff
+                    self.pool_disabled = True
+                    return  # Don't raise exception, let fallback handle it
+                    
+                time.sleep(min(2 ** self.pool_creation_attempts, 10))  # Capped exponential backoff
     
     def recreate_pool(self):
         """Recreate the connection pool if it becomes unusable"""
@@ -86,18 +118,26 @@ class DatabaseConnectionPool:
         self.create_pool()
     
     @contextmanager
-    def get_connection(self, timeout=30, retry_count=3):
+    def get_connection(self, timeout=15, retry_count=2):
         """
         Context manager to get a connection from the pool with timeout and retry logic
         """
+        # Check if pool is disabled
+        if self.pool_disabled:
+            raise Exception("Connection pool is disabled due to network issues")
+        
         connection = None
         attempt = 0
         
         while attempt < retry_count:
             try:
                 if not self.pool:
-                    logger.warning("Pool is None, recreating...")
-                    self.recreate_pool()
+                    logger.warning("Pool is None, attempting to recreate...")
+                    self.create_pool()
+                    
+                    # If still no pool (due to DNS issues), raise exception
+                    if not self.pool:
+                        raise Exception("Unable to create connection pool")
                 
                 # Get connection from pool with timeout
                 connection = self.pool.getconn()
@@ -124,21 +164,23 @@ class DatabaseConnectionPool:
                 if connection:
                     try:
                         connection.rollback()
-                        self.pool.putconn(connection, close=True)
+                        if self.pool:
+                            self.pool.putconn(connection, close=True)
                     except:
                         pass
                     connection = None
                 
                 if attempt >= retry_count:
                     logger.error(f"Failed to get connection after {retry_count} attempts")
-                    # If pool is exhausted, try to recreate it
-                    if "pool exhausted" in str(e).lower():
-                        logger.warning("Pool exhausted, attempting to recreate pool")
-                        self.recreate_pool()
+                    # If pool is exhausted or network issue, disable temporarily
+                    if "pool exhausted" in str(e).lower() or "translate host name" in str(e).lower():
+                        logger.warning("Pool issue detected, disabling temporarily")
+                        self.pool_disabled = True
+                        self.last_pool_attempt = time.time()
                     raise
                 
                 # Wait before retrying with jitter
-                wait_time = min(2 ** attempt, 10) + random.uniform(0, 1)
+                wait_time = min(2 ** attempt, 5) + random.uniform(0, 0.5)
                 time.sleep(wait_time)
         
         # This should never be reached, but just in case
