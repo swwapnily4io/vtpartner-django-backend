@@ -122,8 +122,8 @@ class HighPerformanceConnectionPool:
             
             # Optimized pool configuration for high throughput
             self.pool = psycopg2.pool.ThreadedConnectionPool(
-                minconn=10,     # Higher minimum for immediate availability
-                maxconn=50,     # Higher maximum for peak load
+                minconn=50,     # Higher minimum for immediate availability
+                maxconn=500,     # Higher maximum for peak load
                 host=db_config['HOST'],
                 port=db_config['PORT'],
                 database=db_config['NAME'],
