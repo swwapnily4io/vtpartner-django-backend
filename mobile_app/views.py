@@ -1579,13 +1579,14 @@ def check_missing_fields(fields):
 #         raise e  # Let caller handle it or retry if needed
 
 #Common Functions 
-def select_query(query, params=None):
+def select_query(query, params=None, max_retries=2):
     """
-    Executes a parameterized SQL select query and returns the result using connection pool.
+    Executes a parameterized SQL select query with fallback to Django's connection.
     
     Args:
         query (str): The SQL query to execute.
         params (list or tuple): Parameters to substitute into the query.
+        max_retries (int): Maximum number of retries for connection pool
 
     Returns:
         list: Rows from the query result.
@@ -1594,15 +1595,30 @@ def select_query(query, params=None):
         ValueError: If no data is found.
         DatabaseError: For database-specific errors.
     """
+    print("Select_Query::=>", query)
+    print("Params::", params)
+    
+    # First try connection pool with limited retries
+    for attempt in range(max_retries):
+        try:
+            result = select_query_pool(query, params, timeout=15, retry_count=1)
+            print("result::", result)
+            return result
+        except Exception as e:
+            logger.warning(f"Connection pool attempt {attempt + 1} failed: {e}")
+            if attempt == max_retries - 1:
+                logger.info("Connection pool exhausted, falling back to Django connection")
+                break
+            time.sleep(0.5)  # Brief delay before retry
+    
+    # Fallback to Django's connection
     try:
-        print("Select_Query::=>", query)
-        print("Params::", params)
-        
-        # Use connection pool instead of Django's connection for better performance
-        result = select_query_pool(query, params)
-        
-        print("result::", result)
-        return result
+        logger.info("Using Django's default connection as fallback")
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+            print("result::", result)
+            return result
 
     except ValueError as e:
         print(f"Error: {e}")
@@ -1613,6 +1629,8 @@ def select_query(query, params=None):
         raise
 
     except Exception as e:
+        print("Unexpected error:", e)
+        raise
         print("Unexpected error:", e)
         raise
 
