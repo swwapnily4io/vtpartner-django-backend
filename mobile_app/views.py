@@ -842,7 +842,7 @@ scheduler.start()
 #         print(f"Error checking token for customer_id={customer_id}: {e}")
 #         return False
 def is_valid_customer_fcm_token(customer_id, fcm_token):
-    
+    return True
     """
     Validates customer FCM token using the common select_query function.
     
