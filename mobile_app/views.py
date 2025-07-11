@@ -26308,6 +26308,73 @@ def get_coins_history(request):
         "status": "error"
     }, status=405)
 
+@csrf_exempt
+def get_todays_scheduled_bookings(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            customer_id = data.get('customer_id')
+            
+            # Validate customer_id
+            if not customer_id:
+                return JsonResponse({
+                    "message": "Customer ID is required",
+                    "status": "error"
+                }, status=400)
+            
+            query = """
+                SELECT booking_id, scheduled_time, driver_id 
+                FROM vtpartner.bookings_tbl 
+                WHERE booking_date = CURRENT_DATE 
+                AND is_scheduled = 't' 
+                AND customer_id = %s 
+                ORDER BY booking_id DESC
+            """
+            
+            result = select_query(query, [customer_id])
+            
+            if not result:
+                return JsonResponse({
+                    "message": "No Scheduled Bookings Found for today",
+                    "status": "success",
+                    "results": []
+                }, status=200)
+            
+            # Process the results - this was missing in your original code
+            scheduled_bookings = []
+            for row in result:
+                booking_data = {
+                    "booking_id": row[0],
+                    "scheduled_time": str(row[1]) if row[1] else None,
+                    "driver_id": row[2] if row[2] else None
+                }
+                scheduled_bookings.append(booking_data)
+            
+            return JsonResponse({
+                "status": "success",
+                "message": f"Found {len(scheduled_bookings)} scheduled booking(s) for today",
+                "results": scheduled_bookings,
+                "count": len(scheduled_bookings)
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                "message": "Invalid JSON in request body",
+                "status": "error"
+            }, status=400)
+        except Exception as err:
+            print("Error executing query:", err)
+            return JsonResponse({
+                "message": "Internal Server Error",
+                "status": "error",
+                "error": str(err)
+            }, status=500)
+    
+    return JsonResponse({
+        "message": "Method not allowed",
+        "status": "error"
+    }, status=405) 
+
 # from drf_yasg import openapi
 # from rest_framework.response import Response
 # from rest_framework.views import APIView

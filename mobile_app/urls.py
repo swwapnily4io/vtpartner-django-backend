@@ -584,4 +584,7 @@ urlpatterns = [
     
     path('handyman_wallet_details', views.handyman_wallet_details, name='handyman_wallet_details'),
     
+    
+    path('get_todays_scheduled_bookings', views.get_todays_scheduled_bookings, name='get_todays_scheduled_bookings'),
+    
 ]
