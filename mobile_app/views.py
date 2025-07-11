@@ -26325,7 +26325,7 @@ def get_todays_scheduled_bookings(request):
             query = """
                 SELECT booking_id, scheduled_time, driver_id 
                 FROM vtpartner.bookings_tbl 
-                WHERE booking_date = CURRENT_DATE 
+                WHERE booking_date = '2025-07-04' 
                 AND is_scheduled = 't' 
                 AND customer_id = %s 
                 ORDER BY booking_id DESC
