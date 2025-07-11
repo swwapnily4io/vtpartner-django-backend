@@ -7209,7 +7209,7 @@ def get_scheduled_bookings(request):
                     'goods' as category_type,
                     '1' as category_id,
                     scheduled_bookings_tbl.schedule_id, 
-                    scheduled_bookings_tbl.scheduled_time, 
+                    bookings_tbl.scheduled_time, 
                     scheduled_bookings_tbl.scheduled_date
                 FROM vtpartner.bookings_tbl
                 JOIN vtpartner.scheduled_bookings_tbl ON scheduled_bookings_tbl.booking_id = bookings_tbl.booking_id
