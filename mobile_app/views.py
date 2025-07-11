@@ -1983,219 +1983,7 @@ def check_missing_fields(fields):
 #     return delete_query_enhanced(query, params, USE_POOL_BY_DEFAULT) 
 
 
-from mobile_app.high_performance_db import( execute_raw_query )
-
-def select_query(query, params=None):
-    """
-    Executes a parameterized SQL select query and returns the result.
-    
-    Args:
-        query (str): The SQL query to execute.
-        params (list or tuple): Parameters to substitute into the query.
-
-    Returns:
-        list: Rows from the query result.
-
-    Raises:
-        ValueError: If no data is found.
-        DatabaseError: For database-specific errors.
-    """
-    try:
-        print("Select_Query::=>", query)
-        print("Params::", params)
-        
-        # Use high-performance execution with caching
-        result = execute_raw_query(
-            query=query,
-            params=tuple(params) if params else None,
-            fetch_type='all',
-            use_cache=True,
-            cache_ttl=300
-        )
-        
-        # Convert to list of tuples (matching original behavior)
-        if result.data:
-            # Convert dict rows to tuples for backward compatibility
-            tuple_result = []
-            for row in result.data:
-                if isinstance(row, dict):
-                    tuple_result.append(tuple(row.values()))
-                else:
-                    tuple_result.append(row)
-            print("result::", tuple_result)
-            return tuple_result
-        else:
-            print("result::", [])
-            return []
-
-    except ValueError as e:
-        print(f"Error: {e}")
-        raise  # Re-raise to be handled by calling function
-    
-    except DatabaseError as e:
-        print("DatabaseError executing query:", e)
-        raise  # Re-raise to be handled by calling function
-
-    except Exception as e:
-        print("Unexpected error:", e)
-        raise  # Re-raise for unexpected errors
-
-def insert_query2(query, params=None):
-    """
-    Execute INSERT query with RETURNING clause support
-    
-    Args:
-        query (str): INSERT SQL query
-        params (list or tuple): Parameters to substitute into the query
-        
-    Returns:
-        list or int: Returned rows if RETURNING clause, otherwise rowcount
-    """
-    if params is None:
-        params = ()  # Default to empty tuple if no params are passed
-    
-    print("Executing insert query:", query)
-    print("With parameters:", params)
-    
-    try:
-        # Use high-performance execution
-        result = execute_raw_query(
-            query=query,
-            params=tuple(params) if params else None,
-            fetch_type='all',
-            use_cache=False,  # Don't cache INSERT queries
-            timeout=30
-        )
-        
-        # If the query has a RETURNING clause, return the fetched rows
-        if result.data:
-            # Convert dict rows to tuples for backward compatibility
-            tuple_result = []
-            for row in result.data:
-                if isinstance(row, dict):
-                    tuple_result.append(tuple(row.values()))
-                else:
-                    tuple_result.append(row)
-            return tuple_result
-        else:
-            return result.row_count  # Return number of affected rows
-    
-    except IntegrityError as e:
-        print("Integrity Error: Failed to insert data due to integrity error", e)
-        raise
-    except Exception as e:
-        print("General Error executing query:", e)
-        raise
-
-def update_query(query, params):
-    """
-    Execute UPDATE query and return affected row count
-    
-    Args:
-        query (str): UPDATE SQL query
-        params (list or tuple): Parameters to substitute into the query
-        
-    Returns:
-        int: Number of affected rows
-    """
-    print("update query::", query)
-    print("update query params::", params)
-    
-    try:
-        # Use high-performance execution
-        result = execute_raw_query(
-            query=query,
-            params=tuple(params) if params else None,
-            fetch_type='none',
-            use_cache=False,  # Don't cache UPDATE queries
-            timeout=30
-        )
-        
-        return result.row_count
-        
-    except IntegrityError as e:
-        print("Integrity Error: Failed to update_query due to integrity error", e)
-        raise
-    except Exception as e:
-        print("General Error executing update_query:", e)
-        raise
-
-def delete_query(query, params):
-    """
-    Execute DELETE query and return affected row count
-    
-    Args:
-        query (str): DELETE SQL query
-        params (list or tuple): Parameters to substitute into the query
-        
-    Returns:
-        int: Number of affected rows
-    """
-    print("delete query::", query)
-    print("delete query params::", params)
-    
-    try:
-        # Use high-performance execution
-        result = execute_raw_query(
-            query=query,
-            params=tuple(params) if params else None,
-            fetch_type='none',
-            use_cache=False,  # Don't cache DELETE queries
-            timeout=30
-        )
-        
-        return result.row_count
-        
-    except IntegrityError as e:
-        print("Integrity Error: Failed to delete_query data due to integrity error", e)
-        raise
-    except Exception as e:
-        print("General Error executing delete_query:", e)
-        raise
-
-def insert_query(query, params):
-    """
-    Execute INSERT query with RETURNING clause support
-    
-    Args:
-        query (str): INSERT SQL query
-        params (list or tuple): Parameters to substitute into the query
-        
-    Returns:
-        list or int: Returned rows if RETURNING clause, otherwise rowcount
-    """
-    print("Executing insert query:", query)
-    print("With parameters:", params)
-    
-    try:
-        # Use high-performance execution
-        result = execute_raw_query(
-            query=query,
-            params=tuple(params) if params else None,
-            fetch_type='all',
-            use_cache=False,  # Don't cache INSERT queries
-            timeout=30
-        )
-        
-        # If the query has a RETURNING clause, return the fetched rows
-        if result.data:
-            # Convert dict rows to tuples for backward compatibility
-            tuple_result = []
-            for row in result.data:
-                if isinstance(row, dict):
-                    tuple_result.append(tuple(row.values()))
-                else:
-                    tuple_result.append(row)
-            return tuple_result
-        else:
-            return result.row_count  # Return number of affected rows
-    
-    except IntegrityError as e:
-        print("Integrity Error: Failed to insert data due to integrity error", e)
-        raise
-    except Exception as e:
-        print("General Error executing query:", e)
-        raise
+# from mobile_app.high_performance_db import( execute_raw_query )
 
 # def select_query(query, params=None):
 #     """
@@ -2215,16 +2003,30 @@ def insert_query(query, params):
 #     try:
 #         print("Select_Query::=>", query)
 #         print("Params::", params)
-#         # ensure_db_connection()
-#         with connection.cursor() as cursor:
-#             cursor.execute(query, params)
-#             result = None
-#             result = cursor.fetchall()
-
-#             # if result == []:
-#             #     raise ValueError("No Data Found")  # Custom error when no results are found
-#             print("result::",result)
-#             return result
+        
+#         # Use high-performance execution with caching
+#         result = execute_raw_query(
+#             query=query,
+#             params=tuple(params) if params else None,
+#             fetch_type='all',
+#             use_cache=True,
+#             cache_ttl=300
+#         )
+        
+#         # Convert to list of tuples (matching original behavior)
+#         if result.data:
+#             # Convert dict rows to tuples for backward compatibility
+#             tuple_result = []
+#             for row in result.data:
+#                 if isinstance(row, dict):
+#                     tuple_result.append(tuple(row.values()))
+#                 else:
+#                     tuple_result.append(row)
+#             print("result::", tuple_result)
+#             return tuple_result
+#         else:
+#             print("result::", [])
+#             return []
 
 #     except ValueError as e:
 #         print(f"Error: {e}")
@@ -2237,26 +2039,46 @@ def insert_query(query, params):
 #     except Exception as e:
 #         print("Unexpected error:", e)
 #         raise  # Re-raise for unexpected errors
-    
+
 # def insert_query2(query, params=None):
+#     """
+#     Execute INSERT query with RETURNING clause support
+    
+#     Args:
+#         query (str): INSERT SQL query
+#         params (list or tuple): Parameters to substitute into the query
+        
+#     Returns:
+#         list or int: Returned rows if RETURNING clause, otherwise rowcount
+#     """
 #     if params is None:
 #         params = ()  # Default to empty tuple if no params are passed
     
 #     print("Executing insert query:", query)
 #     print("With parameters:", params)
+    
 #     try:
-#         # ensure_db_connection()
-#         with connection.cursor() as cursor:
-#             cursor.execute(query, params)
-            
-#             # If the query has a RETURNING clause, fetch the returned rows
-#             if cursor.description:
-#                 result = cursor.fetchall()  # Fetch all returned rows if any
-#                 connection.commit()  # Commit after insertion
-#                 return result
-#             else:
-#                 connection.commit()  # Commit if only affecting rows
-#                 return cursor.rowcount  # Return number of affected rows
+#         # Use high-performance execution
+#         result = execute_raw_query(
+#             query=query,
+#             params=tuple(params) if params else None,
+#             fetch_type='all',
+#             use_cache=False,  # Don't cache INSERT queries
+#             timeout=30
+#         )
+        
+#         # If the query has a RETURNING clause, return the fetched rows
+#         if result.data:
+#             # Convert dict rows to tuples for backward compatibility
+#             tuple_result = []
+#             for row in result.data:
+#                 if isinstance(row, dict):
+#                     tuple_result.append(tuple(row.values()))
+#                 else:
+#                     tuple_result.append(row)
+#             return tuple_result
+#         else:
+#             return result.row_count  # Return number of affected rows
     
 #     except IntegrityError as e:
 #         print("Integrity Error: Failed to insert data due to integrity error", e)
@@ -2265,15 +2087,32 @@ def insert_query(query, params):
 #         print("General Error executing query:", e)
 #         raise
 
-
 # def update_query(query, params):
-#     print("update query::",query)
-#     print("update query params::",params)
+#     """
+#     Execute UPDATE query and return affected row count
+    
+#     Args:
+#         query (str): UPDATE SQL query
+#         params (list or tuple): Parameters to substitute into the query
+        
+#     Returns:
+#         int: Number of affected rows
+#     """
+#     print("update query::", query)
+#     print("update query params::", params)
+    
 #     try:
-#         # ensure_db_connection()
-#         with connection.cursor() as cursor:
-#             cursor.execute(query, params)
-#             return cursor.rowcount
+#         # Use high-performance execution
+#         result = execute_raw_query(
+#             query=query,
+#             params=tuple(params) if params else None,
+#             fetch_type='none',
+#             use_cache=False,  # Don't cache UPDATE queries
+#             timeout=30
+#         )
+        
+#         return result.row_count
+        
 #     except IntegrityError as e:
 #         print("Integrity Error: Failed to update_query due to integrity error", e)
 #         raise
@@ -2282,13 +2121,31 @@ def insert_query(query, params):
 #         raise
 
 # def delete_query(query, params):
-#     print("delete query::",query)
-#     print("delete query params::",params)
+#     """
+#     Execute DELETE query and return affected row count
+    
+#     Args:
+#         query (str): DELETE SQL query
+#         params (list or tuple): Parameters to substitute into the query
+        
+#     Returns:
+#         int: Number of affected rows
+#     """
+#     print("delete query::", query)
+#     print("delete query params::", params)
+    
 #     try:
-#         # ensure_db_connection()
-#         with connection.cursor() as cursor:
-#             cursor.execute(query, params)
-#             return cursor.rowcount
+#         # Use high-performance execution
+#         result = execute_raw_query(
+#             query=query,
+#             params=tuple(params) if params else None,
+#             fetch_type='none',
+#             use_cache=False,  # Don't cache DELETE queries
+#             timeout=30
+#         )
+        
+#         return result.row_count
+        
 #     except IntegrityError as e:
 #         print("Integrity Error: Failed to delete_query data due to integrity error", e)
 #         raise
@@ -2297,21 +2154,41 @@ def insert_query(query, params):
 #         raise
 
 # def insert_query(query, params):
+#     """
+#     Execute INSERT query with RETURNING clause support
+    
+#     Args:
+#         query (str): INSERT SQL query
+#         params (list or tuple): Parameters to substitute into the query
+        
+#     Returns:
+#         list or int: Returned rows if RETURNING clause, otherwise rowcount
+#     """
 #     print("Executing insert query:", query)
 #     print("With parameters:", params)
+    
 #     try:
-#         # ensure_db_connection()
-#         with connection.cursor() as cursor:
-#             cursor.execute(query, params)
-            
-#             # If the query has a RETURNING clause, fetch the returned rows
-#             if cursor.description:
-#                 result = cursor.fetchall()  # Fetch all returned rows if any
-#                 connection.commit()  # Commit after insertion
-#                 return result
-#             else:
-#                 connection.commit()  # Commit if only affecting rows
-#                 return cursor.rowcount  # Return number of affected rows
+#         # Use high-performance execution
+#         result = execute_raw_query(
+#             query=query,
+#             params=tuple(params) if params else None,
+#             fetch_type='all',
+#             use_cache=False,  # Don't cache INSERT queries
+#             timeout=30
+#         )
+        
+#         # If the query has a RETURNING clause, return the fetched rows
+#         if result.data:
+#             # Convert dict rows to tuples for backward compatibility
+#             tuple_result = []
+#             for row in result.data:
+#                 if isinstance(row, dict):
+#                     tuple_result.append(tuple(row.values()))
+#                 else:
+#                     tuple_result.append(row)
+#             return tuple_result
+#         else:
+#             return result.row_count  # Return number of affected rows
     
 #     except IntegrityError as e:
 #         print("Integrity Error: Failed to insert data due to integrity error", e)
@@ -2319,6 +2196,129 @@ def insert_query(query, params):
 #     except Exception as e:
 #         print("General Error executing query:", e)
 #         raise
+
+def select_query(query, params=None):
+    """
+    Executes a parameterized SQL select query and returns the result.
+    
+    Args:
+        query (str): The SQL query to execute.
+        params (list or tuple): Parameters to substitute into the query.
+
+    Returns:
+        list: Rows from the query result.
+
+    Raises:
+        ValueError: If no data is found.
+        DatabaseError: For database-specific errors.
+    """
+    try:
+        print("Select_Query::=>", query)
+        print("Params::", params)
+        # ensure_db_connection()
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            result = None
+            result = cursor.fetchall()
+
+            # if result == []:
+            #     raise ValueError("No Data Found")  # Custom error when no results are found
+            print("result::",result)
+            return result
+
+    except ValueError as e:
+        print(f"Error: {e}")
+        raise  # Re-raise to be handled by calling function
+    
+    except DatabaseError as e:
+        print("DatabaseError executing query:", e)
+        raise  # Re-raise to be handled by calling function
+
+    except Exception as e:
+        print("Unexpected error:", e)
+        raise  # Re-raise for unexpected errors
+    
+def insert_query2(query, params=None):
+    if params is None:
+        params = ()  # Default to empty tuple if no params are passed
+    
+    print("Executing insert query:", query)
+    print("With parameters:", params)
+    try:
+        # ensure_db_connection()
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            
+            # If the query has a RETURNING clause, fetch the returned rows
+            if cursor.description:
+                result = cursor.fetchall()  # Fetch all returned rows if any
+                connection.commit()  # Commit after insertion
+                return result
+            else:
+                connection.commit()  # Commit if only affecting rows
+                return cursor.rowcount  # Return number of affected rows
+    
+    except IntegrityError as e:
+        print("Integrity Error: Failed to insert data due to integrity error", e)
+        raise
+    except Exception as e:
+        print("General Error executing query:", e)
+        raise
+
+
+def update_query(query, params):
+    print("update query::",query)
+    print("update query params::",params)
+    try:
+        # ensure_db_connection()
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            return cursor.rowcount
+    except IntegrityError as e:
+        print("Integrity Error: Failed to update_query due to integrity error", e)
+        raise
+    except Exception as e:
+        print("General Error executing update_query:", e)
+        raise
+
+def delete_query(query, params):
+    print("delete query::",query)
+    print("delete query params::",params)
+    try:
+        # ensure_db_connection()
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            return cursor.rowcount
+    except IntegrityError as e:
+        print("Integrity Error: Failed to delete_query data due to integrity error", e)
+        raise
+    except Exception as e:
+        print("General Error executing delete_query:", e)
+        raise
+
+def insert_query(query, params):
+    print("Executing insert query:", query)
+    print("With parameters:", params)
+    try:
+        # ensure_db_connection()
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            
+            # If the query has a RETURNING clause, fetch the returned rows
+            if cursor.description:
+                result = cursor.fetchall()  # Fetch all returned rows if any
+                connection.commit()  # Commit after insertion
+                return result
+            else:
+                connection.commit()  # Commit if only affecting rows
+                return cursor.rowcount  # Return number of affected rows
+    
+    except IntegrityError as e:
+        print("Integrity Error: Failed to insert data due to integrity error", e)
+        raise
+    except Exception as e:
+        print("General Error executing query:", e)
+        raise
 
 @csrf_exempt
 def get_server_key_token():
