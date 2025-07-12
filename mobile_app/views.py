@@ -26386,7 +26386,12 @@ def generate_unique_referral_code():
         # Check if code already exists
         check_query = "SELECT COUNT(*) FROM vtpartner.referral_code_tbl WHERE referral_code = %s"
         result = select_query(check_query, [code])
-        if result and result[0][0] == 0:
+        
+        if not result:
+            # If query fails, assume code doesn't exist
+            return code
+        elif result[0][0] == 0:
+            # Code doesn't exist, safe to use
             return code
 
 @csrf_exempt
@@ -26431,7 +26436,11 @@ def generate_referral_code(request):
                 WHERE customer_id = %s
             """
             customer_result = select_query(customer_query, [customer_id])
-            customer_name = customer_result[0][0] if customer_result and len(customer_result) > 0 else "User"
+            
+            if not customer_result:
+                customer_name = "User"
+            else:
+                customer_name = customer_result[0][0]
             
             # Get referral statistics
             stats_query = """
@@ -26445,8 +26454,13 @@ def generate_referral_code(request):
                 WHERE referred_by_code = %s
             """
             stats_result = select_query(stats_query, [customer_id, referral_code])
-            total_referrals = stats_result[0][0] if stats_result and len(stats_result) > 0 else 0
-            completed_referrals = stats_result[0][1] if stats_result and len(stats_result) > 0 else 0
+            
+            if not stats_result:
+                total_referrals = 0
+                completed_referrals = 0
+            else:
+                total_referrals = stats_result[0][0]
+                completed_referrals = stats_result[0][1]
             
             # Calculate total earnings
             earnings_query = """
@@ -26457,7 +26471,11 @@ def generate_referral_code(request):
                 AND status = 'SUCCESS'
             """
             earnings_result = select_query(earnings_query, [customer_id])
-            total_earnings = float(earnings_result[0][0]) if earnings_result and len(earnings_result) > 0 else 0
+            
+            if not earnings_result:
+                total_earnings = 0
+            else:
+                total_earnings = float(earnings_result[0][0])
             
             return JsonResponse({
                 "status": "success",
@@ -26519,7 +26537,13 @@ def apply_referral_code(request):
                 WHERE used_by_customer = %s
             """
             existing_usage = select_query(existing_usage_query, [customer_id])
-            if existing_usage and len(existing_usage) > 0 and existing_usage[0][0] > 0:
+            
+            if not existing_usage:
+                has_used_referral = False
+            else:
+                has_used_referral = existing_usage[0][0] > 0
+                
+            if has_used_referral:
                 return JsonResponse({
                     "message": "You have already used a referral code",
                     "status": "error"
@@ -26578,7 +26602,7 @@ def apply_referral_code(request):
                     VALUES (%s, %s, %s)
                     RETURNING wallet_id
                 """
-                wallet_result = select_query(create_wallet_query, [customer_id, referee_bonus, current_time])
+                wallet_result = insert_query(create_wallet_query, [customer_id, referee_bonus, current_time])
                 referee_wallet_id = wallet_result[0][0]
             else:
                 referee_wallet_id = referee_wallet_result[0][0]
@@ -26617,7 +26641,7 @@ def apply_referral_code(request):
                     VALUES (%s, %s, %s)
                     RETURNING wallet_id
                 """
-                wallet_result = select_query(create_wallet_query, [referrer_id, referrer_bonus, current_time])
+                wallet_result = insert_query(create_wallet_query, [referrer_id, referrer_bonus, current_time])
                 referrer_wallet_id = wallet_result[0][0]
             else:
                 referrer_wallet_id = referrer_wallet_result[0][0]
@@ -26688,7 +26712,11 @@ def get_referral_details(request):
                 WHERE customer_id = %s
             """
             code_result = select_query(code_query, [customer_id])
-            referral_code = code_result[0][0] if code_result and len(code_result) > 0 else None
+            
+            if not code_result:
+                referral_code = None
+            else:
+                referral_code = code_result[0][0]
             
             if not referral_code:
                 return JsonResponse({
@@ -26726,16 +26754,21 @@ def get_referral_details(request):
             
             referrals = []
             completed_count = 0
-            for row in referrals_result:
-                referral_data = {
-                    "customer_name": row[0],
-                    "used_at": str(row[1]),
-                    "status": row[2],
-                    "amount": 10.0 if row[2] == 'Completed' else 0.0
-                }
-                referrals.append(referral_data)
-                if row[2] == 'Completed':
-                    completed_count += 1
+            
+            if not referrals_result:
+                # No referrals found
+                pass
+            else:
+                for row in referrals_result:
+                    referral_data = {
+                        "customer_name": row[0],
+                        "used_at": str(row[1]),
+                        "status": row[2],
+                        "amount": 10.0 if row[2] == 'Completed' else 0.0
+                    }
+                    referrals.append(referral_data)
+                    if row[2] == 'Completed':
+                        completed_count += 1
             
             # Calculate total earnings
             earnings_query = """
@@ -26746,7 +26779,11 @@ def get_referral_details(request):
                 AND status = 'SUCCESS'
             """
             earnings_result = select_query(earnings_query, [customer_id])
-            total_earnings = float(earnings_result[0][0]) if earnings_result and len(earnings_result) > 0 else 0
+            
+            if not earnings_result:
+                total_earnings = 0
+            else:
+                total_earnings = float(earnings_result[0][0])
             
             return JsonResponse({
                 "status": "success",
@@ -26852,6 +26889,8 @@ def validate_referral_code(request):
         "message": "Method not allowed",
         "status": "error"
     }, status=405) 
+    
+    
 # from drf_yasg import openapi
 # from rest_framework.response import Response
 # from rest_framework.views import APIView
