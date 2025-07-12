@@ -584,7 +584,14 @@ urlpatterns = [
     
     path('handyman_wallet_details', views.handyman_wallet_details, name='handyman_wallet_details'),
     
-    
     path('get_todays_scheduled_bookings', views.get_todays_scheduled_bookings, name='get_todays_scheduled_bookings'),
+    
+    path('validate_referral_code', views.validate_referral_code, name='validate_referral_code'),
+    
+    path('get_referral_details', views.get_referral_details, name='get_referral_details'),
+    
+    path('apply_referral_code', views.apply_referral_code, name='apply_referral_code'),
+    
+    path('generate_referral_code', views.generate_referral_code, name='generate_referral_code'),
     
 ]
