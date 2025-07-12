@@ -26378,6 +26378,7 @@ def get_todays_scheduled_bookings(request):
 import string
 from decimal import Decimal
 
+
 def generate_unique_referral_code():
     """Generate a unique 6-character alphanumeric referral code"""
     while True:
@@ -26425,12 +26426,12 @@ def generate_referral_code(request):
             
             # Get customer details for sharing
             customer_query = """
-                SELECT customer_name, mobile_no 
+                SELECT customer_name, customer_phone 
                 FROM vtpartner.customers_tbl 
                 WHERE customer_id = %s
             """
             customer_result = select_query(customer_query, [customer_id])
-            customer_name = customer_result[0][0] if customer_result else "User"
+            customer_name = customer_result[0][0] if customer_result and len(customer_result) > 0 else "User"
             
             # Get referral statistics
             stats_query = """
@@ -26488,7 +26489,6 @@ def generate_referral_code(request):
         "message": "Method not allowed",
         "status": "error"
     }, status=405)
-    
 
 @csrf_exempt
 def apply_referral_code(request):
@@ -26852,7 +26852,6 @@ def validate_referral_code(request):
         "message": "Method not allowed",
         "status": "error"
     }, status=405) 
- 
 # from drf_yasg import openapi
 # from rest_framework.response import Response
 # from rest_framework.views import APIView
