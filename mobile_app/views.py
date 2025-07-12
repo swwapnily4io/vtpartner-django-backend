@@ -26376,6 +26376,8 @@ def get_todays_scheduled_bookings(request):
     }, status=405) 
     
 import string
+from decimal import Decimal
+
 def generate_unique_referral_code():
     """Generate a unique 6-character alphanumeric referral code"""
     while True:
@@ -26442,8 +26444,8 @@ def generate_referral_code(request):
                 WHERE referred_by_code = %s
             """
             stats_result = select_query(stats_query, [customer_id, referral_code])
-            total_referrals = stats_result[0][0] if stats_result else 0
-            completed_referrals = stats_result[0][1] if stats_result else 0
+            total_referrals = stats_result[0][0] if stats_result and len(stats_result) > 0 else 0
+            completed_referrals = stats_result[0][1] if stats_result and len(stats_result) > 0 else 0
             
             # Calculate total earnings
             earnings_query = """
@@ -26454,7 +26456,7 @@ def generate_referral_code(request):
                 AND status = 'SUCCESS'
             """
             earnings_result = select_query(earnings_query, [customer_id])
-            total_earnings = float(earnings_result[0][0]) if earnings_result else 0
+            total_earnings = float(earnings_result[0][0]) if earnings_result and len(earnings_result) > 0 else 0
             
             return JsonResponse({
                 "status": "success",
@@ -26486,6 +26488,7 @@ def generate_referral_code(request):
         "message": "Method not allowed",
         "status": "error"
     }, status=405)
+    
 
 @csrf_exempt
 def apply_referral_code(request):
@@ -26516,7 +26519,7 @@ def apply_referral_code(request):
                 WHERE used_by_customer = %s
             """
             existing_usage = select_query(existing_usage_query, [customer_id])
-            if existing_usage and existing_usage[0][0] > 0:
+            if existing_usage and len(existing_usage) > 0 and existing_usage[0][0] > 0:
                 return JsonResponse({
                     "message": "You have already used a referral code",
                     "status": "error"
@@ -26685,7 +26688,7 @@ def get_referral_details(request):
                 WHERE customer_id = %s
             """
             code_result = select_query(code_query, [customer_id])
-            referral_code = code_result[0][0] if code_result else None
+            referral_code = code_result[0][0] if code_result and len(code_result) > 0 else None
             
             if not referral_code:
                 return JsonResponse({
@@ -26743,7 +26746,7 @@ def get_referral_details(request):
                 AND status = 'SUCCESS'
             """
             earnings_result = select_query(earnings_query, [customer_id])
-            total_earnings = float(earnings_result[0][0]) if earnings_result else 0
+            total_earnings = float(earnings_result[0][0]) if earnings_result and len(earnings_result) > 0 else 0
             
             return JsonResponse({
                 "status": "success",
@@ -26849,7 +26852,7 @@ def validate_referral_code(request):
         "message": "Method not allowed",
         "status": "error"
     }, status=405) 
-    
+ 
 # from drf_yasg import openapi
 # from rest_framework.response import Response
 # from rest_framework.views import APIView
