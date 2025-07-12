@@ -26423,7 +26423,7 @@ def generate_referral_code(request):
             
             # Get customer details for sharing
             customer_query = """
-                SELECT customer_name, customer_phone 
+                SELECT customer_name, mobile_no 
                 FROM vtpartner.customers_tbl 
                 WHERE customer_id = %s
             """
