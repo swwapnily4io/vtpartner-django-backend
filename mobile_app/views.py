@@ -26454,7 +26454,7 @@ def generate_referral_code(request):
                 WHERE referred_by_code = %s
             """
             stats_result = select_query(stats_query, [customer_id, referral_code])
-            
+            print("stats_result::"+stats_result)
             if not stats_result:
                 total_referrals = 0
                 completed_referrals = 0
