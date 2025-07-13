@@ -2267,8 +2267,8 @@ def select_query(query, params=None):
         DatabaseError: For database-specific errors.
     """
     try:
-        print("Select_Query::=>", query)
-        print("Params::", params)
+        # print("Select_Query::=>", query)
+        # print("Params::", params)
         # get_active_connections()
         # get_total_connections()
         # get_each_connection_details()
@@ -2329,8 +2329,8 @@ def insert_query2(query, params=None):
 
 
 def update_query(query, params):
-    print("update query::",query)
-    print("update query params::",params)
+    # print("update query::",query)
+    # print("update query params::",params)
     try:
         # ensure_db_connection()
         with connection.cursor() as cursor:
@@ -2344,8 +2344,8 @@ def update_query(query, params):
         raise
 
 def delete_query(query, params):
-    print("delete query::",query)
-    print("delete query params::",params)
+    # print("delete query::",query)
+    # print("delete query params::",params)
     try:
         # ensure_db_connection()
         with connection.cursor() as cursor:
@@ -2359,8 +2359,8 @@ def delete_query(query, params):
         raise
 
 def insert_query(query, params):
-    print("Executing insert query:", query)
-    print("With parameters:", params)
+    # print("Executing insert query:", query)
+    # print("With parameters:", params)
     try:
         # ensure_db_connection()
         with connection.cursor() as cursor:
