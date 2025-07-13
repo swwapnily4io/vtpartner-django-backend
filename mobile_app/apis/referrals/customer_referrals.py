@@ -1,4 +1,3 @@
-    
 import string
 from decimal import Decimal
 import json
@@ -33,13 +32,13 @@ def generate_referral_code(request):
         try:
             data = json.loads(request.body)
             customer_id = data.get('customer_id')
-            
+
             if not customer_id:
                 return JsonResponse({
                     "message": "Customer ID is required",
                     "status": "error"
                 }, status=400)
-            
+
             # Check if customer already has a referral code
             existing_query = """
                 SELECT referral_code 
@@ -47,48 +46,36 @@ def generate_referral_code(request):
                 WHERE customer_id = %s
             """
             existing_result = select_query(existing_query, [customer_id])
-            
-            if existing_result:
-                referral_code = existing_result[0][0]
-            else:
-                # Generate new referral code
-                referral_code = generate_unique_referral_code()
-                
+
+            referral_code = existing_result[0][0] if existing_result else generate_unique_referral_code()
+
+            if not existing_result:
                 # Insert new referral code
                 insert_query_text = """
                     INSERT INTO vtpartner.referral_code_tbl (customer_id, referral_code)
                     VALUES (%s, %s)
                 """
                 insert_query(insert_query_text, [customer_id, referral_code])
-            
-            # Get customer details for sharing
+
+            # Get customer details
             customer_query = """
                 SELECT customer_name, mobile_no 
                 FROM vtpartner.customers_tbl 
                 WHERE customer_id = %s
             """
             customer_result = select_query(customer_query, [customer_id])
-            
-            if not customer_result:
-                customer_name = "User"
-            else:
-                customer_name = customer_result[0][0]
-            
-            # Get referral statistics - using simple queries that work with your DB
-            # First get total referrals count
+            customer_name = customer_result[0][0] if customer_result else "User"
+
+            # Total referrals
             total_referrals_query = """
                 SELECT COUNT(*) 
                 FROM vtpartner.referral_usage_tbl 
                 WHERE referred_by_code = %s
             """
             total_referrals_result = select_query(total_referrals_query, [referral_code])
-            
-            if not total_referrals_result:
-                total_referrals = 0
-            else:
-                total_referrals = total_referrals_result[0][0]
-            
-            # Get completed referrals count (count of referral bonus transactions)
+            total_referrals = total_referrals_result[0][0] if total_referrals_result else 0
+
+            # Completed referrals
             completed_referrals_query = """
                 SELECT COUNT(*) 
                 FROM vtpartner.customer_wallet_transactions 
@@ -97,13 +84,9 @@ def generate_referral_code(request):
                 AND status = 'SUCCESS'
             """
             completed_referrals_result = select_query(completed_referrals_query, [customer_id])
-            
-            if not completed_referrals_result:
-                completed_referrals = 0
-            else:
-                completed_referrals = completed_referrals_result[0][0]
-            
-            # Calculate total earnings - using simple SUM query
+            completed_referrals = completed_referrals_result[0][0] if completed_referrals_result else 0
+
+            # Total earnings
             earnings_query = """
                 SELECT SUM(amount) 
                 FROM vtpartner.customer_wallet_transactions 
@@ -112,14 +95,9 @@ def generate_referral_code(request):
                 AND status = 'SUCCESS'
             """
             earnings_result = select_query(earnings_query, [customer_id])
-            
-            if not earnings_result:
-                total_earnings = 0
-            else:
-                # Handle NULL from SUM when no rows match
-                amount = earnings_result[0][0]
-                total_earnings = float(amount) if amount is not None else 0
-            
+            earnings_amount = earnings_result[0][0] if earnings_result and earnings_result[0][0] is not None else 0.0
+            total_earnings = float(earnings_amount)
+
             return JsonResponse({
                 "status": "success",
                 "referral_code": referral_code,
@@ -132,7 +110,7 @@ def generate_referral_code(request):
                     "total_earnings": total_earnings
                 }
             })
-            
+
         except json.JSONDecodeError:
             return JsonResponse({
                 "message": "Invalid JSON in request body",
@@ -145,11 +123,12 @@ def generate_referral_code(request):
                 "status": "error",
                 "error": str(err)
             }, status=500)
-    
+
     return JsonResponse({
         "message": "Method not allowed",
         "status": "error"
     }, status=405)
+
 
 @csrf_exempt
 def apply_referral_code(request):
