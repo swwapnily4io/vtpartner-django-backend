@@ -4,6 +4,7 @@ from .apis.logins import customer_login
 from .apis.registration import customer_registration
 from .apis.generic_controls import generic_apis
 from .apis.withdrawals import goods_driver_withdrawal
+from .apis.referrals import customer_referrals
 
 # from rest_framework import permissions
 # from drf_yasg.views import get_schema_view
@@ -586,12 +587,12 @@ urlpatterns = [
     
     path('get_todays_scheduled_bookings', views.get_todays_scheduled_bookings, name='get_todays_scheduled_bookings'),
     
-    path('validate_referral_code', views.validate_referral_code, name='validate_referral_code'),
+    path('validate_referral_code', customer_referrals.validate_referral_code, name='validate_referral_code'),
     
-    path('get_referral_details', views.get_referral_details, name='get_referral_details'),
+    path('get_referral_details', customer_referrals.get_referral_details, name='get_referral_details'),
     
-    path('apply_referral_code', views.apply_referral_code, name='apply_referral_code'),
+    path('apply_referral_code', customer_referrals.apply_referral_code, name='apply_referral_code'),
     
-    path('generate_referral_code', views.generate_referral_code, name='generate_referral_code'),
+    path('generate_referral_code', customer_referrals.generate_referral_code, name='generate_referral_code'),
     
 ]
