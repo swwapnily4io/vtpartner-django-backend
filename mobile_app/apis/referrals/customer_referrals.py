@@ -102,8 +102,8 @@ def generate_referral_code(request):
             
             if not completed_referrals_result and completed_referrals_result[0][0] is None:
                 completed_referrals = 0
-            # else:
-                # completed_referrals = completed_referrals_result[0][0]
+            else:
+                completed_referrals = completed_referrals_result[0][0]
             
             # Calculate total earnings - using simple SUM query
             earnings_query = """
@@ -117,10 +117,10 @@ def generate_referral_code(request):
             
             if not earnings_result and earnings_result[0][0] is None:
                 total_earnings = 0
-            # else:
+            else:
                 # Handle NULL from SUM when no rows match
-                # amount = earnings_result[0][0]
-                # total_earnings = float(amount) if amount is not None else 0
+                amount = earnings_result[0][0]
+                total_earnings = float(amount) if amount is not None else 0
             
             return JsonResponse({
                 "status": "success",
