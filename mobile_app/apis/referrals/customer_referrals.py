@@ -50,32 +50,44 @@ def generate_referral_code(request):
             if existing_result:
                 referral_code = existing_result[0][0]
             else:
+                # Generate new referral code
                 referral_code = generate_unique_referral_code()
+                
+                # Insert new referral code
                 insert_query_text = """
                     INSERT INTO vtpartner.referral_code_tbl (customer_id, referral_code)
                     VALUES (%s, %s)
                 """
                 insert_query(insert_query_text, [customer_id, referral_code])
             
-            # Get customer name
+            # Get customer details for sharing
             customer_query = """
                 SELECT customer_name, mobile_no 
                 FROM vtpartner.customers_tbl 
                 WHERE customer_id = %s
             """
             customer_result = select_query(customer_query, [customer_id])
-            customer_name = customer_result[0][0] if customer_result else "User"
             
-            # Get total referrals
+            if not customer_result:
+                customer_name = "User"
+            else:
+                customer_name = customer_result[0][0]
+            
+            # Get referral statistics - using simple queries that work with your DB
+            # First get total referrals count
             total_referrals_query = """
                 SELECT COUNT(*) 
                 FROM vtpartner.referral_usage_tbl 
                 WHERE referred_by_code = %s
             """
             total_referrals_result = select_query(total_referrals_query, [referral_code])
-            total_referrals = total_referrals_result[0][0] if total_referrals_result else 0
-
-            # Completed referrals
+            
+            if not total_referrals_result:
+                total_referrals = 0
+            else:
+                total_referrals = total_referrals_result[0][0]
+            
+            # Get completed referrals count (count of referral bonus transactions)
             completed_referrals_query = """
                 SELECT COUNT(*) 
                 FROM vtpartner.customer_wallet_transactions 
@@ -84,11 +96,13 @@ def generate_referral_code(request):
                 AND status = 'SUCCESS'
             """
             completed_referrals_result = select_query(completed_referrals_query, [customer_id])
-            completed_referrals = (
-                completed_referrals_result[0][0] if completed_referrals_result else 0
-            )
-
-            # Total earnings
+            
+            if not completed_referrals_result and completed_referrals_result[0][0] is None:
+                completed_referrals = 0
+            else:
+                completed_referrals = completed_referrals_result[0][0]
+            
+            # Calculate total earnings - using simple SUM query
             earnings_query = """
                 SELECT SUM(amount) 
                 FROM vtpartner.customer_wallet_transactions 
@@ -97,10 +111,14 @@ def generate_referral_code(request):
                 AND status = 'SUCCESS'
             """
             earnings_result = select_query(earnings_query, [customer_id])
-            total_earnings = (
-                float(earnings_result[0][0]) if earnings_result and earnings_result[0][0] is not None else 0.0
-            )
-
+            
+            if not earnings_result and earnings_result[0][0] is None:
+                total_earnings = 0
+            else:
+                # Handle NULL from SUM when no rows match
+                amount = earnings_result[0][0]
+                total_earnings = float(amount) if amount is not None else 0
+            
             return JsonResponse({
                 "status": "success",
                 "referral_code": referral_code,
@@ -113,7 +131,7 @@ def generate_referral_code(request):
                     "total_earnings": total_earnings
                 }
             })
-
+            
         except json.JSONDecodeError:
             return JsonResponse({
                 "message": "Invalid JSON in request body",
@@ -131,7 +149,6 @@ def generate_referral_code(request):
         "message": "Method not allowed",
         "status": "error"
     }, status=405)
-
 
 @csrf_exempt
 def apply_referral_code(request):
