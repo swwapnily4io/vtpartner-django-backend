@@ -100,7 +100,7 @@ def generate_referral_code(request):
             """
             completed_referrals_result = select_query(completed_referrals_query, [customer_id])
             
-            if not completed_referrals_result and completed_referrals_result[0][0] is None:
+            if not completed_referrals_result or completed_referrals_result[0][0] is None:
                 completed_referrals = 0
             else:
                 completed_referrals = completed_referrals_result[0][0]
@@ -115,7 +115,7 @@ def generate_referral_code(request):
             """
             earnings_result = select_query(earnings_query, [customer_id])
             
-            if not earnings_result and earnings_result[0][0] is None:
+            if not earnings_result or earnings_result[0][0] is None:
                 total_earnings = 0
             else:
                 # Handle NULL from SUM when no rows match
