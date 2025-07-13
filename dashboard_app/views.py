@@ -418,11 +418,11 @@ def select_query(query, params=None):
         
         with connection.cursor() as cursor:
             cursor.execute(query, params)
-            #result = None
+            result = None
             result = cursor.fetchall()
-            if not result:
-                raise ValueError("No data found.")
-            return result
+
+            # if result == []:
+            #     raise ValueError("No Data Found")  # Custom error when no results are found
             print("query result::",result)
             return result
 
@@ -431,13 +431,11 @@ def select_query(query, params=None):
         raise  # Re-raise to be handled by calling function
     
     except DatabaseError as e:
-        print(f"[DB ERROR] Query failed: {e}\nQuery: {query}\nParams: {params}")
-        #print("DatabaseError executing query:", e)
+        print("DatabaseError executing query:", e)
         raise  # Re-raise to be handled by calling function
 
     except Exception as e:
-        print(f"[UNEXPECTED ERROR] {e}")
-        #print("Unexpected error:", e)
+        print("Unexpected error:", e)
         raise  # Re-raise for unexpected errors
 
 def update_query(query, params):
