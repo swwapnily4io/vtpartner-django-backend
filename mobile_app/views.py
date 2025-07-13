@@ -26378,7 +26378,6 @@ def get_todays_scheduled_bookings(request):
 import string
 from decimal import Decimal
 
-
 def generate_unique_referral_code():
     """Generate a unique 6-character alphanumeric referral code"""
     while True:
@@ -26416,11 +26415,17 @@ def generate_referral_code(request):
             """
             existing_result = select_query(existing_query, [customer_id])
             
+            print(f"DEBUG generate_referral_code: existing_result = {existing_result}")
+            print(f"DEBUG generate_referral_code: type(existing_result) = {type(existing_result)}")
+            print(f"DEBUG generate_referral_code: len(existing_result) = {len(existing_result) if existing_result else 'None'}")
+            
             if existing_result:
                 referral_code = existing_result[0][0]
+                print(f"DEBUG generate_referral_code: Found existing referral_code = {referral_code}")
             else:
                 # Generate new referral code
                 referral_code = generate_unique_referral_code()
+                print(f"DEBUG generate_referral_code: Generated new referral_code = {referral_code}")
                 
                 # Insert new referral code
                 insert_query_text = """
@@ -26454,13 +26459,18 @@ def generate_referral_code(request):
                 WHERE referred_by_code = %s
             """
             stats_result = select_query(stats_query, [customer_id, referral_code])
-            print("stats_result::"+stats_result)
+            
+            print(f"DEBUG: stats_result = {stats_result}")
+            print(f"DEBUG: type(stats_result) = {type(stats_result)}")
+            print(f"DEBUG: len(stats_result) = {len(stats_result) if stats_result else 'None'}")
+            
             if not stats_result:
                 total_referrals = 0
                 completed_referrals = 0
             else:
-                total_referrals = stats_result[0]
-                completed_referrals = stats_result[1]
+                print(f"DEBUG: stats_result[0] = {stats_result[0]}")
+                total_referrals = stats_result[0][0]
+                completed_referrals = stats_result[0][1]
             
             # Calculate total earnings
             earnings_query = """
@@ -26475,7 +26485,7 @@ def generate_referral_code(request):
             if not earnings_result:
                 total_earnings = 0
             else:
-                total_earnings = float(earnings_result[0])
+                total_earnings = float(earnings_result[0][0])
             
             return JsonResponse({
                 "status": "success",
@@ -26752,6 +26762,10 @@ def get_referral_details(request):
             """
             referrals_result = select_query(referrals_query, [customer_id, referral_code])
             
+            print(f"DEBUG get_referral_details: referrals_result = {referrals_result}")
+            print(f"DEBUG get_referral_details: type(referrals_result) = {type(referrals_result)}")
+            print(f"DEBUG get_referral_details: len(referrals_result) = {len(referrals_result) if referrals_result else 'None'}")
+            
             referrals = []
             completed_count = 0
             
@@ -26759,7 +26773,9 @@ def get_referral_details(request):
                 # No referrals found
                 pass
             else:
+                print(f"DEBUG get_referral_details: Processing {len(referrals_result)} referrals")
                 for row in referrals_result:
+                    print(f"DEBUG get_referral_details: Processing row: {row}")
                     referral_data = {
                         "customer_name": row[0],
                         "used_at": str(row[1]),
@@ -26889,7 +26905,6 @@ def validate_referral_code(request):
         "message": "Method not allowed",
         "status": "error"
     }, status=405) 
-    
     
 # from drf_yasg import openapi
 # from rest_framework.response import Response
