@@ -26442,9 +26442,13 @@ def generate_referral_code(request):
             """
             customer_result = select_query(customer_query, [customer_id])
             
+            print(f"DEBUG generate_referral_code: customer_result = {customer_result}")
+            print(f"DEBUG generate_referral_code: customer_id = {customer_id}")
+            
             if not customer_result:
                 customer_name = "User"
             else:
+                print(f"DEBUG generate_referral_code: customer_result[0] = {customer_result[0]}")
                 customer_name = customer_result[0][0]
             
             # Get referral statistics  
@@ -26463,29 +26467,27 @@ def generate_referral_code(request):
             else:
                 total_referrals = total_referrals_result[0][0]
             
-            # Then get completed referrals count
+            # Then get completed referrals count - simplified approach
             completed_referrals_query = """
-                SELECT COUNT(DISTINCT ru.used_by_customer) 
-                FROM vtpartner.referral_usage_tbl ru
-                WHERE ru.referred_by_code = %s
-                AND EXISTS (
-                    SELECT 1 FROM vtpartner.customer_wallet_transactions cwt 
-                    WHERE cwt.customer_id = %s 
-                    AND cwt.remarks LIKE '%Referral bonus%'
-                )
+                SELECT COUNT(*) 
+                FROM vtpartner.customer_wallet_transactions 
+                WHERE customer_id = %s 
+                AND remarks LIKE '%Referral bonus%'
+                AND status = 'SUCCESS'
             """
-            completed_referrals_result = select_query(completed_referrals_query, [referral_code, customer_id])
+            completed_referrals_result = select_query(completed_referrals_query, [customer_id])
             
             print(f"DEBUG: completed_referrals_result = {completed_referrals_result}")
             
             if not completed_referrals_result:
                 completed_referrals = 0
             else:
+                # Each referral bonus transaction represents one completed referral
                 completed_referrals = completed_referrals_result[0][0]
             
             # Calculate total earnings
             earnings_query = """
-                SELECT COALESCE(SUM(amount), 0) 
+                SELECT SUM(amount) 
                 FROM vtpartner.customer_wallet_transactions 
                 WHERE customer_id = %s 
                 AND remarks LIKE '%Referral bonus%'
@@ -26493,10 +26495,13 @@ def generate_referral_code(request):
             """
             earnings_result = select_query(earnings_query, [customer_id])
             
+            print(f"DEBUG: earnings_result = {earnings_result}")
+            
             if not earnings_result:
                 total_earnings = 0
             else:
-                total_earnings = float(earnings_result[0][0])
+                # Handle NULL from SUM() when no rows match
+                total_earnings = float(earnings_result[0][0]) if earnings_result[0][0] is not None else 0
             
             return JsonResponse({
                 "status": "success",
@@ -26767,7 +26772,7 @@ def get_referral_details(request):
             
             print(f"DEBUG get_referral_details: referrals_result = {referrals_result}")
             print(f"DEBUG get_referral_details: type(referrals_result) = {type(referrals_result)}")
-            print(f"DEBUG get_referral_details: len(referrals_result) = {len(referrals_result) if referrals_result else 'None'}")
+            print(f"DEBUG get_referral_details: len(referrals_result) = {len(referrals_result) if referrals_result is not None else 'None'}")
             
             referrals = []
             completed_count = 0
@@ -26780,17 +26785,8 @@ def get_referral_details(request):
                 for row in referrals_result:
                     print(f"DEBUG get_referral_details: Processing row: {row}")
                     
-                    # Check if this user has received referral bonus
-                    bonus_check_query = """
-                        SELECT COUNT(*) 
-                        FROM vtpartner.customer_wallet_transactions 
-                        WHERE customer_id = %s 
-                        AND remarks LIKE '%Referral bonus%'
-                        AND status = 'SUCCESS'
-                    """
-                    bonus_result = select_query(bonus_check_query, [customer_id])
-                    
-                    status = 'Completed' if (bonus_result and bonus_result[0][0] > 0) else 'Pending'
+                    # For now, mark all as pending - we can enhance this later
+                    status = 'Pending'
                     
                     referral_data = {
                         "customer_name": row[0],
@@ -26804,7 +26800,7 @@ def get_referral_details(request):
             
             # Calculate total earnings
             earnings_query = """
-                SELECT COALESCE(SUM(amount), 0) 
+                SELECT SUM(amount) 
                 FROM vtpartner.customer_wallet_transactions 
                 WHERE customer_id = %s 
                 AND remarks LIKE '%Referral bonus%'
@@ -26812,10 +26808,13 @@ def get_referral_details(request):
             """
             earnings_result = select_query(earnings_query, [customer_id])
             
+            print(f"DEBUG get_referral_details: earnings_result = {earnings_result}")
+            
             if not earnings_result:
                 total_earnings = 0
             else:
-                total_earnings = float(earnings_result[0][0])
+                # Handle NULL from SUM() when no rows match
+                total_earnings = float(earnings_result[0][0]) if earnings_result[0][0] is not None else 0
             
             return JsonResponse({
                 "status": "success",
