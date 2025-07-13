@@ -2196,7 +2196,61 @@ def check_missing_fields(fields):
 #     except Exception as e:
 #         print("General Error executing query:", e)
 #         raise
+def get_active_connections():
+    try:
+        print("Fetching active connections...")
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT count(*) FROM pg_stat_activity WHERE state = 'active';")
+            active_connections = cursor.fetchone()[0]
+            print(f"Active DB connections: {active_connections}")
+    except ValueError as e:
+        print(f"Error: {e}")
+        raise  # Re-raise to be handled by calling function
+    
+    except DatabaseError as e:
+        print("DatabaseError executing query:", e)
+        raise  # Re-raise to be handled by calling function
+    except Exception as e:
+        print("Unexpected error:", e)
+        raise  # Re-raise for unexpected errors
 
+def get_total_connections():
+    try:
+        print("Fetching total connections...")
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT count(*) FROM pg_stat_activity;")
+            total_connections = cursor.fetchone()[0]
+            print(f"Total connections: {total_connections}")
+    except ValueError as e:
+        print(f"Error: {e}")
+        raise  # Re-raise to be handled by calling function
+    
+    except DatabaseError as e:
+        print("DatabaseError executing query:", e)
+        raise  # Re-raise to be handled by calling function
+    except Exception as e:
+        print("Unexpected error:", e)
+        raise  # Re-raise for unexpected errors
+
+def get_each_connection_details():
+    try:
+        print("Fetching each connection details...")
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT pid, usename, client_addr, state, query, backend_start FROM pg_stat_activity WHERE datname = current_database();")
+            rows = cursor.fetchall()
+            for row in rows:
+                print(f"each connection row:{row}")
+    except ValueError as e:
+        print(f"Error: {e}")
+        raise  # Re-raise to be handled by calling function
+    
+    except DatabaseError as e:
+        print("DatabaseError executing query:", e)
+        raise  # Re-raise to be handled by calling function
+    except Exception as e:
+        print("Unexpected error:", e)
+        raise  # Re-raise for unexpected errors
+    
 def select_query(query, params=None):
     """
     Executes a parameterized SQL select query and returns the result.
@@ -2213,8 +2267,11 @@ def select_query(query, params=None):
         DatabaseError: For database-specific errors.
     """
     try:
-        print("Select_Query::=>", query)
-        print("Params::", params)
+        # print("Select_Query::=>", query)
+        # print("Params::", params)
+        # get_active_connections()
+        # get_total_connections()
+        # get_each_connection_details()
         # ensure_db_connection()
         with connection.cursor() as cursor:
             cursor.execute(query, params)
@@ -2237,6 +2294,11 @@ def select_query(query, params=None):
     except Exception as e:
         print("Unexpected error:", e)
         raise  # Re-raise for unexpected errors
+    finally:
+        try:
+            connection.close()  # Ensure DB connection is closed
+        except:
+            pass
     
 def insert_query2(query, params=None):
     if params is None:
@@ -2267,8 +2329,8 @@ def insert_query2(query, params=None):
 
 
 def update_query(query, params):
-    print("update query::",query)
-    print("update query params::",params)
+    # print("update query::",query)
+    # print("update query params::",params)
     try:
         # ensure_db_connection()
         with connection.cursor() as cursor:
@@ -2282,8 +2344,8 @@ def update_query(query, params):
         raise
 
 def delete_query(query, params):
-    print("delete query::",query)
-    print("delete query params::",params)
+    # print("delete query::",query)
+    # print("delete query params::",params)
     try:
         # ensure_db_connection()
         with connection.cursor() as cursor:
@@ -2297,8 +2359,8 @@ def delete_query(query, params):
         raise
 
 def insert_query(query, params):
-    print("Executing insert query:", query)
-    print("With parameters:", params)
+    # print("Executing insert query:", query)
+    # print("With parameters:", params)
     try:
         # ensure_db_connection()
         with connection.cursor() as cursor:
