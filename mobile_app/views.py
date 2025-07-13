@@ -26459,8 +26459,8 @@ def generate_referral_code(request):
                 total_referrals = 0
                 completed_referrals = 0
             else:
-                total_referrals = stats_result[0][0]
-                completed_referrals = stats_result[0][1]
+                total_referrals = stats_result[0]
+                completed_referrals = stats_result[1]
             
             # Calculate total earnings
             earnings_query = """
@@ -26475,7 +26475,7 @@ def generate_referral_code(request):
             if not earnings_result:
                 total_earnings = 0
             else:
-                total_earnings = float(earnings_result[0][0])
+                total_earnings = float(earnings_result[0])
             
             return JsonResponse({
                 "status": "success",
