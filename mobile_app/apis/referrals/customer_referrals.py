@@ -29,6 +29,9 @@ def generate_unique_referral_code():
 def generate_referral_code(request):
     """Generate or get existing referral code for a customer"""
     if request.method == "POST":
+        earnings_result = None
+        completed_referrals_result = None
+        total_referrals_result = None
         try:
             data = json.loads(request.body)
             customer_id = data.get('customer_id')
@@ -138,6 +141,10 @@ def generate_referral_code(request):
                 "status": "error"
             }, status=400)
         except Exception as err:
+            print(f"earnings_result: {earnings_result}")
+            print(f"completed_referrals_result: {completed_referrals_result}")
+            print(f"total_referrals_result: {total_referrals_result}")
+            
             print("Error in generate_referral_code:", err)
             return JsonResponse({
                 "message": "Internal Server Error",
