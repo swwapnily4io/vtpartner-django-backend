@@ -26452,9 +26452,9 @@ def generate_referral_code(request):
                 customer_name = customer_result[0][0]
             
             # Get referral statistics  
-            # First get total referrals count
+            # First get total referrals count - using same pattern as goods_driver_todays_earnings
             total_referrals_query = """
-                SELECT COUNT(*) 
+                SELECT COALESCE(COUNT(*), 0) 
                 FROM vtpartner.referral_usage_tbl 
                 WHERE referred_by_code = %s
             """
@@ -26463,13 +26463,14 @@ def generate_referral_code(request):
             print(f"DEBUG: total_referrals_result = {total_referrals_result}")
             
             if not total_referrals_result:
-                total_referrals = 0
-            else:
-                total_referrals = total_referrals_result[0][0]
+                return JsonResponse({"message": "Database error - total referrals"}, status=500)
             
-            # Then get completed referrals count - simplified approach
+            # Use same pattern as goods_driver_todays_earnings
+            total_referrals = total_referrals_result[0][0]
+            
+            # Then get completed referrals count - using same pattern as goods_driver_todays_earnings
             completed_referrals_query = """
-                SELECT COUNT(*) 
+                SELECT COALESCE(COUNT(*), 0) 
                 FROM vtpartner.customer_wallet_transactions 
                 WHERE customer_id = %s 
                 AND remarks LIKE '%Referral bonus%'
@@ -26480,14 +26481,14 @@ def generate_referral_code(request):
             print(f"DEBUG: completed_referrals_result = {completed_referrals_result}")
             
             if not completed_referrals_result:
-                completed_referrals = 0
-            else:
-                # Each referral bonus transaction represents one completed referral
-                completed_referrals = completed_referrals_result[0][0]
+                return JsonResponse({"message": "Database error - completed referrals"}, status=500)
             
-            # Calculate total earnings
+            # Use same pattern as goods_driver_todays_earnings
+            completed_referrals = completed_referrals_result[0][0]
+            
+            # Calculate total earnings - using same pattern as goods_driver_todays_earnings
             earnings_query = """
-                SELECT SUM(amount) 
+                SELECT COALESCE(SUM(amount), 0) 
                 FROM vtpartner.customer_wallet_transactions 
                 WHERE customer_id = %s 
                 AND remarks LIKE '%Referral bonus%'
@@ -26498,10 +26499,10 @@ def generate_referral_code(request):
             print(f"DEBUG: earnings_result = {earnings_result}")
             
             if not earnings_result:
-                total_earnings = 0
-            else:
-                # Handle NULL from SUM() when no rows match
-                total_earnings = float(earnings_result[0][0]) if earnings_result[0][0] is not None else 0
+                return JsonResponse({"message": "Database error - earnings"}, status=500)
+            
+            # Use same pattern as goods_driver_todays_earnings
+            total_earnings = float(earnings_result[0][0])
             
             return JsonResponse({
                 "status": "success",
@@ -26798,9 +26799,9 @@ def get_referral_details(request):
                     if status == 'Completed':
                         completed_count += 1
             
-            # Calculate total earnings
+            # Calculate total earnings - using same pattern as goods_driver_todays_earnings
             earnings_query = """
-                SELECT SUM(amount) 
+                SELECT COALESCE(SUM(amount), 0) 
                 FROM vtpartner.customer_wallet_transactions 
                 WHERE customer_id = %s 
                 AND remarks LIKE '%Referral bonus%'
@@ -26811,10 +26812,10 @@ def get_referral_details(request):
             print(f"DEBUG get_referral_details: earnings_result = {earnings_result}")
             
             if not earnings_result:
-                total_earnings = 0
-            else:
-                # Handle NULL from SUM() when no rows match
-                total_earnings = float(earnings_result[0][0]) if earnings_result[0][0] is not None else 0
+                return JsonResponse({"message": "Database error - earnings"}, status=500)
+            
+            # Use same pattern as goods_driver_todays_earnings
+            total_earnings = float(earnings_result[0][0])
             
             return JsonResponse({
                 "status": "success",
