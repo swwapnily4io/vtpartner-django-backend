@@ -2294,6 +2294,11 @@ def select_query(query, params=None):
     except Exception as e:
         print("Unexpected error:", e)
         raise  # Re-raise for unexpected errors
+    finally:
+        try:
+            connection.close()  # Ensure DB connection is closed
+        except:
+            pass
     
 def insert_query2(query, params=None):
     if params is None:

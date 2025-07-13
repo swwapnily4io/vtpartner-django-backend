@@ -186,9 +186,9 @@ DATABASES = {
         'NAME': 'kapsdb',
         'USER': 'mysuperuser',
         'PASSWORD': 'Vtpartner786',
-        'HOST': '172.31.84.67',
-        'PORT': '5432'
-        # 'CONN_MAX_AGE': 500,  # keeps DB connection alive for 5 minutes
+        'HOST': 'kaps-database-1.c27aay0ieaae.us-east-1.rds.amazonaws.com', #kaps-database-1.c27aay0ieaae.us-east-1.rds.amazonaws.com
+        'PORT': '5432',
+        'CONN_MAX_AGE': 600,  # keeps DB connection alive for 5 minutes
         # 'OPTIONS': {
         #     'connect_timeout': 30,
         #     'sslmode': 'require',
