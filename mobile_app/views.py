@@ -2269,9 +2269,9 @@ def select_query(query, params=None):
     try:
         print("Select_Query::=>", query)
         print("Params::", params)
-        get_active_connections()
-        get_total_connections()
-        get_each_connection_details()
+        # get_active_connections()
+        # get_total_connections()
+        # get_each_connection_details()
         # ensure_db_connection()
         with connection.cursor() as cursor:
             cursor.execute(query, params)
